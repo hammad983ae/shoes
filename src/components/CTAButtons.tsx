@@ -28,13 +28,13 @@ useEffect(() => {
       >
         {/* Graphic and Headline */}
         <div className="flex flex-col items-center gap-6">
-          <div className="w-20 h-20 flex items-center justify-center">
-            <img 
-              src="/lovable-uploads/519bed3c-88f6-4fd6-bd29-4ceb869c5a3b.png" 
-              alt="Crallux Brand" 
-              className="w-full h-full object-contain filter drop-shadow-lg"
-            />
-          </div>
+          <div className="w-40 h-40 flex items-center justify-center">
+  <img 
+    src="/lovable-uploads/519bed3c-88f6-4fd6-bd29-4ceb869c5a3b.png" 
+    alt="Crallux Brand" 
+    className="w-full h-full object-contain filter drop-shadow-lg"
+  />
+</div>
           <h1 className="text-6xl font-bold text-center bg-gradient-to-r from-primary to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
             CRALLUX SELLS
           </h1>
