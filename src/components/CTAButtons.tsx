@@ -27,7 +27,7 @@ useEffect(() => {
         }}
       >
         {/* Graphic and Headline */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-3">
           <div className="w-52 h-52 flex items-center justify-center">
             <img 
               src="/lovable-uploads/519bed3c-88f6-4fd6-bd29-4ceb869c5a3b.png" 
