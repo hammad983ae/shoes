@@ -49,7 +49,7 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
               } ${startFloating ? 'gentle-float' : ''}`}
               style={{
                 transform: isVisible ? 'scale(1)' : 'scale(0.8)',
-                animationDelay: `${index * 0.2}s`,
+                animationDelay: '0s',
                 animationName: isVisible ? 'fadeInScale' : 'none',
                 animationDuration: '0.8s',
                 animationFillMode: 'both'
