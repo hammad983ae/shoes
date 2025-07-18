@@ -8,13 +8,14 @@ interface CTAButtonsProps {
 }
 
 const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
-  const [isVisible, setIsVisible] = useState(false);
+  import { useEffect, useState } from 'react';
 
-  // Trigger fade-in animation
-  useState(() => {
-    const timer = setTimeout(() => setIsVisible(true), 500);
-    return () => clearTimeout(timer);
-  });
+const [isVisible, setIsVisible] = useState(false);
+
+useEffect(() => {
+  const timer = setTimeout(() => setIsVisible(true), 200); // adjust delay here
+  return () => clearTimeout(timer);
+}, []);
 
   return (
     <div className="absolute inset-0 flex items-center justify-center z-10">
