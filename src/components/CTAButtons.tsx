@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Instagram } from 'lucide-react';
 
@@ -8,7 +8,6 @@ interface CTAButtonsProps {
 }
 
 const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
-  import { useEffect, useState } from 'react';
 
 const [isVisible, setIsVisible] = useState(false);
 
