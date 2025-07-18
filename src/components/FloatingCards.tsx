@@ -44,16 +44,17 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
           {sneakerData.map((sneaker, index) => (
             <div
               key={sneaker.id}
-              className={`intro-card rounded-2xl p-4 w-64 h-80 transition-all duration-700 ${
-                isVisible ? 'opacity-100' : 'opacity-0'
-              } ${startFloating ? 'gentle-float' : ''}`}
-              style={{
-                transform: isVisible ? 'scale(1)' : 'scale(0.8)',
-                animationDelay: '0s',
-                animationName: isVisible ? 'fadeInScale' : 'none',
-                animationDuration: '0.8s',
-                animationFillMode: 'both'
-              }}
+  className={`intro-card rounded-2xl p-4 w-64 h-80 transition-all duration-700 ${
+    isVisible ? 'opacity-100' : 'opacity-0'
+  } ${startFloating ? 'gentle-float' : ''}`}
+  style={{
+    transform: isVisible ? 'scale(1)' : 'scale(0.8)',
+    animationDelay: '0s',
+    animationName: isVisible ? 'fadeInScale' : 'none',
+    animationDuration: '0.8s',
+    animationFillMode: 'forwards',
+    animationIterationCount: 1
+  }}
             >
               <div className="w-full h-full flex flex-col">
                 <div className="flex-1 flex items-center justify-center p-4">
