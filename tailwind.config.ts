@@ -99,24 +99,43 @@ export default {
 					'0%': { opacity: '0', transform: 'translateY(30px)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' }
 				},
-				'explode': {
-					'0%': { transform: 'scale(1) translateX(0) translateY(0)', opacity: '1' },
-					'100%': { transform: 'scale(0) translateX(var(--tx)) translateY(var(--ty))', opacity: '0' }
-				},
+        "explode": {
+          "0%": {
+            "transform": "scale(1) translateX(0) translateY(0)",
+            "opacity": "1"
+          },
+          "60%": {
+            "transform": "scale(1.2) translateX(calc(var(--tx) * 0.8)) translateY(calc(var(--ty) * 0.8))",
+            "opacity": "0.8"
+          },
+          "100%": {
+            "transform": "scale(0.3) translateX(var(--tx)) translateY(var(--ty))",
+            "opacity": "0"
+          }
+        },
+        "gradientShift": {
+          "0%, 100%": {
+            "background": "linear-gradient(45deg, hsl(var(--background)), hsl(var(--background)))"
+          },
+          "50%": {
+            "background": "linear-gradient(45deg, hsl(var(--background)), hsl(var(--background) / 0.98))"
+          }
+        },
 				'blurOut': {
 					'0%': { filter: 'blur(0px)', opacity: '1' },
 					'100%': { filter: 'blur(8px)', opacity: '0.3' }
 				}
 			},
-			animation: {
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'float': 'float 3s ease-in-out infinite',
-				'fadeInScale': 'fadeInScale 0.8s ease-out',
-				'fadeInUp': 'fadeInUp 0.8s ease-out',
-				'explode': 'explode 1s ease-out forwards',
-				'blurOut': 'blurOut 1s ease-out forwards'
-			}
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "float": "float 3s ease-in-out infinite",
+        "fadeInScale": "fadeInScale 0.8s ease-out",
+        "fadeInUp": "fadeInUp 0.8s ease-out",
+        "explode": "explode 1.2s ease-out forwards",
+        "blurOut": "blurOut 1s ease-out forwards",
+        "gradientShift": "gradientShift 8s ease-in-out infinite"
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

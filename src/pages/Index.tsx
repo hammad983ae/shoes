@@ -3,6 +3,7 @@ import FloatingCards from '@/components/FloatingCards';
 import CTAButtons from '@/components/CTAButtons';
 import SneakerCatalog from '@/components/SneakerCatalog';
 import ParticleExplosion from '@/components/ParticleExplosion';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 type AppState = 'initial' | 'floating' | 'cta' | 'explosion' | 'catalog';
 
@@ -11,9 +12,9 @@ const Index = () => {
   const [showParticles, setShowParticles] = useState(false);
 
   useEffect(() => {
-    // Initial sequence
-    const timer1 = setTimeout(() => setAppState('floating'), 500);
-    const timer2 = setTimeout(() => setAppState('cta'), 3500);
+    // Faster initial sequence - max 1.5-2 seconds total
+    const timer1 = setTimeout(() => setAppState('floating'), 200);
+    const timer2 = setTimeout(() => setAppState('cta'), 1500);
     
     return () => {
       clearTimeout(timer1);
@@ -38,6 +39,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Animation */}
+      {(appState === 'floating' || appState === 'cta') && (
+        <div className="absolute inset-0 animate-gradientShift bg-gradient-to-br from-background via-background to-background/95" />
+      )}
+
+      {/* Interactive Particles */}
+      <InteractiveParticles isActive={appState === 'floating' || appState === 'cta'} />
+
       {/* Floating Cards Background */}
       {(appState === 'floating' || appState === 'cta') && (
         <FloatingCards isBackground={appState === 'cta'} />

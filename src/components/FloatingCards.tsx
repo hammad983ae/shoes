@@ -65,12 +65,9 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
                   />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-foreground mb-1">
+                  <h3 className="text-lg font-semibold text-foreground">
                     {sneaker.name}
                   </h3>
-                  <p className="text-xl font-bold text-primary">
-                    {sneaker.price}
-                  </p>
                 </div>
               </div>
             </div>

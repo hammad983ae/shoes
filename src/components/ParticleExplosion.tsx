@@ -4,13 +4,13 @@ const ParticleExplosion = () => {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; tx: number; ty: number }>>([]);
 
   useEffect(() => {
-    // Create particles
-    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+    // Create more particles for bigger explosion
+    const newParticles = Array.from({ length: 80 }, (_, i) => ({
       id: i,
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
-      tx: (Math.random() - 0.5) * 800,
-      ty: (Math.random() - 0.5) * 800,
+      tx: (Math.random() - 0.5) * 1200,
+      ty: (Math.random() - 0.5) * 1200,
     }));
 
     setParticles(newParticles);
@@ -18,7 +18,7 @@ const ParticleExplosion = () => {
     // Clean up particles after animation
     const timer = setTimeout(() => {
       setParticles([]);
-    }, 1000);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, []);

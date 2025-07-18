@@ -180,11 +180,23 @@
 
   .particle {
     position: absolute;
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
     background: hsl(var(--primary));
     border-radius: 50%;
-    animation: explode 1s ease-out forwards;
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.8);
+    animation: explode 1.2s ease-out forwards;
+    pointer-events: none;
+  }
+
+  .interactive-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: hsl(var(--primary));
+    border-radius: 50%;
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.6);
+    transition: all 0.3s ease;
     pointer-events: none;
   }
 }
@@ -240,9 +252,22 @@
     transform: scale(1) translateX(0) translateY(0);
     opacity: 1;
   }
+  60% {
+    transform: scale(1.2) translateX(calc(var(--tx) * 0.8)) translateY(calc(var(--ty) * 0.8));
+    opacity: 0.8;
+  }
   100% {
-    transform: scale(0) translateX(var(--tx)) translateY(var(--ty));
+    transform: scale(0.3) translateX(var(--tx)) translateY(var(--ty));
     opacity: 0;
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background: linear-gradient(45deg, hsl(var(--background)), hsl(var(--background)));
+  }
+  50% {
+    background: linear-gradient(45deg, hsl(var(--background)), hsl(var(--background) / 0.98));
   }
 }
 
