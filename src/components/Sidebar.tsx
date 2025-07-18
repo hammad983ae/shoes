@@ -15,6 +15,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const { getTotalItems } = useCart();
 
   const links = [
+    { label: 'Home', href: '/', icon: () => <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">H</div> },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Contact Us', href: '/contact', icon: Phone },

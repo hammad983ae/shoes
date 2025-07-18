@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import Sidebar from './Sidebar';
 import sneaker1 from '@/assets/sneaker-1.jpg';
 import sneaker2 from '@/assets/sneaker-2.jpg';
@@ -39,33 +39,16 @@ const SneakerCatalog = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleBackToHome = () => {
-    window.location.reload();
-  };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      
+    <div className="flex-1">
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'md:ml-60' : 'md:ml-16'}`}>
+      <div className="w-full">
         {/* Header */}
         <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50 z-50">
           <div className="container mx-auto px-4 py-6 ml-0 md:ml-0">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={handleBackToHome}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </Button>
-                <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
-              </div>
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
             </div>
             
             {/* Search and Filter */}
