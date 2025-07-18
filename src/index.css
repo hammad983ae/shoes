@@ -118,17 +118,21 @@
 }
 
 @layer components {
-  .floating-card {
-    animation: float 3s ease-in-out infinite;
-    transition: var(--transition-smooth);
+  .gentle-float {
+    animation: gentleFloat 4s ease-in-out infinite;
+    animation-delay: 1s; /* Start floating after fade-in completes */
   }
 
-  .floating-card:nth-child(2n) {
-    animation-delay: -1s;
+  .gentle-float:nth-child(2n) {
+    animation-delay: 1.5s;
   }
 
-  .floating-card:nth-child(3n) {
-    animation-delay: -2s;
+  .gentle-float:nth-child(3n) {
+    animation-delay: 2s;
+  }
+
+  .gentle-float:nth-child(4n) {
+    animation-delay: 2.5s;
   }
 
   .cta-button {
@@ -168,6 +172,15 @@
     border-radius: 50%;
     animation: explode 1s ease-out forwards;
     pointer-events: none;
+  }
+}
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 
