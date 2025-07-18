@@ -28,7 +28,7 @@ useEffect(() => {
       >
         {/* Graphic and Headline */}
         <div className="flex flex-col items-center gap-6">
-          <div className="w-32 h-32 flex items-center justify-center">
+          <div className="w-22 h-22 flex items-center justify-center">
             <img 
               src="/lovable-uploads/519bed3c-88f6-4fd6-bd29-4ceb869c5a3b.png" 
               alt="Crallux Brand" 
