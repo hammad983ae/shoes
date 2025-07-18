@@ -3,7 +3,6 @@ import ProductCard from '@/components/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import Sidebar from './Sidebar';
 import sneaker1 from '@/assets/sneaker-1.jpg';
 import sneaker2 from '@/assets/sneaker-2.jpg';
 import sneaker3 from '@/assets/sneaker-3.jpg';
@@ -28,7 +27,6 @@ const sneakerCatalog = [
 
 const SneakerCatalog = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = ['All', 'Basketball', 'Running', 'Lifestyle'];
@@ -41,7 +39,7 @@ const SneakerCatalog = () => {
 
 
   return (
-    <div className="flex-1">
+    <div className="min-h-screen bg-background">
       {/* Main Content */}
       <div className="w-full">
         {/* Header */}

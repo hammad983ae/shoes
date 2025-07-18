@@ -41,8 +41,8 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
 
       {/* Mobile Sidebar Overlay */}
       {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-          <div className="fixed left-0 top-0 h-full w-80 bg-card/95 backdrop-blur-md border-r border-border p-6">
+        <div className="md:hidden fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm">
+          <div className="fixed left-0 top-0 h-full w-80 bg-card backdrop-blur-md border-r border-border p-6">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-bold text-primary">Menu</h2>
               <button
@@ -140,7 +140,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
 
       {/* Desktop Sidebar */}
       <div
-        className={`hidden md:flex fixed left-0 top-0 h-full bg-card/80 backdrop-blur-md border-r border-border transition-all duration-300 z-[60] ${
+        className={`hidden md:flex fixed left-0 top-0 h-full bg-card backdrop-blur-md border-r border-border transition-all duration-300 z-[70] ${
           isExpanded ? 'w-60' : 'w-16'
         }`}
         onMouseEnter={() => setIsExpanded(true)}
