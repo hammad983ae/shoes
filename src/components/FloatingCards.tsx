@@ -44,7 +44,7 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
           {sneakerData.map((sneaker, index) => (
             <div
               key={sneaker.id}
-              className={`product-card rounded-2xl p-4 w-64 h-80 transition-all duration-700 ${
+              className={`intro-card rounded-2xl p-4 w-64 h-80 transition-all duration-700 ${
                 isVisible ? 'opacity-100' : 'opacity-0'
               } ${startFloating ? 'gentle-float' : ''}`}
               style={{

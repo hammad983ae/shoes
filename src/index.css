@@ -135,6 +135,20 @@
     animation-delay: 2.5s;
   }
 
+  .intro-card {
+    background: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+    cursor: default;
+  }
+
+  .intro-card:hover {
+    /* Remove hover effects for intro cards */
+    transform: none;
+    box-shadow: var(--shadow-card);
+  }
+
   .cta-button {
     background: var(--gradient-primary);
     box-shadow: var(--shadow-glow);
