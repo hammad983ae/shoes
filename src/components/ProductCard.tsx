@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useState } from 'react';
+import SizeSelectionModal from './SizeSelectionModal';
 
 interface Sneaker {
   id: number;
@@ -19,9 +20,15 @@ interface ProductCardProps {
 const ProductCard = ({ sneaker, index }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [showSizeModal, setShowSizeModal] = useState(false);
 
   const handleAddToCart = () => {
+    setShowSizeModal(true);
+  };
+
+  const handleSizeSelected = (size: number) => {
     setIsAdded(true);
+    // Cart animation will be handled by the modal
     setTimeout(() => setIsAdded(false), 2000);
   };
 
@@ -89,19 +96,15 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
             {sneaker.price}
           </p>
           
-          {/* Size Selection */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {[7, 8, 9, 10, 11, 12].map(size => (
-              <button
-                key={size}
-                className="w-8 h-8 rounded border border-border hover:border-primary hover:bg-primary/10 text-sm transition-colors"
-              >
-                {size}
-              </button>
-            ))}
-          </div>
         </div>
       </CardContent>
+      
+      <SizeSelectionModal
+        isOpen={showSizeModal}
+        onClose={() => setShowSizeModal(false)}
+        sneaker={sneaker}
+        onAddToCart={handleSizeSelected}
+      />
     </Card>
   );
 };

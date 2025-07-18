@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Star, Phone, LogOut, User, ShoppingCart } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Phone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCart } from '@/contexts/CartContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,11 +11,19 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [socialsOpen, setSocialsOpen] = useState(false);
+  const { getTotalItems } = useCart();
 
   const links = [
-    { label: 'Shop All Sneakers', href: '#', icon: ShoppingBag },
-    { label: 'Get Free Credits', href: '#', icon: Star },
-    { label: 'Contact Us', href: '#', icon: Phone },
+    { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
+    { label: 'Get Free Credits', href: '/credits', icon: Star },
+    { label: 'Contact Us', href: '/contact', icon: Phone },
+  ];
+
+  const socialLinks = [
+    { label: 'Instagram', href: 'https://instagram.com', icon: Instagram },
+    { label: 'TikTok', href: 'https://tiktok.com', icon: Music },
+    { label: 'Discord', href: 'https://discord.com', icon: MessageCircle },
   ];
 
   const isLoggedIn = false; // Replace with actual auth state
@@ -30,7 +40,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
 
       {/* Mobile Sidebar Overlay */}
       {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm">
+        <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
           <div className="fixed left-0 top-0 h-full w-80 bg-card/95 backdrop-blur-md border-r border-border p-6">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-bold text-primary">Menu</h2>
@@ -44,39 +54,84 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
             
             <div className="space-y-4">
               {links.map((link, idx) => (
-                <a
+                <Link
                   key={idx}
-                  href={link.href}
+                  to={link.href}
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
+                  onClick={() => setIsMobileOpen(false)}
                 >
                   <link.icon className="w-5 h-5" />
                   <span className="font-medium">{link.label}</span>
-                </a>
+                </Link>
               ))}
               
+              {/* Socials Section */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => setSocialsOpen(!socialsOpen)}
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 w-full"
+                >
+                  {socialsOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                  <span className="font-medium">Socials</span>
+                </button>
+                
+                {socialsOpen && (
+                  <div className="pl-6 space-y-2">
+                    {socialLinks.map((social, idx) => (
+                      <a
+                        key={idx}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
+                      >
+                        <social.icon className="w-5 h-5" />
+                        <span className="font-medium">{social.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               {isLoggedIn && (
-                <a
-                  href="#"
+                <Link
+                  to="/logout"
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300"
+                  onClick={() => setIsMobileOpen(false)}
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
-                </a>
+                </Link>
               )}
             </div>
 
             <div className="border-t border-border mt-8 pt-6 space-y-4">
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-primary/5">
-                <ShoppingCart className="w-5 h-5 text-primary" />
-                <span className="text-foreground">Cart (0)</span>
-              </div>
+              <Link
+                to="/cart"
+                className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={() => setIsMobileOpen(false)}
+              >
+                <div className="relative">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </div>
+                <span className="text-foreground">Cart ({getTotalItems()})</span>
+              </Link>
               
-              <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 transition-colors">
+              <Link
+                to={isLoggedIn ? "/profile" : "/signin"}
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 transition-colors"
+                onClick={() => setIsMobileOpen(false)}
+              >
                 <User className="w-5 h-5 text-primary" />
                 <span className="text-foreground">
                   {isLoggedIn ? 'Profile' : 'Sign In'}
                 </span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -84,7 +139,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
 
       {/* Desktop Sidebar */}
       <div
-        className={`hidden md:flex fixed left-0 top-0 h-full bg-card/80 backdrop-blur-md border-r border-border transition-all duration-300 z-30 ${
+        className={`hidden md:flex fixed left-0 top-0 h-full bg-card/80 backdrop-blur-md border-r border-border transition-all duration-300 z-[60] ${
           isExpanded ? 'w-60' : 'w-16'
         }`}
         onMouseEnter={() => setIsExpanded(true)}
@@ -94,12 +149,12 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
           {/* Main Navigation */}
           <div className="flex-1 pt-6 space-y-2">
             {links.map((link, idx) => (
-              <a
+              <Link
                 key={idx}
-                href={link.href}
+                to={link.href}
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 group"
               >
-                <link.icon className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <link.icon className="w-5 h-5 text-primary" />
                 <span
                   className={`font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
@@ -107,15 +162,49 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 >
                   {link.label}
                 </span>
-              </a>
+              </Link>
             ))}
             
+            {/* Socials Section */}
+            <div className="mx-2">
+              <button
+                onClick={() => setSocialsOpen(!socialsOpen)}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 w-full"
+              >
+                {socialsOpen ? <ChevronDown className="w-5 h-5 text-primary" /> : <ChevronRight className="w-5 h-5 text-primary" />}
+                <span
+                  className={`font-medium whitespace-nowrap transition-all duration-300 ${
+                    isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
+                  }`}
+                >
+                  Socials
+                </span>
+              </button>
+              
+              {socialsOpen && isExpanded && (
+                <div className="pl-6 space-y-1 mt-2">
+                  {socialLinks.map((social, idx) => (
+                    <a
+                      key={idx}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
+                    >
+                      <social.icon className="w-5 h-5" />
+                      <span className="font-medium text-sm">{social.label}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             {isLoggedIn && (
-              <a
-                href="#"
+              <Link
+                to="/logout"
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
               >
-                <LogOut className="w-5 h-5 text-destructive group-hover:scale-110 transition-transform" />
+                <LogOut className="w-5 h-5 text-destructive" />
                 <span
                   className={`font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
@@ -123,19 +212,24 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 >
                   Logout
                 </span>
-              </a>
+              </Link>
             )}
           </div>
 
           {/* Bottom Section */}
           <div className="border-t border-border p-3 space-y-3">
             {/* Cart */}
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
+            <Link
+              to="/cart"
+              className="flex items-center gap-3 p-2 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors"
+            >
               <div className="relative">
                 <ShoppingCart className="w-5 h-5 text-primary" />
-                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  0
-                </span>
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {getTotalItems()}
+                  </span>
+                )}
               </div>
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
@@ -144,10 +238,13 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
               >
                 Cart
               </span>
-            </div>
+            </Link>
             
             {/* Profile / Sign In */}
-            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer">
+            <Link
+              to={isLoggedIn ? "/profile" : "/signin"}
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+            >
               <User className="w-5 h-5 text-primary" />
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
@@ -156,7 +253,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
               >
                 {isLoggedIn ? 'Profile' : 'Sign In'}
               </span>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
