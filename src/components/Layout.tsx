@@ -16,9 +16,9 @@ const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background">
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex-1 transition-all duration-300 md:ml-16">
+      <div className="ml-16 transition-all duration-300">
         {children}
       </div>
     </div>

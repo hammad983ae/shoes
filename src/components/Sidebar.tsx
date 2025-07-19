@@ -155,7 +155,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 to={link.href}
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 group"
               >
-                <link.icon className="w-5 h-5 text-primary" />
+                <link.icon className="w-5 h-5 text-primary flex-shrink-0" />
                 <span
                   className={`font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
@@ -172,7 +172,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 onClick={() => setSocialsOpen(!socialsOpen)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 w-full"
               >
-                {socialsOpen ? <ChevronDown className="w-5 h-5 text-primary" /> : <ChevronRight className="w-5 h-5 text-primary" />}
+                {socialsOpen ? <ChevronDown className="w-5 h-5 text-primary flex-shrink-0" /> : <ChevronRight className="w-5 h-5 text-primary flex-shrink-0" />}
                 <span
                   className={`font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
@@ -192,7 +192,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
                     >
-                      <social.icon className="w-5 h-5" />
+                      <social.icon className="w-5 h-5 flex-shrink-0" />
                       <span className="font-medium text-sm">{social.label}</span>
                     </a>
                   ))}
@@ -205,7 +205,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 to="/logout"
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
               >
-                <LogOut className="w-5 h-5 text-destructive" />
+                <LogOut className="w-5 h-5 text-destructive flex-shrink-0" />
                 <span
                   className={`font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
@@ -225,7 +225,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
               className="flex items-center gap-3 p-2 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors"
             >
               <div className="relative">
-                <ShoppingCart className="w-5 h-5 text-primary" />
+                <ShoppingCart className="w-5 h-5 text-primary flex-shrink-0" />
                 {getTotalItems() > 0 && (
                   <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
                     {getTotalItems()}
@@ -246,7 +246,7 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
               to={isLoggedIn ? "/profile" : "/signin"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
             >
-              <User className="w-5 h-5 text-primary" />
+              <User className="w-5 h-5 text-primary flex-shrink-0" />
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
