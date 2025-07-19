@@ -40,15 +40,15 @@ const SneakerCatalog = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar on the left */}
+    <div className="min-h-screen bg-background">
+      {/* Fixed sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} />
 
-      {/* Main content */}
-      <div className="flex-1">
+      {/* Main content with left margin so it doesn't go under sidebar */}
+      <div className="ml-16 md:ml-60">
         {/* Header */}
         <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50 z-50">
-          <div className="container mx-auto px-4 py-6 ml-0 md:ml-0">
+          <div className="container mx-auto px-4 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
             </div>
