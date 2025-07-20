@@ -4,6 +4,7 @@ import ProductCard from '@/components/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
+import { Meteors } from '@/components/ui/meteors';
 
 import sneaker1 from '@/assets/sneaker-1.jpg';
 import sneaker2 from '@/assets/sneaker-2.jpg';
@@ -40,7 +41,12 @@ const SneakerCatalog = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Meteor Background - positioned to avoid sidebar */}
+      <div className="fixed inset-0 -z-10 pointer-events-none ml-16 md:ml-60">
+        <Meteors number={15} glowColor="white" speedVariance={true} />
+      </div>
+      
       {/* Fixed sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} />
 
