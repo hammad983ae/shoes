@@ -12,6 +12,7 @@ import ContactUs from "./pages/ContactUs";
 import Cart from "./pages/Cart";
 import SignIn from "./pages/SignIn";
 import SneakerCatalog from "./components/SneakerCatalog";
+import { Meteors } from "@/components/ui/meteors";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <CartProvider>
       <TooltipProvider>
+        {/* Global meteor background */}
+        <div className="w-full h-full fixed inset-0 -z-10">
+          <Meteors number={20} />
+        </div>
+        
         <Toaster />
         <Sonner />
         <BrowserRouter>

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useState } from 'react';
 import SizeSelectionModal from './SizeSelectionModal';
-import { Meteors } from '@/components/ui/meteors';
+
 
 interface Sneaker {
   id: number;
@@ -22,7 +22,7 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [showSizeModal, setShowSizeModal] = useState(false);
-  const [isHoveringInfo, setIsHoveringInfo] = useState(false);
+  
 
   const handleAddToCart = () => {
     setShowSizeModal(true);
@@ -85,12 +85,8 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
         </div>
         
         {/* Product Info */}
-        <div 
-          className="p-6 relative overflow-hidden"
-          onMouseEnter={() => setIsHoveringInfo(true)}
-          onMouseLeave={() => setIsHoveringInfo(false)}
-        >
-          <div className="flex justify-between items-start mb-2 relative z-10">
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
               {sneaker.name}
             </h3>
@@ -98,12 +94,9 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
               {sneaker.category}
             </span>
           </div>
-          <p className="text-xl font-bold text-primary mb-4 relative z-10">
+          <p className="text-xl font-bold text-primary mb-4">
             {sneaker.price}
           </p>
-          
-          {/* Meteor Effect */}
-          {isHoveringInfo && <Meteors number={15} />}
         </div>
       </CardContent>
       
