@@ -281,3 +281,19 @@
     opacity: 0.3;
   }
 }
+/* Fade in effect for meteors and stars */
+@keyframes fadeInSlow {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fadeInSlow {
+  animation-name: fadeInSlow;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  animation-duration: 1.2s; /* adjust how long the fade takes */
+}
