@@ -124,6 +124,14 @@ export default {
 				'blurOut': {
 					'0%': { filter: 'blur(0px)', opacity: '1' },
 					'100%': { filter: 'blur(8px)', opacity: '0.3' }
+				},
+				'meteor': {
+					'0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+					'70%': { opacity: '1' },
+					'100%': {
+						transform: 'rotate(215deg) translateX(-500px)',
+						opacity: '0',
+					},
 				}
 			},
       animation: {
@@ -134,7 +142,8 @@ export default {
         "fadeInUp": "fadeInUp 0.8s ease-out",
         "explode": "explode 1.2s ease-out forwards",
         "blurOut": "blurOut 1s ease-out forwards",
-        "gradientShift": "gradientShift 8s ease-in-out infinite"
+        "gradientShift": "gradientShift 8s ease-in-out infinite",
+        "meteor-effect": "meteor 5s linear infinite"
       }
 		}
 	},
