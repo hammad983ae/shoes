@@ -42,24 +42,22 @@ const SneakerCatalog = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Meteor Background - positioned to avoid sidebar */}
-      <div className="fixed inset-0 -z-10 pointer-events-none ml-16 md:ml-60">
-        <Meteors number={15} glowColor="white" speedVariance={true} />
+      {/* Meteor Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Meteors number={25} glowColor="white" speedVariance={true} />
       </div>
-      
-      {/* Fixed sidebar */}
+
+      {/* Sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} />
 
-      {/* Main content with left margin so it doesn't go under sidebar */}
-      <div className="ml-16 md:ml-60">
-        {/* Header */}
+      {/* Main content */}
+      <div className="ml-16 md:ml-60 relative z-10">
         <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50 z-50">
           <div className="container mx-auto px-4 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
             </div>
 
-            {/* Search and Filter */}
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -87,14 +85,8 @@ const SneakerCatalog = () => {
           </div>
         </div>
 
-        {/* Product Grid */}
         <div className="container mx-auto px-4 py-8">
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            style={{
-              animation: 'fadeInUp 0.8s ease-out',
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredSneakers.map((sneaker, index) => (
               <ProductCard key={sneaker.id} sneaker={sneaker} index={index} />
             ))}

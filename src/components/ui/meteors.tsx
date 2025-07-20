@@ -7,19 +7,23 @@ interface MeteorsProps {
   speedVariance?: boolean;
 }
 
-export const Meteors = ({ number = 20, className, glowColor = "white", speedVariance = true }: MeteorsProps) => {
+export const Meteors = ({
+  number = 20,
+  className,
+  glowColor = "white",
+  speedVariance = true,
+}: MeteorsProps) => {
   const meteors = new Array(number).fill(true);
-  const stars = new Array(Math.floor(number * 0.3)).fill(true); // 30% stars
-  
+  const stars = new Array(Math.floor(number * 0.3)).fill(true);
+
   return (
     <>
-      {/* Meteors */}
-      {meteors.map((el, idx) => (
+      {meteors.map((_, idx) => (
         <span
           key={"meteor" + idx}
           className={cn(
-            "animate-meteor-effect absolute h-0.5 w-0.5 rounded-[9999px] rotate-[215deg]",
-            glowColor === "white" 
+            "animate-meteor-effect absolute h-1 w-1 rounded-full rotate-[215deg]",
+            glowColor === "white"
               ? "bg-white/70 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               : "bg-slate-500 shadow-[0_0_0_1px_#ffffff10]",
             "before:content-[''] before:absolute before:top-1/2 before:transform before:-translate-y-[50%] before:w-[50px] before:h-[1px]",
@@ -32,20 +36,19 @@ export const Meteors = ({ number = 20, className, glowColor = "white", speedVari
             top: Math.random() * 100 + "%",
             left: Math.random() * 100 + "%",
             animationDelay: Math.random() * (0.8 - 0.2) + 0.2 + "s",
-            animationDuration: speedVariance 
+            animationDuration: speedVariance
               ? Math.floor(Math.random() * (12 - 6) + 6) + "s"
               : Math.floor(Math.random() * (10 - 2) + 2) + "s",
           }}
         ></span>
       ))}
-      
-      {/* Stars */}
-      {stars.map((el, idx) => (
+
+      {stars.map((_, idx) => (
         <span
           key={"star" + idx}
           className={cn(
             "absolute w-1 h-1 rounded-full animate-pulse",
-            glowColor === "white" 
+            glowColor === "white"
               ? "bg-white/40 shadow-[0_0_10px_rgba(255,255,255,0.2)]"
               : "bg-slate-400/60",
             className
@@ -54,7 +57,7 @@ export const Meteors = ({ number = 20, className, glowColor = "white", speedVari
             top: Math.random() * 100 + "%",
             left: Math.random() * 100 + "%",
             animationDelay: Math.random() * 2 + "s",
-            animationDuration: (Math.random() * 2 + 2) + "s",
+            animationDuration: Math.random() * 2 + 2 + "s",
           }}
         ></span>
       ))}
