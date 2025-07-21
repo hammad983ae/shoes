@@ -1,16 +1,26 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, ShoppingBag, Star, TrendingUp, Settings, Edit2, Trash2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  CreditCard, 
+  Star, 
+  Settings, 
+  Edit2, 
+  Upload,
+  BarChart3,
+  Users,
+  Award,
+  History,
+  Crown
+} from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -60,15 +70,31 @@ const Profile = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<ProfileData>({ display_name: '', avatar_url: '' });
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Modal states
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isEditDetailsOpen, setIsEditDetailsOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [isSocialsOpen, setIsSocialsOpen] = useState(false);
+  const [isTransactionHistoryOpen, setIsTransactionHistoryOpen] = useState(false);
+  const [isManageMembershipOpen, setIsManageMembershipOpen] = useState(false);
+
+  // Form states
   const [editForm, setEditForm] = useState({
     display_name: '',
     avatar_url: '',
+    description: ''
+  });
+  
+  const [detailsForm, setDetailsForm] = useState({
     email: '',
-    password: '',
+    currentPassword: '',
+    newPassword: '',
     confirmPassword: ''
   });
-  const [activeTab, setActiveTab] = useState('transactions');
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (user) fetchUserData();
@@ -110,6 +136,7 @@ const Profile = () => {
       .select('*')
       .eq('user_id', user.id)
       .single();
+    
     if (profileData) {
       setProfile({
         display_name: profileData.display_name || '',
@@ -118,245 +145,548 @@ const Profile = () => {
       setEditForm({
         display_name: profileData.display_name || '',
         avatar_url: profileData.avatar_url || '',
+        description: ''
+      });
+      setDetailsForm({
         email: user.email || '',
-        password: '',
+        currentPassword: '',
+        newPassword: '',
         confirmPassword: ''
       });
+    }
+  };
+
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setEditForm(prev => ({ ...prev, avatar_url: previewUrl }));
     }
   };
 
   const updateProfile = async () => {
     if (!user) return;
     try {
-      if (editForm.email !== user.email) {
-        const { error: emailError } = await supabase.auth.updateUser({ email: editForm.email });
-        if (emailError) throw emailError;
+      let avatarUrl = editForm.avatar_url;
+
+      // Upload avatar if a file was selected
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${user.id}/avatar.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile, { upsert: true });
+          
+        if (uploadError) throw uploadError;
+        
+        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        avatarUrl = data.publicUrl;
       }
-      if (editForm.password && editForm.password === editForm.confirmPassword) {
-        const { error: passwordError } = await supabase.auth.updateUser({ password: editForm.password });
-        if (passwordError) throw passwordError;
-      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({ display_name: editForm.display_name, avatar_url: editForm.avatar_url })
+        .update({ 
+          display_name: editForm.display_name, 
+          avatar_url: avatarUrl 
+        })
         .eq('user_id', user.id);
+      
       if (error) throw error;
 
-      setProfile({ display_name: editForm.display_name, avatar_url: editForm.avatar_url });
-      setIsEditDialogOpen(false);
+      setProfile({ 
+        display_name: editForm.display_name, 
+        avatar_url: avatarUrl 
+      });
+      setIsEditProfileOpen(false);
+      setAvatarFile(null);
       toast({ title: 'Profile updated successfully' });
     } catch (error: any) {
       toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
     }
   };
 
-  const deleteReview = async (reviewId: string) => {
-    const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
-    if (error) toast({ title: 'Error deleting review', variant: 'destructive' });
-    else {
-      setReviews(reviews.filter((r) => r.id !== reviewId));
-      toast({ title: 'Review deleted successfully' });
+  const updateDetails = async () => {
+    if (!user) return;
+    try {
+      if (detailsForm.email !== user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({ 
+          email: detailsForm.email 
+        });
+        if (emailError) throw emailError;
+      }
+
+      if (detailsForm.newPassword && detailsForm.newPassword === detailsForm.confirmPassword) {
+        const { error: passwordError } = await supabase.auth.updateUser({ 
+          password: detailsForm.newPassword 
+        });
+        if (passwordError) throw passwordError;
+      }
+
+      setIsEditDetailsOpen(false);
+      setDetailsForm({
+        email: detailsForm.email,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      toast({ title: 'Details updated successfully' });
+    } catch (error: any) {
+      toast({ title: 'Error updating details', description: error.message, variant: 'destructive' });
     }
   };
 
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
-  // Softer yellow glow and dark backgrounds
-  const shadowBase =
-    "shadow-[0px_0px_8px_rgba(255,215,0,0.12),-6px_-6px_8px_rgba(255,215,0,0.12)] dark:shadow-[6px_6px_8px_rgba(0,0,0,0.4),-6px_-6px_8px_rgba(255,215,0,0.18)]";
-  const hoverShadow =
-    "hover:shadow-[0px_0px_12px_rgba(255,215,0,0.2),-8px_-8px_12px_rgba(255,215,0,0.2)] dark:hover:shadow-[8px_8px_12px_rgba(0,0,0,0.5),-8px_-8px_12px_rgba(255,215,0,0.25)]";
+  const membershipLevel = "GOLD"; // Could be determined by credits/posts
+  const pointsToNext = 750; // Example calculation
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      {/* Profile header */}
-      <div className={`group relative overflow-hidden rounded-3xl bg-gray-900 p-8 ${shadowBase} transition-all duration-500 ${hoverShadow} hover:scale-[1.02] hover:-translate-y-1`}>
-        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
-          <Avatar className="w-32 h-32 border-4 border-gray-800 shadow-lg">
-            <AvatarImage src={profile.avatar_url || undefined} className="object-cover" />
-            <AvatarFallback className="text-2xl font-bold bg-yellow-500 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 flex items-center justify-center">
+      {/* Main Profile Card */}
+      <div className="w-full max-w-md bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-6 shadow-2xl border border-gray-700">
+        {/* Profile Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
+            <AvatarImage src={profile.avatar_url || undefined} />
+            <AvatarFallback className="bg-yellow-500 text-black font-bold text-xl">
               {profile.display_name?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 space-y-4">
-            <h1 className="text-4xl font-bold text-yellow-400 mb-2">{profile.display_name || 'Anonymous User'}</h1>
-            <p className="text-gray-300">{user.email}</p>
-            <div className="flex gap-6 mt-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-300">{posts.length}</div>
-                <div className="text-sm text-gray-400">Posts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{credits?.current_balance || 0}</div>
-                <div className="text-sm text-gray-400">Credits</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">{reviews.length}</div>
-                <div className="text-sm text-gray-400">Reviews</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-white">
+                {profile.display_name || 'Anonymous User'}
+              </h2>
+              <div className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full text-xs font-bold text-black">
+                {membershipLevel}
               </div>
             </div>
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-yellow-500 hover:bg-yellow-600 text-black shadow-md hover:shadow-yellow-400/50">
-                  <Edit2 className="w-4 h-4 mr-2" /> Edit Profile
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md rounded-2xl bg-gray-900 text-white">
-                <DialogHeader>
-                  <DialogTitle>Edit Profile</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 p-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="display_name">Display Name</Label>
-                    <Input id="display_name" value={editForm.display_name} onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar_url">Avatar URL</Label>
-                    <Input id="avatar_url" value={editForm.avatar_url} onChange={(e) => setEditForm({ ...editForm, avatar_url: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">New Password (optional)</Label>
-                    <Input id="password" type="password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} />
-                  </div>
-                  {editForm.password && (
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input id="confirmPassword" type="password" value={editForm.confirmPassword} onChange={(e) => setEditForm({ ...editForm, confirmPassword: e.target.value })} />
-                    </div>
-                  )}
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={updateProfile} className="bg-yellow-500 hover:bg-yellow-600 text-black">Save Changes</Button>
-                    <Button onClick={() => setIsEditDialogOpen(false)} variant="outline">Cancel</Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <p className="text-gray-400 text-sm">{user.email}</p>
+            <p className="text-gray-500 text-xs mt-1">Member since March 2021</p>
           </div>
+        </div>
+
+        {/* Points Section */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="w-5 h-5 text-yellow-500" />
+            <span className="text-lg font-bold text-white">
+              {credits?.current_balance || 0} Points
+            </span>
+          </div>
+          <p className="text-gray-400 text-sm">{pointsToNext} points to platinum</p>
+        </div>
+
+        {/* Membership Card */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl border border-gray-600 relative overflow-hidden">
+          <div className="absolute top-2 right-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center">
+              <Crown className="w-4 h-4 text-black" />
+            </div>
+          </div>
+          <div className="text-xs text-gray-400 mb-1">MEMBERSHIP CARD</div>
+          <div className="text-lg font-mono text-white mb-2">•••• •••• •••• 5678</div>
+          <div className="flex justify-between items-end">
+            <div>
+              <div className="text-xs text-gray-400">MEMBER NAME</div>
+              <div className="text-sm font-semibold text-white">
+                {profile.display_name || 'Anonymous User'}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-400">EXPIRES</div>
+              <div className="text-sm font-semibold text-white">09/25</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Widgets */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <BarChart3 className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+            <div className="text-lg font-bold text-white">{posts.length}</div>
+            <div className="text-xs text-gray-400">Posts</div>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <Users className="w-5 h-5 text-green-400 mx-auto mb-1" />
+            <div className="text-lg font-bold text-white">1.2K</div>
+            <div className="text-xs text-gray-400">Followers</div>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <Award className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+            <div className="text-lg font-bold text-white">{reviews.length}</div>
+            <div className="text-xs text-gray-400">Reviews</div>
+          </div>
+        </div>
+
+        {/* Membership Benefits */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Crown className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm font-semibold text-white">Membership Benefits</span>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
+              <span>Priority customer support</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
+              <span>Free shipping on all orders</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
+              <span>Early access to new products</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Access Buttons */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <Button
+            onClick={() => setIsCreditsOpen(true)}
+            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12 rounded-xl"
+          >
+            <CreditCard className="w-4 h-4 mb-1" />
+            <span className="text-xs">Credits</span>
+          </Button>
+          <Button
+            onClick={() => setIsReviewsOpen(true)}
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-12 rounded-xl"
+          >
+            <Star className="w-4 h-4 mb-1" />
+            <span className="text-xs">Reviews</span>
+          </Button>
+          <Button
+            onClick={() => setIsSocialsOpen(true)}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 rounded-xl"
+          >
+            <Users className="w-4 h-4 mb-1" />
+            <span className="text-xs">Socials</span>
+          </Button>
+        </div>
+
+        {/* Edit Profile Button */}
+        <Button
+          onClick={() => setIsEditProfileOpen(true)}
+          className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl"
+        >
+          <Edit2 className="w-4 h-4 mr-2" />
+          Edit Profile
+        </Button>
+
+        {/* Bottom Bar */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsTransactionHistoryOpen(true)}
+            className="text-gray-400 hover:text-white"
+          >
+            <History className="w-4 h-4 mr-1" />
+            <span className="text-xs">Transaction History</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsManageMembershipOpen(true)}
+            className="text-gray-400 hover:text-white"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            <span className="text-xs">Manage Membership</span>
+          </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={`grid w-full grid-cols-5 rounded-2xl bg-gray-900 p-1 ${shadowBase}`}>
-          {[
-            { key: 'transactions', icon: <ShoppingBag className="w-4 h-4 mr-2" />, label: 'Transactions' },
-            { key: 'credits', icon: <CreditCard className="w-4 h-4 mr-2" />, label: 'Credits' },
-            { key: 'reviews', icon: <Star className="w-4 h-4 mr-2" />, label: 'Reviews' },
-            { key: 'posts', icon: <TrendingUp className="w-4 h-4 mr-2" />, label: 'Posts' },
-            { key: 'settings', icon: <Settings className="w-4 h-4 mr-2" />, label: 'Settings' }
-          ].map(tab => (
-            <TabsTrigger key={tab.key} value={tab.key} className="rounded-xl hover:scale-105 hover:shadow-yellow-400/50 text-white">
-              {tab.icon}{tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Edit Profile Modal */}
+      <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+        <DialogContent className="sm:max-w-md bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Edit Profile</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 p-2">
+            <div className="flex flex-col items-center gap-4">
+              <Avatar className="w-24 h-24 border-2 border-yellow-500">
+                <AvatarImage src={editForm.avatar_url} />
+                <AvatarFallback className="bg-yellow-500 text-black text-2xl font-bold">
+                  {editForm.display_name?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  id="avatar-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Avatar
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="display_name">Username</Label>
+              <Input 
+                id="display_name" 
+                value={editForm.display_name} 
+                onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                value={editForm.description} 
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+                rows={3}
+              />
+            </div>
 
-        {/* Transactions */}
-        <TabsContent value="transactions">
-          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-            <CardHeader><CardTitle>Transaction History</CardTitle></CardHeader>
-            <CardContent>
-              {transactions.length === 0 ? <p>No transactions yet.</p> : (
-                <div className="space-y-4">
-                  {transactions.map(t => (
-                    <div key={t.id} className="flex justify-between items-center p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
-                      <div>
-                        <h3 className="font-semibold">{t.product_name}</h3>
-                        <p className="text-sm">{new Date(t.created_at).toLocaleDateString()}</p>
-                        <Badge variant="outline">{t.transaction_type}</Badge>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">${t.amount}</p>
-                        {t.credits_earned ? <p className="text-green-400">+{t.credits_earned} credits</p> : null}
-                        {t.credits_spent ? <p className="text-red-400">-{t.credits_spent} credits</p> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <div className="flex gap-3 pt-4">
+              <Button onClick={updateProfile} className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
+                Save Changes
+              </Button>
+              <Button
+                onClick={() => setIsEditDetailsOpen(true)}
+                variant="outline"
+                className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              >
+                Edit Details
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Credits */}
-        <TabsContent value="credits">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-              <CardHeader><CardTitle>Current Balance</CardTitle></CardHeader>
-              <CardContent><p className="text-4xl text-yellow-400">{credits?.current_balance || 0}</p></CardContent>
+      {/* Edit Details Modal */}
+      <Dialog open={isEditDetailsOpen} onOpenChange={setIsEditDetailsOpen}>
+        <DialogContent className="sm:max-w-md bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Edit Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 p-2">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email"
+                value={detailsForm.email} 
+                onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input 
+                id="currentPassword" 
+                type="password"
+                value={detailsForm.currentPassword} 
+                onChange={(e) => setDetailsForm({ ...detailsForm, currentPassword: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input 
+                id="newPassword" 
+                type="password"
+                value={detailsForm.newPassword} 
+                onChange={(e) => setDetailsForm({ ...detailsForm, newPassword: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input 
+                id="confirmPassword" 
+                type="password"
+                value={detailsForm.confirmPassword} 
+                onChange={(e) => setDetailsForm({ ...detailsForm, confirmPassword: e.target.value })}
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button onClick={updateDetails} className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
+                Update Details
+              </Button>
+              <Button onClick={() => setIsEditDetailsOpen(false)} variant="outline">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credits Modal */}
+      <Dialog open={isCreditsOpen} onOpenChange={setIsCreditsOpen}>
+        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-green-400" />
+              Credits Overview
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-4 p-2">
+            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-green-400">{credits?.current_balance || 0}</div>
+                <div className="text-sm text-gray-400">Current</div>
+              </CardContent>
             </Card>
-            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-              <CardHeader><CardTitle>Total Earned</CardTitle></CardHeader>
-              <CardContent><p className="text-4xl text-green-400">{credits?.total_earned || 0}</p></CardContent>
+            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-blue-400">{credits?.total_earned || 0}</div>
+                <div className="text-sm text-gray-400">Earned</div>
+              </CardContent>
             </Card>
-            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-              <CardHeader><CardTitle>Total Spent</CardTitle></CardHeader>
-              <CardContent><p className="text-4xl text-red-400">{credits?.total_spent || 0}</p></CardContent>
+            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-red-400">{credits?.total_spent || 0}</div>
+                <div className="text-sm text-gray-400">Spent</div>
+              </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        </DialogContent>
+      </Dialog>
 
-        {/* Reviews */}
-        <TabsContent value="reviews">
-          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-            <CardHeader><CardTitle>Your Reviews</CardTitle></CardHeader>
-            <CardContent>
-              {reviews.length === 0 ? <p>No reviews yet.</p> : (
-                reviews.map(r => (
-                  <div key={r.id} className="p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
-                    <div className="flex justify-between">
-                      <div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < r.rating ? 'text-yellow-400' : 'text-gray-500'}`} />
-                          ))}
-                        </div>
-                        <p>{r.review_text}</p>
-                      </div>
-                      <Button variant="destructive" size="sm" onClick={() => deleteReview(r.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+      {/* Reviews Modal */}
+      <Dialog open={isReviewsOpen} onOpenChange={setIsReviewsOpen}>
+        <DialogContent className="sm:max-w-2xl bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Star className="w-5 h-5 text-purple-400" />
+              Your Reviews
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto p-2">
+            {reviews.length === 0 ? (
+              <p className="text-center text-gray-400 py-8">No reviews yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map(review => (
+                  <div key={review.id} className="p-4 bg-gray-800 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`} 
+                        />
+                      ))}
+                      <span className="text-sm text-gray-400 ml-2">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300">{review.review_text || 'No comment'}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Socials Modal */}
+      <Dialog open={isSocialsOpen} onOpenChange={setIsSocialsOpen}>
+        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-400" />
+              Social Stats
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-2">
+            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
+              <span>Followers</span>
+              <span className="font-bold text-blue-400">1,234</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
+              <span>Following</span>
+              <span className="font-bold text-green-400">567</span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
+              <span>Posts</span>
+              <span className="font-bold text-purple-400">{posts.length}</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction History Modal */}
+      <Dialog open={isTransactionHistoryOpen} onOpenChange={setIsTransactionHistoryOpen}>
+        <DialogContent className="sm:max-w-2xl bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <History className="w-5 h-5 text-yellow-400" />
+              Transaction History
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto p-2">
+            {transactions.length === 0 ? (
+              <p className="text-center text-gray-400 py-8">No transactions yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {transactions.map(transaction => (
+                  <div key={transaction.id} className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
+                    <div>
+                      <h3 className="font-semibold">{transaction.product_name}</h3>
+                      <p className="text-sm text-gray-400">{new Date(transaction.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${transaction.amount}</p>
+                      {transaction.credits_earned && (
+                        <p className="text-green-400 text-sm">+{transaction.credits_earned} credits</p>
+                      )}
                     </div>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Posts */}
-        <TabsContent value="posts">
-          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-            <CardHeader><CardTitle>Your Posts</CardTitle></CardHeader>
-            <CardContent>
-              {posts.length === 0 ? <p>No posts yet.</p> : (
-                posts.map(p => (
-                  <div key={p.id} className="p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
-                    <h3 className="font-semibold mb-2">{p.title}</h3>
-                    <p>{p.content}</p>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Settings */}
-        <TabsContent value="settings">
-          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
-            <CardHeader><CardTitle>Account Settings</CardTitle></CardHeader>
-            <CardContent>
-              <div className="p-4 rounded-xl bg-gray-800 mb-3">Privacy Settings</div>
-              <div className="p-4 rounded-xl bg-gray-800 mb-3">Notifications</div>
-              <div className="p-4 rounded-xl bg-gray-800">App Experience</div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Manage Membership Modal */}
+      <Dialog open={isManageMembershipOpen} onOpenChange={setIsManageMembershipOpen}>
+        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Settings className="w-5 h-5 text-yellow-400" />
+              Manage Membership
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-2">
+            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
+              <h3 className="font-semibold mb-2">Privacy Settings</h3>
+              <p className="text-sm text-gray-400">Control who can see your profile and activities</p>
+            </div>
+            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
+              <h3 className="font-semibold mb-2">Notifications</h3>
+              <p className="text-sm text-gray-400">Manage email and push notification preferences</p>
+            </div>
+            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
+              <h3 className="font-semibold mb-2">Membership Upgrade</h3>
+              <p className="text-sm text-gray-400">Upgrade to Platinum for exclusive benefits</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
