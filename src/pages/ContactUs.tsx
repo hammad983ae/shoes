@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, MessageCircle, Mail, Music, Youtube } from 'lucide-react';
+import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ContactUs = () => {
@@ -18,7 +18,7 @@ const ContactUs = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Social Media */}
           <Card>
             <CardHeader>
@@ -79,12 +79,12 @@ const ContactUs = () => {
             </CardContent>
           </Card>
 
-          {/* Stores & Email */}
+          {/* Email */}
           <Card>
             <CardHeader>
-              <CardTitle>Stores & Email</CardTitle>
+              <CardTitle>Email</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <Mail className="w-6 h-6 text-primary" />
                 <div>
@@ -92,24 +92,40 @@ const ContactUs = () => {
                   <p className="text-sm text-muted-foreground">hello@crallux.com</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-3">
-                <p className="font-semibold text-foreground">Stores:</p>
-                
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <div>
-                    <p className="font-semibold">Depop</p>
-                    <p className="text-sm text-muted-foreground">Prices are negotiable.</p>
-                  </div>
+          {/* Stores */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Stores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <a 
+                href="https://depop.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+              >
+                <Users className="w-6 h-6 text-green-500" />
+                <div>
+                  <p className="font-semibold">Depop</p>
+                  <p className="text-sm text-muted-foreground">Prices are negotiable.</p>
                 </div>
+              </a>
 
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <div>
-                    <p className="font-semibold">Telegram</p>
-                    <p className="text-sm text-muted-foreground">Buy in bulk.</p>
-                  </div>
+              <a 
+                href="https://telegram.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+              >
+                <Send className="w-6 h-6 text-blue-500" />
+                <div>
+                  <p className="font-semibold">Telegram</p>
+                  <p className="text-sm text-muted-foreground">Buy in bulk.</p>
                 </div>
-              </div>
+              </a>
             </CardContent>
           </Card>
         </div>
