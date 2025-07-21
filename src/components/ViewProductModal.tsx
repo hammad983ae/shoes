@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -35,13 +35,18 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
   
   // Mock inventory data
   const getInventory = (size: string) => Math.floor(Math.random() * 10) + 1;
-  
-  // Mock reviews
-  const reviews = [
+
+  // Review system (stateful, extensible for future auth logic)
+  type Review = { name: string; rating: number; comment: string; };
+  const [reviews, setReviews] = useState<Review[]>([
     { name: 'John D.', rating: 5, comment: 'Amazing quality and comfort!' },
     { name: 'Sarah M.', rating: 4, comment: 'Great fit, love the style.' },
     { name: 'Mike R.', rating: 5, comment: 'Perfect for everyday wear.' }
-  ];
+  ]);
+  const [reviewName, setReviewName] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   // Similar items (exclude current product)
   const similarItems = allSneakers
@@ -59,7 +64,6 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
           size: parseFloat(selectedSize),
         });
       }
-      
       setIsAnimating(true);
       setTimeout(() => {
         setIsAnimating(false);
@@ -69,36 +73,95 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
 
   const handleBuyNow = () => {
     handleAddToCart();
-    // In a real app, this would redirect to checkout
     setTimeout(() => {
       onClose();
     }, 1000);
   };
 
+  // Review submission handler
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewName.trim() || !reviewComment.trim()) return;
+    setReviewSubmitting(true);
+    setTimeout(() => {
+      setReviews(prev => [
+        ...prev,
+        { name: reviewName.trim(), rating: reviewRating, comment: reviewComment.trim() }
+      ]);
+      setReviewName('');
+      setReviewRating(5);
+      setReviewComment('');
+      setReviewSubmitting(false);
+    }, 400);
+  };
+
+  // Parallax effect refs and logic
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const container = imageContainerRef.current;
+    const img = imageRef.current;
+    if (!container || !img) return;
+    let frame: number | null = null;
+    let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+    const maxMove = 18; // px, max translation
+    const ease = 0.12; // lower = smoother
+    function animate() {
+      currentX += (targetX - currentX) * ease;
+      currentY += (targetY - currentY) * ease;
+      img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      frame = requestAnimationFrame(animate);
+    }
+    function onMouseMove(e: MouseEvent) {
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      // Opposite direction, center is 0,0
+      targetX = (0.5 - x) * maxMove;
+      targetY = (0.5 - y) * maxMove;
+    }
+    function onMouseLeave() {
+      targetX = 0;
+      targetY = 0;
+    }
+    container.addEventListener('mousemove', onMouseMove);
+    container.addEventListener('mouseleave', onMouseLeave);
+    frame = requestAnimationFrame(animate);
+    return () => {
+      container.removeEventListener('mousemove', onMouseMove);
+      container.removeEventListener('mouseleave', onMouseLeave);
+      if (frame) cancelAnimationFrame(frame);
+      if (img) img.style.transform = '';
+    };
+  }, [isOpen]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl w-[90vw] h-[90vh] p-0 overflow-hidden">
-          {/* Close button */}
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+          {/* Close button (only one, top right) */}
           <Button
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background"
             onClick={onClose}
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-            {/* Left side - Image */}
-            <div className="relative bg-muted/20 flex items-center justify-center p-8">
-              <div className="relative max-w-md">
+            {/* Left side - Image (parallax, fills container) */}
+            <div ref={imageContainerRef} className="relative bg-muted/20 flex items-center justify-center p-0 h-full overflow-hidden">
+              <div className="relative w-full max-w-md h-[340px] sm:h-[400px] md:h-[480px] lg:h-[520px] flex items-center justify-center overflow-hidden">
                 <img 
+                  ref={imageRef}
                   src={sneaker.image} 
                   alt={sneaker.name}
-                  className="w-full h-auto object-cover rounded-lg"
+                  className="w-full h-full object-cover rounded-lg shadow-lg mx-auto transition-transform duration-300 will-change-transform select-none pointer-events-none"
+                  draggable={false}
+                  style={{ display: 'block' }}
                 />
-                
                 {/* Heart icon */}
                 <Button
                   variant="ghost"
@@ -111,8 +174,8 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
               </div>
             </div>
 
-            {/* Right side - Details */}
-            <div className="flex flex-col p-8 overflow-y-auto">
+            {/* Right side - Details (scrollable) */}
+            <div className="flex flex-col p-8 overflow-y-auto h-full min-h-0">
               <div className="space-y-6">
                 {/* Product info */}
                 <div>
@@ -126,7 +189,7 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
                 {/* Size selector */}
                 <div>
                   <label className="text-sm font-medium text-foreground mb-3 block">Size</label>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                     {sizes.map(size => (
                       <Button
                         key={size}
@@ -183,6 +246,9 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-4">Reviews</h3>
                   <div className="space-y-4">
+                    {reviews.length === 0 && (
+                      <div className="text-muted-foreground text-sm">No reviews yet. Be the first to review!</div>
+                    )}
                     {reviews.map((review, index) => (
                       <div key={index} className="border-l-2 border-primary/20 pl-4">
                         <div className="flex items-center gap-2 mb-1">
@@ -199,6 +265,41 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
                       </div>
                     ))}
                   </div>
+                  {/* Review submission form */}
+                  <form onSubmit={handleReviewSubmit} className="mt-6 p-4 bg-muted/40 rounded-lg space-y-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        type="text"
+                        placeholder="Your name"
+                        className="border rounded px-3 py-2 text-sm flex-1 bg-background"
+                        value={reviewName}
+                        onChange={e => setReviewName(e.target.value)}
+                        required
+                      />
+                      <select
+                        className="border rounded px-3 py-2 text-sm bg-background"
+                        value={reviewRating}
+                        onChange={e => setReviewRating(Number(e.target.value))}
+                        required
+                      >
+                        {[5,4,3,2,1].map(r => (
+                          <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <textarea
+                      placeholder="Write your review..."
+                      className="border rounded px-3 py-2 text-sm w-full bg-background min-h-[60px]"
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      required
+                    />
+                    <div className="flex justify-end">
+                      <Button type="submit" disabled={reviewSubmitting || !reviewName.trim() || !reviewComment.trim()}>
+                        {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+                      </Button>
+                    </div>
+                  </form>
                 </div>
 
                 {/* About this item */}

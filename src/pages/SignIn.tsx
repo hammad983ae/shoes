@@ -14,7 +14,6 @@ const SignIn = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle sign in/up logic here
-    console.log('Form submitted:', { email, password, isSignUp });
   };
 
   return (
