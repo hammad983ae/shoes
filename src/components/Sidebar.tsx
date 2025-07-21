@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music, Home } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,11 +10,11 @@ interface SidebarProps {
   onBackToHome?: () => void;
 }
 
-const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
+const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [socialsOpen, setSocialsOpen] = useState(false);
   const { getTotalItems } = useCart();
+  const { user, signOut } = useAuth();
 
   const links = [
     { label: 'Home', href: '/', icon: Home },
@@ -22,13 +23,9 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
     { label: 'Socials', href: '/contact', icon: Smartphone },
   ];
 
-  const socialLinks = [
-    { label: 'Instagram', href: 'https://instagram.com', icon: Instagram },
-    { label: 'TikTok', href: 'https://tiktok.com', icon: Music },
-    { label: 'Discord', href: 'https://discord.com', icon: MessageCircle },
-  ];
-
-  const isLoggedIn = false; // Replace with actual auth state
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <>
@@ -72,15 +69,17 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
                 </Link>
               ))}
               
-              {isLoggedIn && (
-                <Link
-                  to="/logout"
+              {user && (
+                <button
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300"
-                  onClick={() => setIsMobileOpen(false)}
+                  onClick={() => {
+                    handleSignOut();
+                    setIsMobileOpen(false);
+                  }}
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
-                </Link>
+                </button>
               )}
             </div>
 
@@ -102,13 +101,13 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
               </Link>
               
               <Link
-                to={isLoggedIn ? "/profile" : "/signin"}
+                to={user ? "/profile" : "/signin"}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 transition-colors"
                 onClick={() => setIsMobileOpen(false)}
               >
                 <User className="w-5 h-5 text-primary" />
                 <span className="text-foreground">
-                  {isLoggedIn ? 'Profile' : 'Sign In'}
+                  {user ? 'Profile' : 'Sign In'}
                 </span>
               </Link>
             </div>
@@ -149,10 +148,10 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
               </Link>
             ))}
             
-            {isLoggedIn && (
-              <Link
-                to="/logout"
+            {user && (
+              <button
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
+                onClick={handleSignOut}
               >
                 <LogOut className="w-5 h-5 text-destructive flex-shrink-0" />
                 <span
@@ -162,7 +161,7 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
                 >
                   Logout
                 </span>
-              </Link>
+              </button>
             )}
           </div>
 
@@ -192,7 +191,7 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
             
             {/* Profile / Sign In */}
             <Link
-              to={isLoggedIn ? "/profile" : "/signin"}
+              to={user ? "/profile" : "/signin"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
             >
               <User className="w-5 h-5 text-primary flex-shrink-0" />
@@ -201,7 +200,7 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
                   isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
                 }`}
               >
-                {isLoggedIn ? 'Profile' : 'Sign In'}
+                {user ? 'Profile' : 'Sign In'}
               </span>
             </Link>
           </div>

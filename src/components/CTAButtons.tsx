@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Instagram } from 'lucide-react';
+import { ShoppingBag, Instagram, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CTAButtonsProps {
   onShopNow: () => void;
@@ -9,6 +11,7 @@ interface CTAButtonsProps {
 
 const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 200);
@@ -60,6 +63,21 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
             View Instagram
           </Button>
         </div>
+
+        {/* Sign In CTA - Only show if not logged in */}
+        {!user && (
+          <div className="mt-4">
+            <Link to="/signin">
+              <Button
+                variant="secondary"
+                className="text-base px-8 py-3 rounded-xl font-medium flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                Sign In / Create Account
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
     >
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="flex gap-8">
-          {sneakerData.map((sneaker, index) => (
+          {sneakerData.map((sneaker) => (
             <div
               key={sneaker.id}
   className={`intro-card rounded-2xl p-4 w-64 h-80 transition-all duration-700 ${

@@ -1,7 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, Heart } from 'lucide-react';
-import { useState } from 'react';
 import { useFavorites } from '@/contexts/FavoritesContext';
 
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, X } from 'lucide-react';
@@ -34,7 +34,7 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
   const quantities = ['1', '2', '3', '4', '5'];
   
   // Mock inventory data
-  const getInventory = (size: string) => Math.floor(Math.random() * 10) + 1;
+  const getInventory = () => Math.floor(Math.random() * 10) + 1;
 
   // Review system (stateful, extensible for future auth logic)
   type Review = { name: string; rating: number; comment: string; };
@@ -110,10 +110,13 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
     function animate() {
       currentX += (targetX - currentX) * ease;
       currentY += (targetY - currentY) * ease;
-      img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      if (img) {
+        img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      }
       frame = requestAnimationFrame(animate);
     }
     function onMouseMove(e: MouseEvent) {
+      if (!container) return;
       const rect = container.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
@@ -140,6 +143,10 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+          <DialogTitle className="sr-only">
+            {sneaker.name} - Product Details
+          </DialogTitle>
+          
           {/* Close button (only one, top right) */}
           <Button
             variant="ghost"
@@ -190,17 +197,17 @@ const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProduct
                 <div>
                   <label className="text-sm font-medium text-foreground mb-3 block">Size</label>
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                    {sizes.map(size => (
+                    {sizes.map(sizeOption => (
                       <Button
-                        key={size}
-                        variant={selectedSize === size ? "default" : "outline"}
-                        onClick={() => setSelectedSize(size)}
+                        key={sizeOption}
+                        variant={selectedSize === sizeOption ? "default" : "outline"}
+                        onClick={() => setSelectedSize(sizeOption)}
                         className="h-12 text-sm"
                       >
                         <div className="text-center">
-                          <div>{size}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {getInventory(size)} left
+                          <div>{sizeOption}</div>
+                           <div className="text-xs text-muted-foreground">
+                             {getInventory()} left
                           </div>
                         </div>
                       </Button>

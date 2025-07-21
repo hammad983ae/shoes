@@ -3,16 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Cart = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
-  const isLoggedIn = false; // Replace with actual auth state
+  const { user } = useAuth();
   const navigate = useNavigate();
   // For size editing
   const sizes = ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
 
   // Placeholder for updating size (in real app, would update cart context)
-  function handleSizeChange(item, newSize) {
+  function handleSizeChange(item: any, newSize: string) {
     // Remove old item, add new with same quantity
     removeItem(item.id, item.size);
     updateQuantity(item.id, parseFloat(newSize), item.quantity);
@@ -57,7 +58,7 @@ const Cart = () => {
     );
   }
 
-  if (!isLoggedIn) {
+  if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

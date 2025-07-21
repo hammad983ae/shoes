@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Gift, Users, DollarSign } from 'lucide-react';
 
 const GetFreeCredits = () => {
   const [dollarAmount, setDollarAmount] = useState(1);
