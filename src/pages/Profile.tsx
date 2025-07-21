@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, ShoppingBag, Star, TrendingUp, Settings, Edit2, Trash2, Shield, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CreditCard, ShoppingBag, Star, TrendingUp, Settings, Edit2, Trash2 } from 'lucide-react';
 
 interface Transaction {
   id: string;
