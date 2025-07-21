@@ -163,8 +163,8 @@ const Profile = () => {
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
   // Shared shadow styles
-  const shadowBase = "shadow-[12px_12px_24px_rgba(0,0,0,0.15),-12px_-12px_24px_rgba(255,215,0,0.4)] dark:shadow-[12px_12px_24px_rgba(0,0,0,0.3),-12px_-12px_24px_rgba(255,215,0,0.4)]";
-  const hoverShadow = "hover:shadow-[20px_20px_40px_rgba(0,0,0,0.2),-20px_-20px_40px_rgba(255,215,0,0.5)] dark:hover:shadow-[20px_20px_40px_rgba(0,0,0,0.4),-20px_-20px_40px_rgba(255,215,0,0.5)]";
+  const shadowBase = "shadow-[0px_0px_20px_rgba(255,215,0,0.3),-12px_-12px_24px_rgba(255,215,0,0.3)] dark:shadow-[12px_12px_24px_rgba(0,0,0,0.3),-12px_-12px_24px_rgba(255,215,0,0.4)]";
+  const hoverShadow = "hover:shadow-[0px_0px_25px_rgba(0,0,0,0.2),-20px_-20px_40px_rgba(255,215,0,0.4)] dark:hover:shadow-[20px_20px_40px_rgba(0,0,0,0.4),-20px_-20px_40px_rgba(255,215,0,0.5)]";
 
   return (
     <div className="container mx-auto p-6 space-y-8">
