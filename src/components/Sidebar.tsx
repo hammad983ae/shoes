@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Star, Phone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music, Home, MousePointer } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 
@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
-    { label: 'Contact Us', href: '/contact', icon: Phone },
+    { label: 'Socials', href: '/contact', icon: Smartphone },
   ];
 
   const socialLinks = [
@@ -71,34 +71,6 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
                   <span className="font-medium">{link.label}</span>
                 </Link>
               ))}
-              
-              {/* Socials Section */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => setSocialsOpen(!socialsOpen)}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 w-full"
-                >
-                  {socialsOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                  <span className="font-medium">Socials</span>
-                </button>
-                
-                {socialsOpen && (
-                  <div className="pl-6 space-y-2">
-                    {socialLinks.map((social, idx) => (
-                      <a
-                        key={idx}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
-                      >
-                        <social.icon className="w-5 h-5" />
-                        <span className="font-medium">{social.label}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
               
               {isLoggedIn && (
                 <Link
@@ -176,40 +148,6 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
                 </span>
               </Link>
             ))}
-            
-            {/* Socials Section */}
-            <div className="mx-2">
-              <button
-                onClick={() => setSocialsOpen(!socialsOpen)}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 w-full"
-              >
-                {socialsOpen ? <ChevronDown className="w-5 h-5 text-primary flex-shrink-0" /> : <ChevronRight className="w-5 h-5 text-primary flex-shrink-0" />}
-                <span
-                  className={`font-medium whitespace-nowrap transition-all duration-300 ${
-                    isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
-                  }`}
-                >
-                  Socials
-                </span>
-              </button>
-              
-              {socialsOpen && isExpanded && (
-                <div className="pl-6 space-y-1 mt-2">
-                  {socialLinks.map((social, idx) => (
-                    <a
-                      key={idx}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
-                    >
-                      <social.icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="font-medium text-sm">{social.label}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
             
             {isLoggedIn && (
               <Link
