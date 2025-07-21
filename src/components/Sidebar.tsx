@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Star, Phone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Phone, LogOut, User, ShoppingCart, ChevronDown, ChevronRight, Instagram, MessageCircle, Music, Home, MousePointer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  onBackToHome?: () => void;
 }
 
-const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
+const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [socialsOpen, setSocialsOpen] = useState(false);
   const { getTotalItems } = useCart();
 
   const links = [
-    { label: 'Home', href: '/', icon: () => <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">H</div> },
+    { label: 'Home', href: '/', icon: Home },
+    { label: 'Website Intro', href: '/', icon: MousePointer },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Contact Us', href: '/contact', icon: Phone },
@@ -59,7 +61,12 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                   key={idx}
                   to={link.href}
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
-                  onClick={() => setIsMobileOpen(false)}
+                  onClick={() => {
+                    if (link.href === '/' && onBackToHome) {
+                      onBackToHome();
+                    }
+                    setIsMobileOpen(false);
+                  }}
                 >
                   <link.icon className="w-5 h-5" />
                   <span className="font-medium">{link.label}</span>
@@ -154,6 +161,11 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
                 key={idx}
                 to={link.href}
                 className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 group"
+                onClick={() => {
+                  if (link.href === '/' && onBackToHome) {
+                    onBackToHome();
+                  }
+                }}
               >
                 <link.icon className="w-5 h-5 text-primary flex-shrink-0" />
                 <span

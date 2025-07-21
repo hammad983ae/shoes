@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProductCard from '@/components/ProductCard';
+import FilterPanel from '@/components/FilterPanel';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
 import sneaker1 from '@/assets/sneaker-1.jpg';
@@ -27,23 +27,51 @@ const sneakerCatalog = [
   { id: 12, image: sneaker6, price: '$175', name: 'Retro Court', category: 'Basketball' },
 ];
 
-const SneakerCatalog = () => {
+interface SneakerCatalogProps {
+  onBackToHome?: () => void;
+}
+
+const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('name-asc');
 
-  const categories = ['All', 'Basketball', 'Running', 'Lifestyle'];
+  const filteredAndSortedSneakers = (() => {
+    // Filter sneakers
+    let filtered = sneakerCatalog.filter((sneaker) => {
+      const matchesSearch = sneaker.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'All' || sneaker.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
 
-  const filteredSneakers = sneakerCatalog.filter((sneaker) => {
-    const matchesSearch = sneaker.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || sneaker.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+    // Sort sneakers
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'price-high':
+          return parseInt(b.price.replace('$', '')) - parseInt(a.price.replace('$', ''));
+        case 'price-low':
+          return parseInt(a.price.replace('$', '')) - parseInt(b.price.replace('$', ''));
+        case 'newest':
+          return b.id - a.id; // Assuming higher ID means newer
+        case 'oldest':
+          return a.id - b.id; // Assuming lower ID means older
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  })();
 
   return (
     <div className="min-h-screen bg-background relative">
 
       {/* Sidebar */}
-      <Sidebar isOpen={true} onToggle={() => {}} />
+      <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={onBackToHome} />
 
       {/* Main content */}
       <div className="ml-16 md:ml-60 relative z-10">
@@ -64,30 +92,24 @@ const SneakerCatalog = () => {
                 />
               </div>
 
-              <div className="flex gap-2">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? 'default' : 'outline'}
-                    onClick={() => setSelectedCategory(category)}
-                    className="rounded-full"
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
+              <FilterPanel 
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+              />
             </div>
           </div>
         </div>
 
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSneakers.map((sneaker, index) => (
+            {filteredAndSortedSneakers.map((sneaker, index) => (
               <ProductCard key={sneaker.id} sneaker={sneaker} index={index} />
             ))}
           </div>
 
-          {filteredSneakers.length === 0 && (
+          {filteredAndSortedSneakers.length === 0 && (
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">
                 No sneakers found matching your criteria.

@@ -33,6 +33,15 @@ const Index = () => {
     }, 1000);
   };
 
+  const handleBackToHome = () => {
+    setAppState('initial');
+    setShowParticles(false);
+    
+    // Restart the initial sequence
+    setTimeout(() => setAppState('floating'), 200);
+    setTimeout(() => setAppState('cta'), 1500);
+  };
+
   const handleViewInstagram = () => {
     window.open('https://instagram.com', '_blank');
   };
@@ -67,7 +76,7 @@ const Index = () => {
 
       {/* Sneaker Catalog */}
       {appState === 'catalog' && (
-        <SneakerCatalog />
+        <SneakerCatalog onBackToHome={handleBackToHome} />
       )}
     </div>
   );
