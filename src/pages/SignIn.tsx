@@ -6,6 +6,7 @@ import { Mail, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -49,7 +50,8 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen page-gradient">
+    <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">

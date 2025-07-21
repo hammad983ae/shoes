@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 const GetFreeCredits = () => {
   const [dollarAmount, setDollarAmount] = useState(1);
   const credits = dollarAmount * 100;
 
   return (
-    <div className="min-h-screen page-gradient">
+    <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Get Free Credits</h1>
@@ -16,7 +18,7 @@ const GetFreeCredits = () => {
 
       {/* Start Earning Credits Today Section - Moved to Top */}
       <div className="mb-12 text-center">
-        <Card className="max-w-2xl mx-auto">
+        <Card className="max-w-2xl mx-auto bg-[#0a0a0a] border-[#FFD700]">
           <CardHeader>
             <CardTitle className="text-2xl">Start Earning Credits Today!</CardTitle>
           </CardHeader>
@@ -83,7 +85,7 @@ const GetFreeCredits = () => {
 
           {/* Explanations */}
           <div className="space-y-4">
-            <Card className="border-primary/20">
+            <Card className="bg-[#0a0a0a] border-[#FFD700]">
               <CardContent className="pt-6">
                 <p className="text-center text-lg font-medium text-foreground">
                   You get <span className="text-primary font-bold">10% back in credits</span> when someone buys using your link.
@@ -91,7 +93,7 @@ const GetFreeCredits = () => {
               </CardContent>
             </Card>
             
-            <Card className="border-primary/20">
+            <Card className="bg-[#0a0a0a] border-[#FFD700]">
               <CardContent className="pt-6">
                 <p className="text-center text-lg font-medium text-foreground">
                   They also get <span className="text-primary font-bold">10% off</span> their first purchase after creating an account.

@@ -153,15 +153,19 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
                 </span>
               </Link>
             ))}
-            
+          </div>
+
+          {/* Bottom Section */}
+          <div className="border-t border-border/50 mx-2 pt-3 p-3 space-y-3">
+            {/* Logout Button - positioned above cart */}
             {user && (
               <button
-                className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
+                className="flex items-center gap-3 p-2 mx-0 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
                 onClick={handleSignOut}
               >
                 <LogOut className="w-5 h-5 text-destructive flex-shrink-0" />
                 <span
-                  className={`font-medium whitespace-nowrap transition-all duration-300 ${
+                  className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                     isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
                   }`}
                 >
@@ -169,10 +173,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
                 </span>
               </button>
             )}
-          </div>
-
-          {/* Bottom Section */}
-          <div className="border-t border-border/50 mx-2 pt-3 p-3 space-y-3">
+            
             {/* Cart */}
             <Link
               to="/cart"

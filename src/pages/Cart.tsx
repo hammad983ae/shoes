@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 const Cart = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, clearCart } = useCart();
@@ -41,8 +42,9 @@ const Cart = () => {
   };
 
   if (items.length === 0) {
-    return (
-      <div className="min-h-screen page-gradient">
+  return (
+    <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>

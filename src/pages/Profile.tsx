@@ -23,6 +23,7 @@ import {
   Coins,
   MessageSquare
 } from 'lucide-react';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 interface Transaction {
   id: string;
@@ -318,9 +319,10 @@ const Profile = () => {
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
   return (
-    <div className="min-h-screen page-gradient p-4 flex items-center justify-center">
+    <div className="min-h-screen page-gradient p-4 flex items-center justify-center relative">
+      <InteractiveParticles isActive={true} />
       {/* Main Profile Card */}
-      <div className="w-full max-w-md bg-gradient-to-b from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-gray-700/50">
+      <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700] backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
         {/* Profile Header */}
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
@@ -393,14 +395,14 @@ const Profile = () => {
         <div className="grid grid-cols-2 gap-2 mb-6">
           <Button
             onClick={() => setIsReviewsOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-12 rounded-xl"
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
           >
             <Star className="w-4 h-4 mb-1" />
             <span className="text-xs">Reviews</span>
           </Button>
           <Button
             onClick={() => setIsSocialsOpen(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 rounded-xl"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
           >
             <MessageSquare className="w-4 h-4 mb-1" />
             <span className="text-xs">Socials</span>
@@ -410,7 +412,7 @@ const Profile = () => {
         {/* Edit Profile Button */}
         <Button
           onClick={() => setIsEditProfileOpen(true)}
-          className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl"
+          className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
         >
           <Edit2 className="w-4 h-4 mr-2" />
           Edit Profile
@@ -422,7 +424,7 @@ const Profile = () => {
             variant="ghost"
             size="sm"
             onClick={() => setIsTransactionHistoryOpen(true)}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white transform hover:scale-105 transition-all duration-200"
           >
             <History className="w-4 h-4 mr-1" />
             <span className="text-xs">Transaction History</span>
@@ -431,7 +433,7 @@ const Profile = () => {
             variant="ghost"
             size="sm"
             onClick={() => setIsSettingsOpen(true)}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white transform hover:scale-105 transition-all duration-200"
           >
             <Settings className="w-4 h-4 mr-1" />
             <span className="text-xs">Settings</span>

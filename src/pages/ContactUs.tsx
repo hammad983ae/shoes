@@ -2,10 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 const ContactUs = () => {
   return (
-    <div className="min-h-screen page-gradient">
+    <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Socials</h1>
@@ -21,7 +23,7 @@ const ContactUs = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Social Media */}
-          <Card>
+          <Card className="bg-[#0a0a0a] border-[#FFD700]">
             <CardHeader>
               <CardTitle>Follow Us on Social Media</CardTitle>
             </CardHeader>
@@ -83,7 +85,7 @@ const ContactUs = () => {
           {/* Right side: Email and Stores stacked */}
           <div className="space-y-8">
             {/* Email */}
-            <Card>
+            <Card className="bg-[#0a0a0a] border-[#FFD700]">
               <CardHeader>
                 <CardTitle>Email</CardTitle>
               </CardHeader>
@@ -99,7 +101,7 @@ const ContactUs = () => {
             </Card>
 
             {/* Stores */}
-            <Card>
+            <Card className="bg-[#0a0a0a] border-[#FFD700]">
               <CardHeader>
                 <CardTitle>Stores</CardTitle>
               </CardHeader>

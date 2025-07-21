@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Heart } from 'lucide-react';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 import sneaker1 from '@/assets/sneaker-1.jpg';
 import sneaker2 from '@/assets/sneaker-2.jpg';
@@ -80,13 +81,14 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
   return (
     <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
 
       {/* Sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={onBackToHome} />
 
       {/* Main content */}
       <div className="ml-16 md:ml-20 relative z-10">
-        <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50 z-50">
+        <div className="sticky top-0 backdrop-blur-md border-b border-border/50 z-50">
           <div className="px-4 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>

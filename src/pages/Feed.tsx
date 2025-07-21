@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, Share, Plus, Filter, TrendingUp } from 'lucide-react';
+import InteractiveParticles from '@/components/InteractiveParticles';
 
 interface Post {
   id: string;
@@ -139,7 +140,8 @@ const Feed = () => {
   });
 
   return (
-    <div className="min-h-screen page-gradient">
+    <div className="min-h-screen page-gradient relative">
+      <InteractiveParticles isActive={true} />
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Your Feed</h1>
@@ -291,7 +293,7 @@ const Feed = () => {
         ))}
         
         {filteredPosts.length === 0 && (
-          <Card>
+          <Card className="bg-[#0a0a0a] border-[#FFD700]">
             <CardContent className="text-center py-12">
               <p className="text-muted-foreground">
                 {filterTag ? 'No posts found with that filter.' : 'No posts yet. Be the first to create one!'}
