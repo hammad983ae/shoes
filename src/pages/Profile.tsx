@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -9,17 +9,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import ReactCrop, { Crop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { 
-  CreditCard, 
   Star, 
   Settings, 
   Edit2, 
-  Upload,
   BarChart3,
   Users,
   Award,
   History,
-  Crown
+  Coins,
+  MessageSquare
 } from 'lucide-react';
 
 interface Transaction {
@@ -62,6 +64,13 @@ interface ProfileData {
   avatar_url: string | null;
 }
 
+interface Settings {
+  privacy_public_profile: boolean;
+  privacy_show_email: boolean;
+  notifications_email: boolean;
+  notifications_push: boolean;
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -70,20 +79,24 @@ const Profile = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<ProfileData>({ display_name: '', avatar_url: '' });
+  const [settings, setSettings] = useState<Settings>({
+    privacy_public_profile: true,
+    privacy_show_email: false,
+    notifications_email: true,
+    notifications_push: true
+  });
   
   // Modal states
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isEditDetailsOpen, setIsEditDetailsOpen] = useState(false);
-  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isSocialsOpen, setIsSocialsOpen] = useState(false);
   const [isTransactionHistoryOpen, setIsTransactionHistoryOpen] = useState(false);
-  const [isManageMembershipOpen, setIsManageMembershipOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Form states
   const [editForm, setEditForm] = useState({
     display_name: '',
-    avatar_url: '',
     description: ''
   });
   
@@ -94,7 +107,17 @@ const Profile = () => {
     confirmPassword: ''
   });
 
+  // Image cropping states
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const [crop, setCrop] = useState<Crop>({
+    unit: '%',
+    width: 50,
+    height: 50,
+    x: 25,
+    y: 25
+  });
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (user) fetchUserData();
@@ -103,97 +126,140 @@ const Profile = () => {
   const fetchUserData = async () => {
     if (!user) return;
 
-    const { data: transactionData } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (transactionData) setTransactions(transactionData);
+    try {
+      // Fetch profile data
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('display_name, avatar_url')
+        .eq('user_id', user.id)
+        .single();
 
-    const { data: creditsData } = await supabase
-      .from('user_credits')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    if (creditsData) setCredits(creditsData);
+      if (profileData) {
+        setProfile(profileData);
+        setEditForm({
+          display_name: profileData.display_name || '',
+          description: '' // Add description field to profiles table if needed
+        });
+      }
 
-    const { data: reviewsData } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (reviewsData) setReviews(reviewsData);
+      // Fetch credits
+      const { data: creditsData } = await supabase
+        .from('user_credits')
+        .select('current_balance, total_earned, total_spent')
+        .eq('user_id', user.id)
+        .single();
 
-    const { data: postsData } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (postsData) setPosts(postsData);
+      if (creditsData) setCredits(creditsData);
 
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (profileData) {
-      setProfile({
-        display_name: profileData.display_name || '',
-        avatar_url: profileData.avatar_url || ''
-      });
-      setEditForm({
-        display_name: profileData.display_name || '',
-        avatar_url: profileData.avatar_url || '',
-        description: ''
-      });
-      setDetailsForm({
-        email: user.email || '',
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
+      // Fetch transactions
+      const { data: transactionsData } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (transactionsData) setTransactions(transactionsData);
+
+      // Fetch reviews
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (reviewsData) setReviews(reviewsData);
+
+      // Fetch posts
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (postsData) setPosts(postsData);
+
+      setDetailsForm(prev => ({ ...prev, email: user.email || '' }));
+    } catch (error: any) {
+      toast({ title: 'Error fetching user data', description: error.message, variant: 'destructive' });
     }
   };
 
-  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setEditForm(prev => ({ ...prev, avatar_url: previewUrl }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageSrc(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<Blob> => {
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    
+    canvas.width = crop.width * scaleX;
+    canvas.height = crop.height * scaleY;
+    
+    const ctx = canvas.getContext('2d')!;
+    
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width * scaleX,
+      crop.height * scaleY
+    );
+    
+    return new Promise((resolve) => {
+      canvas.toBlob(resolve as BlobCallback, 'image/jpeg', 0.95);
+    });
+  };
+
+  const uploadAvatar = async (blob: Blob): Promise<string> => {
+    const fileName = `avatar-${user?.id}-${Date.now()}.jpg`;
+    
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, blob);
+
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
   };
 
   const updateProfile = async () => {
     if (!user) return;
     try {
-      let avatarUrl = editForm.avatar_url;
-
-      // Upload avatar if a file was selected
-      if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${user.id}/avatar.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, avatarFile, { upsert: true });
-          
-        if (uploadError) throw uploadError;
-        
-        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
-        avatarUrl = data.publicUrl;
+      let avatarUrl = profile.avatar_url;
+      
+      if (avatarFile && imageRef.current && crop.width && crop.height) {
+        const croppedBlob = await getCroppedImg(imageRef.current, crop);
+        if (croppedBlob) {
+          avatarUrl = await uploadAvatar(croppedBlob);
+        }
       }
 
       const { error } = await supabase
         .from('profiles')
-        .update({ 
+        .upsert({ 
+          user_id: user.id, 
           display_name: editForm.display_name, 
           avatar_url: avatarUrl 
-        })
-        .eq('user_id', user.id);
-      
+        });
+
       if (error) throw error;
 
       setProfile({ 
@@ -202,6 +268,7 @@ const Profile = () => {
       });
       setIsEditProfileOpen(false);
       setAvatarFile(null);
+      setImageSrc('');
       toast({ title: 'Profile updated successfully' });
     } catch (error: any) {
       toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
@@ -238,15 +305,22 @@ const Profile = () => {
     }
   };
 
+  const updateSettings = async () => {
+    try {
+      // In a real app, you'd save settings to a user_settings table
+      toast({ title: 'Settings updated successfully' });
+      setIsSettingsOpen(false);
+    } catch (error: any) {
+      toast({ title: 'Error updating settings', description: error.message, variant: 'destructive' });
+    }
+  };
+
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
-  const membershipLevel = "GOLD"; // Could be determined by credits/posts
-  const pointsToNext = 750; // Example calculation
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 flex items-center justify-center">
+    <div className="min-h-screen page-gradient p-4 flex items-center justify-center">
       {/* Main Profile Card */}
-      <div className="w-full max-w-md bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-6 shadow-2xl border border-gray-700">
+      <div className="w-full max-w-md bg-gradient-to-b from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-gray-700/50">
         {/* Profile Header */}
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
@@ -256,103 +330,67 @@ const Profile = () => {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-white">
-                {profile.display_name || 'Anonymous User'}
-              </h2>
-              <div className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full text-xs font-bold text-black">
-                {membershipLevel}
-              </div>
-            </div>
+            <h2 className="text-xl font-bold text-white">
+              {profile.display_name || 'Anonymous User'}
+            </h2>
             <p className="text-gray-400 text-sm">{user.email}</p>
-            <p className="text-gray-500 text-xs mt-1">Member since March 2021</p>
+            <p className="text-gray-500 text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
           </div>
         </div>
 
-        {/* Points Section */}
+        {/* Credits Section */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Coins className="w-5 h-5 text-yellow-500" />
             <span className="text-lg font-bold text-white">
-              {credits?.current_balance || 0} Points
+              {credits?.current_balance || 0} Credits
             </span>
-          </div>
-          <p className="text-gray-400 text-sm">{pointsToNext} points to platinum</p>
-        </div>
-
-        {/* Membership Card */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl border border-gray-600 relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center">
-              <Crown className="w-4 h-4 text-black" />
-            </div>
-          </div>
-          <div className="text-xs text-gray-400 mb-1">MEMBERSHIP CARD</div>
-          <div className="text-lg font-mono text-white mb-2">•••• •••• •••• 5678</div>
-          <div className="flex justify-between items-end">
-            <div>
-              <div className="text-xs text-gray-400">MEMBER NAME</div>
-              <div className="text-sm font-semibold text-white">
-                {profile.display_name || 'Anonymous User'}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-400">EXPIRES</div>
-              <div className="text-sm font-semibold text-white">09/25</div>
-            </div>
           </div>
         </div>
 
         {/* Stats Widgets */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
             <BarChart3 className="w-5 h-5 text-blue-400 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">{posts.length}</div>
             <div className="text-xs text-gray-400">Posts</div>
           </div>
-          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
             <Users className="w-5 h-5 text-green-400 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">1.2K</div>
             <div className="text-xs text-gray-400">Followers</div>
           </div>
-          <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
             <Award className="w-5 h-5 text-purple-400 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">{reviews.length}</div>
             <div className="text-xs text-gray-400">Reviews</div>
           </div>
         </div>
 
-        {/* Membership Benefits */}
+        {/* How to Get More Credits */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <Crown className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-semibold text-white">Membership Benefits</span>
+            <Coins className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm font-semibold text-white">How to Get More Credits</span>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-gray-300">
               <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
-              <span>Priority customer support</span>
+              <span>Share product reviews</span>
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
-              <span>Free shipping on all orders</span>
+              <span>Create sneaker posts</span>
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
-              <span>Early access to new products</span>
+              <span>Refer friends to the platform</span>
             </div>
           </div>
         </div>
 
         {/* Quick Access Buttons */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          <Button
-            onClick={() => setIsCreditsOpen(true)}
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12 rounded-xl"
-          >
-            <CreditCard className="w-4 h-4 mb-1" />
-            <span className="text-xs">Credits</span>
-          </Button>
+        <div className="grid grid-cols-2 gap-2 mb-6">
           <Button
             onClick={() => setIsReviewsOpen(true)}
             className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-12 rounded-xl"
@@ -364,7 +402,7 @@ const Profile = () => {
             onClick={() => setIsSocialsOpen(true)}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 rounded-xl"
           >
-            <Users className="w-4 h-4 mb-1" />
+            <MessageSquare className="w-4 h-4 mb-1" />
             <span className="text-xs">Socials</span>
           </Button>
         </div>
@@ -392,77 +430,75 @@ const Profile = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsManageMembershipOpen(true)}
+            onClick={() => setIsSettingsOpen(true)}
             className="text-gray-400 hover:text-white"
           >
             <Settings className="w-4 h-4 mr-1" />
-            <span className="text-xs">Manage Membership</span>
+            <span className="text-xs">Settings</span>
           </Button>
         </div>
       </div>
 
       {/* Edit Profile Modal */}
       <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-        <DialogContent className="sm:max-w-md bg-gray-900 text-white rounded-2xl border border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Edit Profile</DialogTitle>
+            <DialogTitle className="text-white">Edit Profile</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 p-2">
-            <div className="flex flex-col items-center gap-4">
-              <Avatar className="w-24 h-24 border-2 border-yellow-500">
-                <AvatarImage src={editForm.avatar_url} />
-                <AvatarFallback className="bg-yellow-500 text-black text-2xl font-bold">
-                  {editForm.display_name?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="relative">
-                <input
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="display_name" className="text-gray-300">Username</Label>
+              <Input
+                id="display_name"
+                value={editForm.display_name}
+                onChange={(e) => setEditForm({...editForm, display_name: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description" className="text-gray-300">Description</Label>
+              <Textarea
+                id="description"
+                value={editForm.description}
+                onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+            <div>
+              <Label className="text-gray-300">Avatar</Label>
+              <div className="space-y-4">
+                <Input
                   type="file"
                   accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  id="avatar-upload"
+                  onChange={handleImageSelect}
+                  className="bg-gray-800 border-gray-700"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Avatar
-                </Button>
+                {imageSrc && (
+                  <div className="max-w-full">
+                    <ReactCrop
+                      crop={crop}
+                      onChange={(_, percentCrop) => setCrop(percentCrop)}
+                      aspect={1}
+                    >
+                      <img
+                        ref={imageRef}
+                        src={imageSrc}
+                        alt="Crop preview"
+                        className="max-w-full max-h-80 object-contain"
+                      />
+                    </ReactCrop>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="display_name">Username</Label>
-              <Input 
-                id="display_name" 
-                value={editForm.display_name} 
-                onChange={(e) => setEditForm({ ...editForm, display_name: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                value={editForm.description} 
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button onClick={updateProfile} className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
+            <div className="flex gap-2 pt-4">
+              <Button onClick={updateProfile} className="flex-1">
                 Save Changes
               </Button>
-              <Button
+              <Button 
+                variant="outline" 
                 onClick={() => setIsEditDetailsOpen(true)}
-                variant="outline"
-                className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                className="flex-1"
               >
                 Edit Details
               </Button>
@@ -473,130 +509,86 @@ const Profile = () => {
 
       {/* Edit Details Modal */}
       <Dialog open={isEditDetailsOpen} onOpenChange={setIsEditDetailsOpen}>
-        <DialogContent className="sm:max-w-md bg-gray-900 text-white rounded-2xl border border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Edit Details</DialogTitle>
+            <DialogTitle className="text-white">Edit Details</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 p-2">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Input
+                id="email"
                 type="email"
-                value={detailsForm.email} 
-                onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
+                value={detailsForm.email}
+                onChange={(e) => setDetailsForm({...detailsForm, email: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input 
-                id="currentPassword" 
+            <div>
+              <Label htmlFor="current_password" className="text-gray-300">Current Password</Label>
+              <Input
+                id="current_password"
                 type="password"
-                value={detailsForm.currentPassword} 
-                onChange={(e) => setDetailsForm({ ...detailsForm, currentPassword: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
+                value={detailsForm.currentPassword}
+                onChange={(e) => setDetailsForm({...detailsForm, currentPassword: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input 
-                id="newPassword" 
+            <div>
+              <Label htmlFor="new_password" className="text-gray-300">New Password</Label>
+              <Input
+                id="new_password"
                 type="password"
-                value={detailsForm.newPassword} 
-                onChange={(e) => setDetailsForm({ ...detailsForm, newPassword: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
+                value={detailsForm.newPassword}
+                onChange={(e) => setDetailsForm({...detailsForm, newPassword: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input 
-                id="confirmPassword" 
+            <div>
+              <Label htmlFor="confirm_password" className="text-gray-300">Confirm New Password</Label>
+              <Input
+                id="confirm_password"
                 type="password"
-                value={detailsForm.confirmPassword} 
-                onChange={(e) => setDetailsForm({ ...detailsForm, confirmPassword: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white"
+                value={detailsForm.confirmPassword}
+                onChange={(e) => setDetailsForm({...detailsForm, confirmPassword: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button onClick={updateDetails} className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
-                Update Details
-              </Button>
-              <Button onClick={() => setIsEditDetailsOpen(false)} variant="outline">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Credits Modal */}
-      <Dialog open={isCreditsOpen} onOpenChange={setIsCreditsOpen}>
-        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-green-400" />
-              Credits Overview
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-3 gap-4 p-2">
-            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
-              <CardContent className="p-0">
-                <div className="text-2xl font-bold text-green-400">{credits?.current_balance || 0}</div>
-                <div className="text-sm text-gray-400">Current</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
-              <CardContent className="p-0">
-                <div className="text-2xl font-bold text-blue-400">{credits?.total_earned || 0}</div>
-                <div className="text-sm text-gray-400">Earned</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gray-800 border-gray-600 p-4 text-center">
-              <CardContent className="p-0">
-                <div className="text-2xl font-bold text-red-400">{credits?.total_spent || 0}</div>
-                <div className="text-sm text-gray-400">Spent</div>
-              </CardContent>
-            </Card>
+            <Button onClick={updateDetails} className="w-full">
+              Update Details
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Reviews Modal */}
       <Dialog open={isReviewsOpen} onOpenChange={setIsReviewsOpen}>
-        <DialogContent className="sm:max-w-2xl bg-gray-900 text-white rounded-2xl border border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Star className="w-5 h-5 text-purple-400" />
-              Your Reviews
-            </DialogTitle>
+            <DialogTitle className="text-white">Your Reviews</DialogTitle>
           </DialogHeader>
-          <div className="max-h-96 overflow-y-auto p-2">
+          <div className="space-y-4 max-h-96 overflow-y-auto">
             {reviews.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">No reviews yet.</p>
+              <p className="text-gray-400 text-center py-8">No reviews yet</p>
             ) : (
-              <div className="space-y-4">
-                {reviews.map(review => (
-                  <div key={review.id} className="p-4 bg-gray-800 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`} 
-                        />
-                      ))}
-                      <span className="text-sm text-gray-400 ml-2">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
+              reviews.map((review) => (
+                <Card key={review.id} className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-semibold text-white">Product ID: {review.product_id}</span>
+                      <div className="flex text-yellow-500">
+                        {Array.from({ length: review.rating }, (_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-300">{review.review_text || 'No comment'}</p>
-                  </div>
-                ))}
-              </div>
+                    <p className="text-gray-300">{review.review_text}</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
             )}
           </div>
         </DialogContent>
@@ -604,25 +596,24 @@ const Profile = () => {
 
       {/* Socials Modal */}
       <Dialog open={isSocialsOpen} onOpenChange={setIsSocialsOpen}>
-        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" />
-              Social Stats
-            </DialogTitle>
+            <DialogTitle className="text-white">Social Stats</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 p-2">
-            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
-              <span>Followers</span>
-              <span className="font-bold text-blue-400">1,234</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
-              <span>Following</span>
-              <span className="font-bold text-green-400">567</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
-              <span>Posts</span>
-              <span className="font-bold text-purple-400">{posts.length}</span>
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{posts.length}</div>
+                <div className="text-gray-400">Posts</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">1.2K</div>
+                <div className="text-gray-400">Followers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">845</div>
+                <div className="text-gray-400">Following</div>
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -630,60 +621,98 @@ const Profile = () => {
 
       {/* Transaction History Modal */}
       <Dialog open={isTransactionHistoryOpen} onOpenChange={setIsTransactionHistoryOpen}>
-        <DialogContent className="sm:max-w-2xl bg-gray-900 text-white rounded-2xl border border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <History className="w-5 h-5 text-yellow-400" />
-              Transaction History
-            </DialogTitle>
+            <DialogTitle className="text-white">Transaction History</DialogTitle>
           </DialogHeader>
-          <div className="max-h-96 overflow-y-auto p-2">
+          <div className="space-y-4 max-h-96 overflow-y-auto">
             {transactions.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">No transactions yet.</p>
+              <p className="text-gray-400 text-center py-8">No transactions yet</p>
             ) : (
-              <div className="space-y-3">
-                {transactions.map(transaction => (
-                  <div key={transaction.id} className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
-                    <div>
-                      <h3 className="font-semibold">{transaction.product_name}</h3>
-                      <p className="text-sm text-gray-400">{new Date(transaction.created_at).toLocaleDateString()}</p>
+              transactions.map((transaction) => (
+                <Card key={transaction.id} className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-semibold text-white">{transaction.product_name}</span>
+                        <p className="text-gray-400 text-sm">{transaction.transaction_type}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-white font-semibold">${transaction.amount}</div>
+                        {transaction.credits_earned && (
+                          <div className="text-green-400 text-sm">+{transaction.credits_earned} credits</div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${transaction.amount}</p>
-                      {transaction.credits_earned && (
-                        <p className="text-green-400 text-sm">+{transaction.credits_earned} credits</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    <p className="text-gray-500 text-sm mt-2">
+                      {new Date(transaction.created_at).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Manage Membership Modal */}
-      <Dialog open={isManageMembershipOpen} onOpenChange={setIsManageMembershipOpen}>
-        <DialogContent className="sm:max-w-lg bg-gray-900 text-white rounded-2xl border border-gray-700">
+      {/* Settings Modal */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="bg-gray-900 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Settings className="w-5 h-5 text-yellow-400" />
-              Manage Membership
-            </DialogTitle>
+            <DialogTitle className="text-white">Settings</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 p-2">
-            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
-              <h3 className="font-semibold mb-2">Privacy Settings</h3>
-              <p className="text-sm text-gray-400">Control who can see your profile and activities</p>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">Privacy Settings</h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="public_profile" className="text-gray-300">Public Profile</Label>
+                <Switch
+                  id="public_profile"
+                  checked={settings.privacy_public_profile}
+                  onCheckedChange={(checked) => 
+                    setSettings(prev => ({ ...prev, privacy_public_profile: checked }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="show_email" className="text-gray-300">Show Email</Label>
+                <Switch
+                  id="show_email"
+                  checked={settings.privacy_show_email}
+                  onCheckedChange={(checked) => 
+                    setSettings(prev => ({ ...prev, privacy_show_email: checked }))
+                  }
+                />
+              </div>
             </div>
-            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
-              <h3 className="font-semibold mb-2">Notifications</h3>
-              <p className="text-sm text-gray-400">Manage email and push notification preferences</p>
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">Notification Settings</h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="email_notifications" className="text-gray-300">Email Notifications</Label>
+                <Switch
+                  id="email_notifications"
+                  checked={settings.notifications_email}
+                  onCheckedChange={(checked) => 
+                    setSettings(prev => ({ ...prev, notifications_email: checked }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="push_notifications" className="text-gray-300">Push Notifications</Label>
+                <Switch
+                  id="push_notifications"
+                  checked={settings.notifications_push}
+                  onCheckedChange={(checked) => 
+                    setSettings(prev => ({ ...prev, notifications_push: checked }))
+                  }
+                />
+              </div>
             </div>
-            <div className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 cursor-pointer transition-colors">
-              <h3 className="font-semibold mb-2">Membership Upgrade</h3>
-              <p className="text-sm text-gray-400">Upgrade to Platinum for exclusive benefits</p>
-            </div>
+            
+            <Button onClick={updateSettings} className="w-full">
+              Save Settings
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

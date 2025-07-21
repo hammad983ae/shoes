@@ -79,15 +79,15 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   })();
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen page-gradient relative">
 
       {/* Sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={onBackToHome} />
 
       {/* Main content */}
-      <div className="ml-16 md:ml-60 relative z-10">
+      <div className="ml-16 md:ml-20 relative z-10">
         <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50 z-50">
-          <div className="container mx-auto px-4 py-6">
+          <div className="px-4 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
             </div>
@@ -124,8 +124,8 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="px-4 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredAndSortedSneakers.map((sneaker, index) => (
               <ProductCard 
                 key={sneaker.id} 

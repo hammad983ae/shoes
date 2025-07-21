@@ -47,7 +47,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen page-gradient relative overflow-hidden">
       {/* Background Animation */}
       {(appState === 'floating' || appState === 'cta') && (
         <div className="absolute inset-0 animate-gradientShift bg-gradient-to-br from-background via-background to-background/95" />
