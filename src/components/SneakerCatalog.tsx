@@ -2,8 +2,11 @@ import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProductCard from '@/components/ProductCard';
 import FilterPanel from '@/components/FilterPanel';
+import ViewProductModal from '@/components/ViewProductModal';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Heart } from 'lucide-react';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 import sneaker1 from '@/assets/sneaker-1.jpg';
 import sneaker2 from '@/assets/sneaker-2.jpg';
@@ -35,6 +38,9 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name-asc');
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<typeof sneakerCatalog[0] | null>(null);
+  const { getFavoriteProducts } = useFavorites();
 
   const filteredAndSortedSneakers = (() => {
     // Filter sneakers
@@ -43,6 +49,11 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
       const matchesCategory = selectedCategory === 'All' || sneaker.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
+
+    // Apply favorites filter if enabled
+    if (showFavorites) {
+      filtered = getFavoriteProducts(filtered);
+    }
 
     // Sort sneakers
     const sorted = [...filtered].sort((a, b) => {
@@ -92,12 +103,23 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
                 />
               </div>
 
-              <FilterPanel 
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-              />
+              <div className="flex gap-2">
+                <Button
+                  variant={showFavorites ? "default" : "outline"}
+                  onClick={() => setShowFavorites(!showFavorites)}
+                  className="flex items-center gap-2"
+                >
+                  <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
+                  Show Favorites
+                </Button>
+                
+                <FilterPanel 
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -105,7 +127,12 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAndSortedSneakers.map((sneaker, index) => (
-              <ProductCard key={sneaker.id} sneaker={sneaker} index={index} />
+              <ProductCard 
+                key={sneaker.id} 
+                sneaker={sneaker} 
+                index={index}
+                onViewProduct={setSelectedProduct}
+              />
             ))}
           </div>
 
@@ -118,6 +145,16 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
           )}
         </div>
       </div>
+      
+      {/* View Product Modal */}
+      {selectedProduct && (
+        <ViewProductModal
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          sneaker={selectedProduct}
+          allSneakers={sneakerCatalog}
+        />
+      )}
     </div>
   );
 };

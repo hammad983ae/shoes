@@ -1,8 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { Eye, Heart } from 'lucide-react';
 import { useState } from 'react';
-import SizeSelectionModal from './SizeSelectionModal';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 
 interface Sneaker {
@@ -16,22 +16,14 @@ interface Sneaker {
 interface ProductCardProps {
   sneaker: Sneaker;
   index: number;
+  onViewProduct?: (sneaker: Sneaker) => void;
 }
 
-const ProductCard = ({ sneaker, index }: ProductCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
-  const [showSizeModal, setShowSizeModal] = useState(false);
-  
+const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
+  const { toggleFavorite, isFavorite } = useFavorites();
 
-  const handleAddToCart = () => {
-    setShowSizeModal(true);
-  };
-
-  const handleSizeSelected = (size: number) => {
-    setIsAdded(true);
-    // Cart animation will be handled by the modal
-    setTimeout(() => setIsAdded(false), 2000);
+  const handleViewProduct = () => {
+    onViewProduct?.(sneaker);
   };
 
   return (
@@ -62,24 +54,23 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
             className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation();
-              setIsLiked(!isLiked);
+              toggleFavorite(sneaker.id);
             }}
           >
-            <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+            <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </Button>
           
-          {/* Quick Add Button */}
+          {/* View Product Button */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                handleAddToCart();
+                handleViewProduct();
               }}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              disabled={isAdded}
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {isAdded ? 'Added!' : 'Add to Cart'}
+              <Eye className="w-4 h-4 mr-2" />
+              View Product
             </Button>
           </div>
         </div>
@@ -99,13 +90,6 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
           </p>
         </div>
       </CardContent>
-      
-      <SizeSelectionModal
-        isOpen={showSizeModal}
-        onClose={() => setShowSizeModal(false)}
-        sneaker={sneaker}
-        onAddToCart={handleSizeSelected}
-      />
     </Card>
   );
 };
