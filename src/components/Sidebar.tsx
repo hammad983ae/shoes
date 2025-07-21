@@ -118,9 +118,14 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
       {/* Desktop Sidebar */}
       <div
-        className={`hidden md:flex fixed left-0 top-0 h-full bg-card backdrop-blur-md border-r border-border transition-all duration-300 z-[70] ${
+        className={`hidden md:flex fixed left-0 top-0 h-full backdrop-blur-md border-r border-border/30 transition-all duration-500 z-[70] ${
           isExpanded ? 'w-60' : 'w-16'
         }`}
+        style={{
+          background: isExpanded 
+            ? 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)'
+            : 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)'
+        }}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
       >
@@ -150,24 +155,27 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
             ))}
             
             {user && (
-              <button
-                className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-5 h-5 text-destructive flex-shrink-0" />
-                <span
-                  className={`font-medium whitespace-nowrap transition-all duration-300 ${
-                    isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
-                  }`}
+              <>
+                <button
+                  className="flex items-center gap-3 p-3 mx-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300 group"
+                  onClick={handleSignOut}
                 >
-                  Logout
-                </span>
-              </button>
+                  <LogOut className="w-5 h-5 text-destructive flex-shrink-0" />
+                  <span
+                    className={`font-medium whitespace-nowrap transition-all duration-300 ${
+                      isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
+                    }`}
+                  >
+                    Logout
+                  </span>
+                </button>
+                <div className="border-t border-border/50 mx-2 mt-4"></div>
+              </>
             )}
           </div>
 
           {/* Bottom Section */}
-          <div className="border-t border-border p-3 space-y-3">
+          <div className="p-3 space-y-3">
             {/* Cart */}
             <Link
               to="/cart"
