@@ -8,6 +8,7 @@ const GetFreeCredits = () => {
   const credits = dollarAmount * 100;
 
   return (
+    <div className="min-h-screen page-gradient">
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Get Free Credits</h1>
@@ -125,7 +126,7 @@ const GetFreeCredits = () => {
         </div>
       </div>
 
-
+    </div>
     </div>
   );
 };

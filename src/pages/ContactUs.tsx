@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 const ContactUs = () => {
   return (
+    <div className="min-h-screen page-gradient">
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Socials</h1>
@@ -148,6 +149,7 @@ const ContactUs = () => {
           </Card>
         </div>
       </div>
+    </div>
     </div>
   );
 };

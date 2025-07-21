@@ -139,6 +139,7 @@ const Feed = () => {
   });
 
   return (
+    <div className="min-h-screen page-gradient">
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Your Feed</h1>
@@ -299,6 +300,7 @@ const Feed = () => {
           </Card>
         )}
       </div>
+    </div>
     </div>
   );
 };
