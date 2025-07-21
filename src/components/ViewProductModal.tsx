@@ -21,6 +21,7 @@ interface ViewProductModalProps {
   onClose: () => void;
   sneaker: Sneaker;
   allSneakers: Sneaker[];
+  onProductSelect?: (product: Sneaker) => void;
 }
 
 const ViewProductModal = ({ isOpen, onClose, sneaker, allSneakers }: ViewProductModalProps) => {

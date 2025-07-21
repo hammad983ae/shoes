@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const links = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
+    { label: 'Your Feed', href: '/feed', icon: TrendingUp },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Socials', href: '/contact', icon: Smartphone },
   ];

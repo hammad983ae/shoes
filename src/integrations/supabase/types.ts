@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      post_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_interactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          brand_tags: string[] | null
+          category_tags: string[] | null
+          content: string | null
+          created_at: string
+          engagement_score: number | null
+          id: string
+          image_url: string | null
+          sneaker_tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_tags?: string[] | null
+          category_tags?: string[] | null
+          content?: string | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          image_url?: string | null
+          sneaker_tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_tags?: string[] | null
+          category_tags?: string[] | null
+          content?: string | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          image_url?: string | null
+          sneaker_tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,6 +112,134 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          review_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          review_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          review_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          creator_id: string | null
+          credits_earned: number | null
+          credits_spent: number | null
+          id: string
+          post_id: string | null
+          product_details: Json | null
+          product_name: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          creator_id?: string | null
+          credits_earned?: number | null
+          credits_spent?: number | null
+          id?: string
+          post_id?: string | null
+          product_details?: Json | null
+          product_name: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          creator_id?: string | null
+          credits_earned?: number | null
+          credits_spent?: number | null
+          id?: string
+          post_id?: string | null
+          product_details?: Json | null
+          product_name?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_credits: {
+        Row: {
+          current_balance: number | null
+          id: string
+          total_earned: number | null
+          total_spent: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_balance?: number | null
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_balance?: number | null
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
         }
         Relationships: []
       }

@@ -12,6 +12,8 @@ import GetFreeCredits from "./pages/GetFreeCredits";
 import ContactUs from "./pages/ContactUs";
 import Cart from "./pages/Cart";
 import SignIn from "./pages/SignIn";
+import Profile from "./pages/Profile";
+import Feed from "./pages/Feed";
 import SneakerCatalog from "./components/SneakerCatalog";
 
 const App = () => (
@@ -26,6 +28,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/catalog" element={<SneakerCatalog />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/feed" element={<Feed />} />
                 <Route path="/credits" element={<GetFreeCredits />} />
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/cart" element={<Cart />} />

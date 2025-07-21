@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import PostPurchaseModal from '@/components/PostPurchaseModal';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, clearCart } = useCart();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [showPostPurchase, setShowPostPurchase] = useState(false);
+  const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
+  
   // For size editing
   const sizes = ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
 
@@ -24,12 +28,17 @@ const Cart = () => {
   const estimatedTax = subtotal * 0.08;
   const total = subtotal + estimatedTax;
 
-  function handleCheckout() {
-    // Placeholder: simulate redirect to checkout provider
-    alert('Redirecting to checkout provider (Stripe/Shopify/Link)...');
-    // In real app, redirect to provider with cart data
-    // window.location.href = 'https://checkout-provider.com/checkout?cart=...';
-  }
+  const handleCheckout = () => {
+    // Store purchased items for post-purchase modal
+    setPurchasedItems([...items]);
+    clearCart();
+    setShowPostPurchase(true);
+  };
+
+  const handleContinueAnyways = () => {
+    // Allow non-signed-in users to proceed to checkout
+    handleCheckout();
+  };
 
   if (items.length === 0) {
     return (
@@ -51,43 +60,6 @@ const Cart = () => {
                   Start Shopping
                 </Link>
               </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>
-        </div>
-
-        <div className="max-w-2xl mx-auto text-center">
-          <Card>
-            <CardContent className="pt-12 pb-12">
-              <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-primary" />
-              <h2 className="text-2xl font-bold mb-4">Don't lose your cart!</h2>
-              <p className="text-muted-foreground mb-6">
-                You have {getTotalItems()} item{getTotalItems() > 1 ? 's' : ''} in your cart. 
-                Create an account to save your items and complete your purchase.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild className="flex-1">
-                  <Link to="/signin">
-                    Create an Account
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => navigate('/cart', { replace: true })}
-                >
-                  Continue Anyways
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -185,9 +157,29 @@ const Cart = () => {
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button className="w-full mt-6" onClick={handleCheckout}>
-                Checkout
-              </Button>
+
+              {!user ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-center text-muted-foreground mb-4">
+                      Sign in to save your cart and earn rewards!
+                    </p>
+                    <div className="flex gap-2">
+                      <Button asChild className="flex-1">
+                        <Link to="/signin">Sign In</Link>
+                      </Button>
+                      <Button variant="outline" className="flex-1" onClick={handleContinueAnyways}>
+                        Continue Anyways
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Button onClick={handleCheckout} className="w-full" size="lg">
+                  Proceed to Checkout
+                </Button>
+              )}
+
               <Button variant="outline" className="w-full" asChild>
                 <Link to="/catalog">
                   Continue Shopping
@@ -197,6 +189,12 @@ const Cart = () => {
           </Card>
         </div>
       </div>
+      
+      <PostPurchaseModal 
+        isOpen={showPostPurchase}
+        onClose={() => setShowPostPurchase(false)}
+        purchasedItems={purchasedItems}
+      />
     </div>
   );
 };
