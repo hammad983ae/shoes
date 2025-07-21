@@ -14,11 +14,11 @@ const ContactUs = () => {
         <div className="text-center mb-12">
           <h2 className="text-2xl font-bold mb-4">All of Our Links</h2>
           <p className="text-muted-foreground">
-            Have questions about our sneakers or need help? We'd love to hear from you!
+            All of our important links are right here — explore and connect with us.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Social Media */}
           <Card>
             <CardHeader>
@@ -52,19 +52,6 @@ const ContactUs = () => {
               </a>
 
               <a 
-                href="https://discord.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
-              >
-                <MessageCircle className="w-6 h-6 text-indigo-500" />
-                <div>
-                  <p className="font-semibold">Discord</p>
-                  <p className="text-sm text-muted-foreground">Join our community</p>
-                </div>
-              </a>
-
-              <a 
                 href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -76,58 +63,74 @@ const ContactUs = () => {
                   <p className="text-sm text-muted-foreground">@crallux_sneakers</p>
                 </div>
               </a>
-            </CardContent>
-          </Card>
 
-          {/* Email */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Email</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <Mail className="w-6 h-6 text-primary" />
-                <div>
-                  <p className="font-semibold">Email:</p>
-                  <p className="text-sm text-muted-foreground">hello@crallux.com</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Stores */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Stores</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <a 
-                href="https://depop.com"
+                href="https://discord.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
               >
-                <Users className="w-6 h-6 text-green-500" />
+                <MessageCircle className="w-6 h-6 text-indigo-500" />
                 <div>
-                  <p className="font-semibold">Depop</p>
-                  <p className="text-sm text-muted-foreground">Prices are negotiable.</p>
-                </div>
-              </a>
-
-              <a 
-                href="https://telegram.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
-              >
-                <Send className="w-6 h-6 text-blue-500" />
-                <div>
-                  <p className="font-semibold">Telegram</p>
-                  <p className="text-sm text-muted-foreground">Buy in bulk.</p>
+                  <p className="font-semibold">Discord</p>
+                  <p className="text-sm text-muted-foreground">Join our community</p>
                 </div>
               </a>
             </CardContent>
           </Card>
+
+          {/* Right side: Email and Stores stacked */}
+          <div className="space-y-8">
+            {/* Email */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Email</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <Mail className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="font-semibold">Email:</p>
+                    <p className="text-sm text-muted-foreground">hello@crallux.com</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stores */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Stores</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <a 
+                  href="https://depop.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+                >
+                  <Users className="w-6 h-6 text-red-500" />
+                  <div>
+                    <p className="font-semibold">Depop</p>
+                    <p className="text-sm text-muted-foreground">Prices are negotiable.</p>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://telegram.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+                >
+                  <Send className="w-6 h-6 text-blue-500" />
+                  <div>
+                    <p className="font-semibold">Telegram</p>
+                    <p className="text-sm text-muted-foreground">Buy in bulk.</p>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <div className="mt-12 text-center">
