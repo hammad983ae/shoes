@@ -17,7 +17,6 @@ const Sidebar = ({ isOpen, onToggle, onBackToHome }: SidebarProps) => {
 
   const links = [
     { label: 'Home', href: '/', icon: Home },
-    { label: 'Website Intro', href: '/', icon: MousePointer },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Contact Us', href: '/contact', icon: Phone },
