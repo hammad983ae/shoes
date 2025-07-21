@@ -62,10 +62,10 @@ const Profile = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<ProfileData>({ display_name: '', avatar_url: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ 
-    display_name: '', 
-    avatar_url: '', 
-    email: '', 
+  const [editForm, setEditForm] = useState({
+    display_name: '',
+    avatar_url: '',
+    email: '',
     password: '',
     confirmPassword: ''
   });
@@ -162,23 +162,23 @@ const Profile = () => {
 
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
-  // Shared shadow styles
-  const shadowBase = "shadow-[0px_0px_20px_rgba(255,215,0,0.3),-12px_-12px_24px_rgba(255,215,0,0.3)] dark:shadow-[12px_12px_24px_rgba(0,0,0,0.3),-12px_-12px_24px_rgba(255,215,0,0.4)]";
-  const hoverShadow = "hover:shadow-[0px_0px_25px_rgba(0,0,0,0.2),-20px_-20px_40px_rgba(255,215,0,0.4)] dark:hover:shadow-[20px_20px_40px_rgba(0,0,0,0.4),-20px_-20px_40px_rgba(255,215,0,0.5)]";
+  // Softer yellow glow and dark backgrounds
+  const shadowBase =
+    "shadow-[0px_0px_8px_rgba(255,215,0,0.12),-6px_-6px_8px_rgba(255,215,0,0.12)] dark:shadow-[6px_6px_8px_rgba(0,0,0,0.4),-6px_-6px_8px_rgba(255,215,0,0.18)]";
+  const hoverShadow =
+    "hover:shadow-[0px_0px_12px_rgba(255,215,0,0.2),-8px_-8px_12px_rgba(255,215,0,0.2)] dark:hover:shadow-[8px_8px_12px_rgba(0,0,0,0.5),-8px_-8px_12px_rgba(255,215,0,0.25)]";
 
   return (
     <div className="container mx-auto p-6 space-y-8">
       {/* Profile header */}
-      <div className={`group relative overflow-hidden rounded-3xl bg-slate-700 dark:bg-slate-800 p-8 ${shadowBase} transition-all duration-500 ${hoverShadow} hover:scale-[1.02] hover:-translate-y-1`}>
+      <div className={`group relative overflow-hidden rounded-3xl bg-gray-900 p-8 ${shadowBase} transition-all duration-500 ${hoverShadow} hover:scale-[1.02] hover:-translate-y-1`}>
         <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="relative">
-            <Avatar className="w-32 h-32 border-4 border-slate-600 dark:border-slate-700 shadow-lg">
-              <AvatarImage src={profile.avatar_url || undefined} className="object-cover" />
-              <AvatarFallback className="text-2xl font-bold bg-yellow-500 text-white">
-                {profile.display_name?.[0]?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <Avatar className="w-32 h-32 border-4 border-gray-800 shadow-lg">
+            <AvatarImage src={profile.avatar_url || undefined} className="object-cover" />
+            <AvatarFallback className="text-2xl font-bold bg-yellow-500 text-white">
+              {profile.display_name?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 space-y-4">
             <h1 className="text-4xl font-bold text-yellow-400 mb-2">{profile.display_name || 'Anonymous User'}</h1>
             <p className="text-gray-300">{user.email}</p>
@@ -198,11 +198,11 @@ const Profile = () => {
             </div>
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-yellow-500 hover:bg-yellow-600 text-black shadow-lg hover:shadow-yellow-400/50">
+                <Button className="bg-yellow-500 hover:bg-yellow-600 text-black shadow-md hover:shadow-yellow-400/50">
                   <Edit2 className="w-4 h-4 mr-2" /> Edit Profile
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md rounded-2xl bg-slate-700 text-white">
+              <DialogContent className="sm:max-w-md rounded-2xl bg-gray-900 text-white">
                 <DialogHeader>
                   <DialogTitle>Edit Profile</DialogTitle>
                 </DialogHeader>
@@ -242,7 +242,7 @@ const Profile = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={`grid w-full grid-cols-5 rounded-2xl bg-slate-700 dark:bg-slate-800 p-1 ${shadowBase}`}>
+        <TabsList className={`grid w-full grid-cols-5 rounded-2xl bg-gray-900 p-1 ${shadowBase}`}>
           {[
             { key: 'transactions', icon: <ShoppingBag className="w-4 h-4 mr-2" />, label: 'Transactions' },
             { key: 'credits', icon: <CreditCard className="w-4 h-4 mr-2" />, label: 'Credits' },
@@ -258,17 +258,13 @@ const Profile = () => {
 
         {/* Transactions */}
         <TabsContent value="transactions">
-          <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
-            <CardHeader>
-              <CardTitle>Transaction History</CardTitle>
-            </CardHeader>
+          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
+            <CardHeader><CardTitle>Transaction History</CardTitle></CardHeader>
             <CardContent>
-              {transactions.length === 0 ? (
-                <p>No transactions yet.</p>
-              ) : (
+              {transactions.length === 0 ? <p>No transactions yet.</p> : (
                 <div className="space-y-4">
                   {transactions.map(t => (
-                    <div key={t.id} className="flex justify-between items-center p-6 rounded-xl bg-slate-600 hover:bg-slate-500 transition-all duration-300">
+                    <div key={t.id} className="flex justify-between items-center p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
                       <div>
                         <h3 className="font-semibold">{t.product_name}</h3>
                         <p className="text-sm">{new Date(t.created_at).toLocaleDateString()}</p>
@@ -290,15 +286,15 @@ const Profile = () => {
         {/* Credits */}
         <TabsContent value="credits">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
               <CardHeader><CardTitle>Current Balance</CardTitle></CardHeader>
               <CardContent><p className="text-4xl text-yellow-400">{credits?.current_balance || 0}</p></CardContent>
             </Card>
-            <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
               <CardHeader><CardTitle>Total Earned</CardTitle></CardHeader>
               <CardContent><p className="text-4xl text-green-400">{credits?.total_earned || 0}</p></CardContent>
             </Card>
-            <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+            <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
               <CardHeader><CardTitle>Total Spent</CardTitle></CardHeader>
               <CardContent><p className="text-4xl text-red-400">{credits?.total_spent || 0}</p></CardContent>
             </Card>
@@ -307,12 +303,12 @@ const Profile = () => {
 
         {/* Reviews */}
         <TabsContent value="reviews">
-          <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
             <CardHeader><CardTitle>Your Reviews</CardTitle></CardHeader>
             <CardContent>
               {reviews.length === 0 ? <p>No reviews yet.</p> : (
                 reviews.map(r => (
-                  <div key={r.id} className="p-6 rounded-xl bg-slate-600 hover:bg-slate-500 transition-all duration-300">
+                  <div key={r.id} className="p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
                     <div className="flex justify-between">
                       <div>
                         <div className="flex">
@@ -335,12 +331,12 @@ const Profile = () => {
 
         {/* Posts */}
         <TabsContent value="posts">
-          <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
             <CardHeader><CardTitle>Your Posts</CardTitle></CardHeader>
             <CardContent>
               {posts.length === 0 ? <p>No posts yet.</p> : (
                 posts.map(p => (
-                  <div key={p.id} className="p-6 rounded-xl bg-slate-600 hover:bg-slate-500 transition-all duration-300">
+                  <div key={p.id} className="p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300">
                     <h3 className="font-semibold mb-2">{p.title}</h3>
                     <p>{p.content}</p>
                   </div>
@@ -352,12 +348,12 @@ const Profile = () => {
 
         {/* Settings */}
         <TabsContent value="settings">
-          <Card className={`rounded-2xl bg-slate-700 text-white ${shadowBase}`}>
+          <Card className={`rounded-2xl bg-gray-900 text-white ${shadowBase}`}>
             <CardHeader><CardTitle>Account Settings</CardTitle></CardHeader>
             <CardContent>
-              <div className="p-4 rounded-xl bg-slate-600 mb-3">Privacy Settings</div>
-              <div className="p-4 rounded-xl bg-slate-600 mb-3">Notifications</div>
-              <div className="p-4 rounded-xl bg-slate-600">App Experience</div>
+              <div className="p-4 rounded-xl bg-gray-800 mb-3">Privacy Settings</div>
+              <div className="p-4 rounded-xl bg-gray-800 mb-3">Notifications</div>
+              <div className="p-4 rounded-xl bg-gray-800">App Experience</div>
             </CardContent>
           </Card>
         </TabsContent>
