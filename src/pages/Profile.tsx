@@ -66,6 +66,7 @@ interface ProfileData {
   avatar_url: string | null;
   referrals_count: number;
   referral_code: string | null;
+  bio: string | null;
 }
 
 interface SocialConnection {
@@ -119,7 +120,8 @@ const Profile = () => {
     display_name: '', 
     avatar_url: '', 
     referrals_count: 0, 
-    referral_code: null 
+    referral_code: null,
+    bio: null
   });
   const [settings, setSettings] = useState<Settings>({
     privacy_public_profile: true,
@@ -143,7 +145,7 @@ const Profile = () => {
   // Form states
   const [editForm, setEditForm] = useState({
     display_name: '',
-    description: ''
+    bio: ''
   });
 
   // Image cropping states
@@ -170,7 +172,7 @@ const Profile = () => {
       // Fetch profile data with referral info
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('display_name, avatar_url, referrals_count, referral_code')
+        .select('display_name, avatar_url, referrals_count, referral_code, bio')
         .eq('user_id', user.id)
         .single();
 
@@ -179,11 +181,12 @@ const Profile = () => {
           display_name: profileData.display_name,
           avatar_url: profileData.avatar_url,
           referrals_count: profileData.referrals_count || 0,
-          referral_code: profileData.referral_code
+          referral_code: profileData.referral_code,
+          bio: profileData.bio
         });
         setEditForm({
           display_name: profileData.display_name || '',
-          description: ''
+          bio: profileData.bio || ''
         });
         setPreviewAvatar(profileData.avatar_url || '');
       }
@@ -277,33 +280,37 @@ const Profile = () => {
     const ctx = canvas.getContext('2d');
     
     if (!ctx) {
-      throw new Error('No 2d context');
+      throw new Error('Canvas context not available');
     }
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    const pixelRatio = window.devicePixelRatio;
+    // Calculate actual pixel dimensions based on crop percentages
+    const cropX = (crop.x! / 100) * image.naturalWidth;
+    const cropY = (crop.y! / 100) * image.naturalHeight;
+    const cropWidth = (crop.width! / 100) * image.naturalWidth;
+    const cropHeight = (crop.height! / 100) * image.naturalHeight;
 
-    canvas.width = crop.width! * pixelRatio;
-    canvas.height = crop.height! * pixelRatio;
+    // Set canvas size to match the crop area
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
 
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
+    // Draw the cropped portion
     ctx.drawImage(
       image,
-      crop.x! * scaleX,
-      crop.y! * scaleY,
-      crop.width! * scaleX,
-      crop.height! * scaleY,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
       0,
       0,
-      crop.width!,
-      crop.height!
+      cropWidth,
+      cropHeight
     );
 
     return new Promise((resolve) => {
-      canvas.toBlob(resolve as any, 'image/jpeg', 0.9);
+      canvas.toBlob(resolve as any, 'image/jpeg', 0.95);
     });
   };
 
@@ -347,8 +354,9 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          display_name: editForm.display_name,
-          avatar_url: previewAvatar
+          display_name: editForm.display_name, 
+          avatar_url: previewAvatar,
+          bio: editForm.bio
         })
         .eq('user_id', user.id);
 
@@ -357,7 +365,8 @@ const Profile = () => {
       setProfile(prev => ({ 
         ...prev,
         display_name: editForm.display_name, 
-        avatar_url: previewAvatar 
+        avatar_url: previewAvatar,
+        bio: editForm.bio
       }));
       setIsEditMode(false);
       toast({ title: 'Profile updated successfully' });
@@ -408,7 +417,10 @@ const Profile = () => {
               <h2 className="text-xl font-bold text-white">
                 {profile.display_name || 'Anonymous User'}
               </h2>
-              <p className="text-gray-400 text-sm">{user.email}</p>
+              {profile.bio && (
+                <p className="text-gray-300 text-sm mt-1">{profile.bio}</p>
+              )}
+              <p className="text-gray-400 text-sm mt-1">{user.email}</p>
               <p className="text-gray-500 text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
             </div>
           </div>
@@ -545,13 +557,13 @@ const Profile = () => {
               />
             </div>
 
-            {/* Description */}
+            {/* Bio */}
             <div>
-              <Label htmlFor="description" className="text-gray-300 mb-2 block">Description</Label>
+              <Label htmlFor="bio" className="text-gray-300 mb-2 block">Bio</Label>
               <Textarea
-                id="description"
-                value={editForm.description}
-                onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                id="bio"
+                value={editForm.bio}
+                onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
                 className="bg-gray-800 border-gray-700 text-white"
                 placeholder="Tell us about yourself"
                 rows={3}
@@ -692,7 +704,7 @@ const Profile = () => {
                   setIsSocialsOpen(false);
                   setIsAnalyticsOpen(true);
                 }}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold h-12 rounded-xl btn-hover-glow"
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Post Analytics
