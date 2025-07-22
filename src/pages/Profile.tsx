@@ -939,6 +939,27 @@ const Profile = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Documentation Section */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <h3 className="text-foreground font-semibold mb-4">Documentation</h3>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="outline"
+            onClick={() => window.open('/privacy', '_blank')}
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+          >
+            Privacy Policy
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => window.open('/terms', '_blank')}
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+          >
+            Terms of Service
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

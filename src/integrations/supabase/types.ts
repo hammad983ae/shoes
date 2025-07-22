@@ -158,6 +158,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          agreed_to_terms: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -170,6 +171,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agreed_to_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -182,6 +184,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agreed_to_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferralCode } from '@/hooks/useReferralCode';
+import { Checkbox } from '@/components/ui/checkbox';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 interface AuthModalProps {
@@ -30,6 +31,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user } = useAuth();
   const { referralCode, clearReferralCode } = useReferralCode();
@@ -47,6 +49,10 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
       if (isSignUp) {
         if (password !== confirmPassword) {
           setError('Passwords do not match');
+          return;
+        }
+        if (!agreedToTerms) {
+          setError('You must agree to the Terms of Service');
           return;
         }
         const { error } = await signUp(email, password, displayName, referralCode || undefined);
@@ -152,10 +158,31 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                 </div>
               </div>
             )}
+            {isSignUp && (
+              <div className="flex items-start space-x-3 py-3">
+                <Checkbox
+                  id="terms-fullpage"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="terms-fullpage" className="text-yellow-300 text-sm leading-relaxed">
+                  I agree to the{' '}
+                  <a 
+                    href="/terms" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-yellow-400 underline hover:text-yellow-200"
+                  >
+                    Terms of Service
+                  </a>
+                </Label>
+              </div>
+            )}
             <Button
               type="submit"
               className="w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 border-0"
-              disabled={loading}
+              disabled={loading || (isSignUp && !agreedToTerms)}
             >
               {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>
@@ -291,10 +318,32 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
               </div>
             )}
 
+            {isSignUp && (
+              <div className="flex items-start space-x-3 py-3">
+                <Checkbox
+                  id="terms-modal"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="terms-modal" className="text-yellow-300 text-sm leading-relaxed">
+                  I agree to the{' '}
+                  <a 
+                    href="/terms" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-yellow-400 underline hover:text-yellow-200"
+                  >
+                    Terms of Service
+                  </a>
+                </Label>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 border-0"
-              disabled={loading}
+              disabled={loading || (isSignUp && !agreedToTerms)}
             >
               {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>

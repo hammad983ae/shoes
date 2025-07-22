@@ -14,6 +14,8 @@ import Cart from "./pages/Cart";
 import SignIn from "./pages/SignIn";
 import Profile from "./pages/Profile";
 import Feed from "./pages/Feed";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import SneakerCatalog from "./components/SneakerCatalog";
 
 const App = () => (
@@ -35,6 +37,8 @@ const App = () => (
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/signin" element={<SignIn />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
