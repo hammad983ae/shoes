@@ -386,10 +386,38 @@ const Profile = () => {
   };
 
   const connectSocialPlatform = async (platform: string) => {
-    toast({ 
-      title: 'Coming Soon', 
-      description: `${platform} connection will be available soon!` 
-    });
+    if (platform === 'Instagram') {
+      try {
+        const { facebookLogin } = await import('@/utils/facebookLogin');
+        const auth = await facebookLogin();
+        console.log('✅ Instagram/Facebook login success:', auth);
+        // TODO: Send auth.accessToken and auth.userID to Supabase to store as linked account
+        // Example:
+        // await supabase.from('social_connections').insert({
+        //   user_id: user?.id,
+        //   platform: 'instagram',
+        //   platform_user_id: auth.userID,
+        //   access_token: auth.accessToken,
+        //   username: 'temp_username' // Get from FB Graph API
+        // });
+        toast({ 
+          title: 'Success!', 
+          description: 'Instagram account connected successfully!' 
+        });
+      } catch (err) {
+        console.error('❌ Login error:', err);
+        toast({ 
+          title: 'Connection Failed', 
+          description: 'Failed to connect Instagram account. Please try again.',
+          variant: 'destructive'
+        });
+      }
+    } else {
+      toast({ 
+        title: 'Coming Soon', 
+        description: `${platform} connection will be available soon!` 
+      });
+    }
   };
 
   const isPlatformConnected = (platform: string) => {
