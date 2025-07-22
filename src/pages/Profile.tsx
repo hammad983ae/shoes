@@ -361,7 +361,7 @@ const Profile = () => {
           <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
             <Users className="w-5 h-5 text-green-400 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">1.2K</div>
-            <div className="text-xs text-gray-400">Followers</div>
+            <div className="text-xs text-gray-400">People Referred</div>
           </div>
           <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
             <Award className="w-5 h-5 text-purple-400 mx-auto mb-1" />
