@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,8 +15,30 @@ interface SidebarProps {
 const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ avatar_url?: string | null; display_name?: string | null } | null>(null);
   const { getTotalItems } = useCart();
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url, display_name')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const links = [
     { label: 'Home', href: '/', icon: Home },
@@ -201,7 +225,16 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
               to={user ? "/profile" : "/signin"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
             >
-              <User className="w-5 h-5 text-primary flex-shrink-0" />
+              {user ? (
+                <Avatar className="w-5 h-5 flex-shrink-0 border border-primary/20">
+                  <AvatarImage src={userProfile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                    {userProfile?.display_name?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User className="w-5 h-5 text-primary flex-shrink-0" />
+              )}
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'

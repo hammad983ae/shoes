@@ -442,14 +442,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* View Post Analytics Button */}
-          <Button
-            onClick={() => setIsAnalyticsOpen(true)}
-            className="w-full mb-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold h-12 rounded-xl btn-hover-glow"
-          >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            View Post Analytics
-          </Button>
 
           {/* Quick Action Buttons */}
           <div className="flex gap-2 mb-4">
@@ -692,6 +684,20 @@ const Profile = () => {
                 </div>
               );
             })}
+            
+            {/* View Post Analytics Button at bottom of socials modal */}
+            <div className="pt-4 border-t border-gray-700">
+              <Button
+                onClick={() => {
+                  setIsSocialsOpen(false);
+                  setIsAnalyticsOpen(true);
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold h-12 rounded-xl btn-hover-glow"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Post Analytics
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
