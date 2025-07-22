@@ -58,7 +58,7 @@ const Cart = () => {
               <p className="text-muted-foreground mb-6">
                 Looks like you haven't added any sneakers to your cart yet.
               </p>
-              <Button asChild>
+              <Button asChild className="btn-hover-glow">
                 <Link to="/catalog">
                   Start Shopping
                 </Link>

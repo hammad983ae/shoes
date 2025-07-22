@@ -29,7 +29,7 @@ const FilterPanel = ({ selectedCategory, setSelectedCategory, sortBy, setSortBy 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2 btn-hover-glow">
           <Filter className="w-4 h-4" />
           Filter
         </Button>
@@ -81,7 +81,7 @@ const FilterPanel = ({ selectedCategory, setSelectedCategory, sortBy, setSortBy 
               setSelectedCategory('All');
               setSortBy('name-asc');
             }}
-            className="w-full"
+            className="w-full btn-hover-glow"
           >
             Clear All Filters
           </Button>

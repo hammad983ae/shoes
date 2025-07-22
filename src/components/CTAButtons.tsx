@@ -43,7 +43,7 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
         <div className="flex flex-row gap-6">
           <Button
             onClick={onShopNow}
-            className="cta-button text-lg px-12 py-6 rounded-2xl font-semibold flex items-center gap-3 min-w-[200px] justify-center"
+            className="cta-button text-lg px-12 py-6 rounded-2xl font-semibold flex items-center gap-3 min-w-[200px] justify-center btn-hover-glow"
             size="lg"
           >
             <ShoppingBag className="w-5 h-5" />
@@ -53,7 +53,7 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
           <Button
             onClick={onViewInstagram}
             variant="outline"
-            className="text-lg px-12 py-6 rounded-2xl font-semibold flex items-center gap-3 min-w-[200px] justify-center border-primary/30 text-primary hover:bg-primary/10"
+            className="text-lg px-12 py-6 rounded-2xl font-semibold flex items-center gap-3 min-w-[200px] justify-center border-primary/30 text-primary hover:bg-primary/10 btn-hover-glow"
             size="lg"
           >
             <Instagram className="w-5 h-5" />

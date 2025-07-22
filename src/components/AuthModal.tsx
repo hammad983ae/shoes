@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useReferralCode } from '@/hooks/useReferralCode';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 interface AuthModalProps {
@@ -31,6 +32,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user } = useAuth();
+  const { referralCode, clearReferralCode } = useReferralCode();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,7 +49,12 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
           setError('Passwords do not match');
           return;
         }
-        await signUp(email, password, displayName);
+        const { error } = await signUp(email, password, displayName, referralCode || undefined);
+        if (!error) {
+          clearReferralCode(); // Clear the referral code after successful signup
+        } else {
+          setError(error.message);
+        }
       } else {
         const { error } = await signIn(email, password);
         if (error) setError(error.message);
@@ -77,6 +84,13 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
               ? 'Create your account to save your cart and earn credits'
               : 'Sign in to your account to continue'}
           </p>
+          {referralCode && isSignUp && (
+            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-center">
+              <p className="text-green-400 text-sm">
+                🎉 You're signing up with a referral code! You'll get 10% off your first purchase.
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-yellow-300">Email</Label>
@@ -201,6 +215,14 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
               ? 'Create your account to save your cart and earn credits'
               : 'Sign in to your account to continue'}
           </p>
+
+          {referralCode && isSignUp && (
+            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-center">
+              <p className="text-green-400 text-sm">
+                🎉 You're signing up with a referral code! You'll get 10% off your first purchase.
+              </p>
+            </div>
+          )}
 
           {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 

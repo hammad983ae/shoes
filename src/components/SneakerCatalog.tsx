@@ -107,7 +107,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
                   <Button
                     variant={showFavorites ? "default" : "outline"}
                     onClick={() => setShowFavorites(!showFavorites)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 btn-hover-glow"
                   >
                     <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
                     Show Favorites

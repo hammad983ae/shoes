@@ -50,7 +50,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300"
+            className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 btn-hover-glow"
             onClick={(e) => {
               e.stopPropagation();
               toggleFavorite(sneaker.id);
@@ -66,7 +66,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
                 e.stopPropagation();
                 handleViewProduct();
               }}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow"
             >
               <Eye className="w-4 h-4 mr-2" />
               View Product

@@ -32,6 +32,27 @@ const GetFreeCredits = () => {
     }
   };
 
+  const copyReferralLink = () => {
+    const link = `https://crallux.com/ref/${referralCode}`;
+    navigator.clipboard.writeText(link).then(() => {
+      // Could add a toast here
+      console.log('Copied to clipboard');
+    });
+  };
+
+  const shareReferralLink = () => {
+    const link = `https://crallux.com/ref/${referralCode}`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join Crallux and get 10% off!',
+        text: 'Get 10% off your first sneaker purchase at Crallux!',
+        url: link,
+      });
+    } else {
+      copyReferralLink();
+    }
+  };
+
   return (
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
@@ -61,8 +82,8 @@ const GetFreeCredits = () => {
               </div>
               
               <div className="flex gap-4 justify-center">
-                <Button>Share Link</Button>
-                <Button variant="outline">Copy Link</Button>
+                <Button onClick={shareReferralLink} className="btn-hover-glow">Share Link</Button>
+                <Button variant="outline" onClick={copyReferralLink} className="btn-hover-glow">Copy Link</Button>
               </div>
             </div>
           </CardContent>
