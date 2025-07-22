@@ -138,7 +138,7 @@ const Profile = () => {
   const [postAnalytics, setPostAnalytics] = useState<PostAnalytic[]>([]);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   
-  // Edit mode and modal states
+  // Modal states - back to original design
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
@@ -314,7 +314,7 @@ const Profile = () => {
   };
 
   const uploadAvatar = async (blob: Blob): Promise<string> => {
-    const fileName = `avatar-${user?.id}-${Date.now()}.jpg`;
+    const fileName = `${user?.id}/avatar-${Date.now()}.jpg`;
     const { error } = await supabase.storage
       .from('avatars')
       .upload(fileName, blob, { cacheControl: '3600', upsert: true });
@@ -342,6 +342,7 @@ const Profile = () => {
       
       toast({ title: 'Avatar updated successfully' });
     } catch (error: any) {
+      console.error('Avatar upload error:', error);
       toast({ title: 'Error updating avatar', description: error.message, variant: 'destructive' });
     }
   };
@@ -367,6 +368,7 @@ const Profile = () => {
       setIsEditMode(false);
       toast({ title: 'Profile updated successfully' });
     } catch (error: any) {
+      console.error('Profile update error:', error);
       toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
     }
   };
@@ -398,7 +400,7 @@ const Profile = () => {
       <InteractiveParticles isActive={true} />
       
       {!isEditMode ? (
-        /* Main Profile Card */
+        /* Main Profile Card - Original Layout */
         <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
           {/* Profile Header */}
           <div className="flex items-center gap-4 mb-6">
@@ -446,7 +448,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Analytics Button */}
+          {/* View Post Analytics Button */}
           <Button
             onClick={() => setIsAnalyticsOpen(true)}
             className="w-full mb-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold h-12 rounded-xl btn-hover-glow"
@@ -507,7 +509,7 @@ const Profile = () => {
           </div>
         </div>
       ) : (
-        /* Edit Profile Subpage */
+        /* Edit Profile Subpage - New Design */
         <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
           {/* Back Button */}
           <Button
