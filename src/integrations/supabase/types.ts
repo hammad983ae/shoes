@@ -132,6 +132,9 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          referral_code: string | null
+          referrals_count: number | null
+          referred_by: string | null
           updated_at: string
           user_id: string
         }
@@ -140,6 +143,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          referral_code?: string | null
+          referrals_count?: number | null
+          referred_by?: string | null
           updated_at?: string
           user_id: string
         }
@@ -148,6 +154,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          referral_code?: string | null
+          referrals_count?: number | null
+          referred_by?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -442,7 +451,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

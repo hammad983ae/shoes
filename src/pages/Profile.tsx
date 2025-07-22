@@ -22,7 +22,14 @@ import {
   Award,
   History,
   Coins,
-  MessageSquare
+  MessageSquare,
+  Instagram,
+  Youtube,
+  Twitter,
+  Check,
+  ExternalLink,
+  
+  Video
 } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -64,6 +71,33 @@ interface Post {
 interface ProfileData {
   display_name: string | null;
   avatar_url: string | null;
+  referrals_count: number;
+  referral_code: string | null;
+}
+
+interface SocialConnection {
+  id: string;
+  platform: string;
+  username: string;
+  is_active: boolean;
+  connected_at: string;
+}
+
+interface PostAnalytic {
+  id: string;
+  top_post_id: string;
+  credits_earned: number;
+  engagement_multiplier: number;
+  calculated_at: string;
+  top_posts?: {
+    platform: string;
+    author_username: string;
+    title: string | null;
+    view_count: number;
+    like_count: number;
+    comment_count: number;
+    share_count: number;
+  };
 }
 
 interface Settings {
@@ -73,6 +107,14 @@ interface Settings {
   notifications_push: boolean;
 }
 
+const socialPlatforms = [
+  { name: 'TikTok', icon: Video, platform: 'tiktok' },
+  { name: 'Instagram', icon: Instagram, platform: 'instagram' },
+  { name: 'YouTube', icon: Youtube, platform: 'youtube' },
+  { name: 'X (Twitter)', icon: Twitter, platform: 'x' },
+  { name: 'Reddit', icon: MessageSquare, platform: 'reddit' },
+];
+
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -80,13 +122,21 @@ const Profile = () => {
   const [credits, setCredits] = useState<UserCredits | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [profile, setProfile] = useState<ProfileData>({ display_name: '', avatar_url: '' });
+  const [profile, setProfile] = useState<ProfileData>({ 
+    display_name: '', 
+    avatar_url: '', 
+    referrals_count: 0, 
+    referral_code: null 
+  });
   const [settings, setSettings] = useState<Settings>({
     privacy_public_profile: true,
     privacy_show_email: false,
     notifications_email: true,
     notifications_push: true
   });
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [postAnalytics, setPostAnalytics] = useState<PostAnalytic[]>([]);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   
   // Modal states
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -129,20 +179,54 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      // Fetch profile data
+      // Fetch profile data with referral info
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('display_name, avatar_url')
+        .select('display_name, avatar_url, referrals_count, referral_code')
         .eq('user_id', user.id)
         .single();
 
       if (profileData) {
-        setProfile(profileData);
+        setProfile({
+          display_name: profileData.display_name,
+          avatar_url: profileData.avatar_url,
+          referrals_count: profileData.referrals_count || 0,
+          referral_code: profileData.referral_code
+        });
         setEditForm({
           display_name: profileData.display_name || '',
-          description: '' // Add description field to profiles table if needed
+          description: ''
         });
       }
+
+      // Fetch social connections
+      const { data: socialData } = await supabase
+        .from('social_connections')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (socialData) setSocialConnections(socialData);
+
+      // Fetch post analytics
+      const { data: analyticsData } = await supabase
+        .from('post_analytics')
+        .select(`
+          *,
+          top_posts (
+            platform,
+            author_username,
+            title,
+            view_count,
+            like_count,
+            comment_count,
+            share_count
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('calculated_at', { ascending: false });
+
+      if (analyticsData) setPostAnalytics(analyticsData as any);
 
       // Fetch credits
       const { data: creditsData } = await supabase
@@ -264,10 +348,11 @@ const Profile = () => {
 
       if (error) throw error;
 
-      setProfile({ 
+      setProfile(prev => ({ 
+        ...prev,
         display_name: editForm.display_name, 
         avatar_url: avatarUrl 
-      });
+      }));
       setIsEditProfileOpen(false);
       setAvatarFile(null);
       setImageSrc('');
@@ -317,13 +402,25 @@ const Profile = () => {
     }
   };
 
+  const connectSocialPlatform = async (platform: string) => {
+    // TODO: Implement OAuth connection flow for each platform
+    toast({ 
+      title: 'Coming Soon', 
+      description: `${platform} connection will be available soon!` 
+    });
+  };
+
+  const isPlatformConnected = (platform: string) => {
+    return socialConnections.some(conn => conn.platform === platform && conn.is_active);
+  };
+
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
   return (
     <div className="min-h-screen page-gradient p-4 flex items-center justify-center relative">
       <InteractiveParticles isActive={true} />
       {/* Main Profile Card */}
-      <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+      <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
         {/* Profile Header */}
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
@@ -353,18 +450,18 @@ const Profile = () => {
 
         {/* Stats Widgets */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
-            <BarChart3 className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+          <div className="bg-black/80 rounded-xl p-3 text-center border border-gray-700/50">
+            <BarChart3 className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">{posts.length}</div>
             <div className="text-xs text-gray-400">Posts</div>
           </div>
-          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
-            <Users className="w-5 h-5 text-green-400 mx-auto mb-1" />
-            <div className="text-lg font-bold text-white">1.2K</div>
+          <div className="bg-black/80 rounded-xl p-3 text-center border border-gray-700/50">
+            <Users className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
+            <div className="text-lg font-bold text-white">{profile.referrals_count}</div>
             <div className="text-xs text-gray-400">People Referred</div>
           </div>
-          <div className="bg-gray-800/80 rounded-xl p-3 text-center border border-gray-700/50">
-            <Award className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+          <div className="bg-black/80 rounded-xl p-3 text-center border border-gray-700/50">
+            <Award className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
             <div className="text-lg font-bold text-white">{reviews.length}</div>
             <div className="text-xs text-gray-400">Reviews</div>
           </div>
@@ -396,14 +493,16 @@ const Profile = () => {
         <div className="grid grid-cols-2 gap-2 mb-6">
           <Button
             onClick={() => setIsReviewsOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 h-12 rounded-xl btn-hover-glow"
           >
             <Star className="w-4 h-4 mb-1" />
             <span className="text-xs">Reviews</span>
           </Button>
           <Button
             onClick={() => setIsSocialsOpen(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 h-12 rounded-xl btn-hover-glow"
           >
             <MessageSquare className="w-4 h-4 mb-1" />
             <span className="text-xs">Socials</span>
@@ -413,7 +512,7 @@ const Profile = () => {
         {/* Edit Profile Button */}
         <Button
           onClick={() => setIsEditProfileOpen(true)}
-          className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+          className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl btn-hover-glow"
         >
           <Edit2 className="w-4 h-4 mr-2" />
           Edit Profile
@@ -425,16 +524,16 @@ const Profile = () => {
             variant="ghost"
             size="sm"
             onClick={() => setIsTransactionHistoryOpen(true)}
-            className="text-gray-400 hover:text-white transform hover:scale-105 transition-all duration-200"
+            className="text-gray-400 hover:text-white btn-hover-glow"
           >
             <History className="w-4 h-4 mr-1" />
-            <span className="text-xs">Transaction History</span>
+            <span className="text-xs">History</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsSettingsOpen(true)}
-            className="text-gray-400 hover:text-white transform hover:scale-105 transition-all duration-200"
+            className="text-gray-400 hover:text-white btn-hover-glow"
           >
             <Settings className="w-4 h-4 mr-1" />
             <span className="text-xs">Settings</span>
@@ -599,15 +698,139 @@ const Profile = () => {
 
       {/* Socials Modal */}
       <Dialog open={isSocialsOpen} onOpenChange={setIsSocialsOpen}>
-        <DialogContent className="bg-gray-900 border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white">Social Connections</DialogTitle>
+            <DialogTitle className="text-white">Connect Social Accounts</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="text-center py-8">
-              <p className="text-gray-400 mb-4">Connect your social accounts to earn credits when you tag @CrowlixSells!</p>
-              <p className="text-gray-500 text-sm">Feature coming soon...</p>
+            <p className="text-gray-400 text-sm text-center mb-6">
+              Connect your social accounts to track when you're tagged and earn credits!
+            </p>
+            
+            {socialPlatforms.map((platform) => {
+              const IconComponent = platform.icon;
+              const isConnected = isPlatformConnected(platform.platform);
+              
+              return (
+                <div key={platform.platform} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <IconComponent className="w-6 h-6 text-white" />
+                    <span className="text-white font-medium">{platform.name}</span>
+                  </div>
+                  
+                  {isConnected ? (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <Check className="w-4 h-4" />
+                      <span className="text-sm">Connected</span>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => connectSocialPlatform(platform.name)}
+                      variant="outline"
+                      size="sm"
+                      className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 btn-hover-glow"
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+            
+            <div className="pt-4 border-t border-gray-700">
+              <Button
+                onClick={() => setIsAnalyticsOpen(true)}
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold btn-hover-glow"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Post Analytics
+              </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Post Analytics Modal */}
+      <Dialog open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Post Analytics Dashboard</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {postAnalytics.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400 mb-4">No post analytics yet</p>
+                <p className="text-gray-500 text-sm">Connect your social accounts and start getting tagged in posts to see analytics here!</p>
+              </div>
+            ) : (
+              postAnalytics.map((analytic) => (
+                <Card key={analytic.id} className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-white">
+                          {analytic.top_posts?.title || 'Untitled Post'}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          by @{analytic.top_posts?.author_username} on {analytic.top_posts?.platform}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-yellow-500 font-semibold">
+                          🪙 {analytic.credits_earned} credits earned
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          {analytic.engagement_multiplier}x multiplier
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div className="text-center">
+                        <div className="text-white font-semibold">
+                          {analytic.top_posts?.view_count?.toLocaleString()}
+                        </div>
+                        <div className="text-gray-400">Views</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-semibold">
+                          {analytic.top_posts?.like_count?.toLocaleString()}
+                        </div>
+                        <div className="text-gray-400">Likes</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-semibold">
+                          {analytic.top_posts?.comment_count?.toLocaleString()}
+                        </div>
+                        <div className="text-gray-400">Comments</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-semibold">
+                          {analytic.top_posts?.share_count?.toLocaleString()}
+                        </div>
+                        <div className="text-gray-400">Shares</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400 text-sm">
+                          Calculated: {new Date(analytic.calculated_at).toLocaleDateString()}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(`https://${analytic.top_posts?.platform}.com`, '_blank')}
+                          className="text-yellow-500 hover:text-yellow-400"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>

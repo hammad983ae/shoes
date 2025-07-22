@@ -1,12 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const GetFreeCredits = () => {
+  const { user } = useAuth();
   const [dollarAmount, setDollarAmount] = useState(1);
+  const [referralCode, setReferralCode] = useState('your-unique-code');
   const credits = dollarAmount * 100;
+
+  useEffect(() => {
+    if (user) {
+      fetchReferralCode();
+    }
+  }, [user]);
+
+  const fetchReferralCode = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('referral_code')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (data?.referral_code) {
+      setReferralCode(data.referral_code);
+    }
+  };
 
   return (
     <div className="min-h-screen page-gradient relative">
@@ -32,7 +56,7 @@ const GetFreeCredits = () => {
               <div className="p-4 bg-primary/10 rounded-lg">
                 <p className="font-semibold text-primary">Your Referral Link:</p>
                 <p className="text-sm text-muted-foreground font-mono bg-background p-2 rounded mt-2">
-                  https://crallux.com/ref/your-unique-code
+                  https://crallux.com/ref/{referralCode}
                 </p>
               </div>
               
