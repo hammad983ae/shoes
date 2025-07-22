@@ -88,46 +88,45 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
       {/* Main content */}
       <div className="ml-16 md:ml-20 relative z-10">
-        <div className="sticky top-0 backdrop-blur-md border-b border-border/50 z-50">
-          <div className="px-4 py-6">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-foreground">Sneaker Collection</h1>
-            </div>
+        <div className="sticky top-0 z-50 w-full">
+          <div className="backdrop-blur-md border-b border-border/50 w-full">
+            <div className="max-w-screen-2xl mx-auto px-6 md:px-8 py-6">
+              <h1 className="text-3xl font-bold text-foreground mb-4">Sneaker Collection</h1>
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search sneakers..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-full"
+                  />
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search sneakers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant={showFavorites ? "default" : "outline"}
-                  onClick={() => setShowFavorites(!showFavorites)}
-                  className="flex items-center gap-2"
-                >
-                  <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
-                  Show Favorites
-                </Button>
-                
-                <FilterPanel 
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  sortBy={sortBy}
-                  setSortBy={setSortBy}
-                />
+                <div className="flex gap-2">
+                  <Button
+                    variant={showFavorites ? "default" : "outline"}
+                    onClick={() => setShowFavorites(!showFavorites)}
+                    className="flex items-center gap-2"
+                  >
+                    <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
+                    Show Favorites
+                  </Button>
+                  
+                  <FilterPanel 
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="px-4 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="flex justify-center px-4 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 max-w-screen-2xl w-full">
             {filteredAndSortedSneakers.map((sneaker, index) => (
               <ProductCard 
                 key={sneaker.id} 

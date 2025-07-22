@@ -322,7 +322,7 @@ const Profile = () => {
     <div className="min-h-screen page-gradient p-4 flex items-center justify-center relative">
       <InteractiveParticles isActive={true} />
       {/* Main Profile Card */}
-      <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700] backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+      <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
         {/* Profile Header */}
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">

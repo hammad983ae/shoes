@@ -140,7 +140,8 @@
   }
 
   .intro-card {
-    background: var(--gradient-card);
+    /* Match website intro background to main page gradient */
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
     border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-card);
     transition: var(--transition-smooth);
@@ -166,7 +167,8 @@
   }
 
   .product-card {
-    background: var(--gradient-card);
+    /* Solid very dark black for sneaker cards */
+    background: #0a0a0a;
     border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-card);
     transition: var(--transition-smooth);
@@ -203,6 +205,27 @@
     transition: all 0.3s ease;
     pointer-events: none;
   }
+
+  .hover-scale-glow {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .hover-scale-glow:hover {
+    @apply scale-[1.03] shadow-[0_0_10px_rgba(255,255,255,0.18)];
+  }
+  /* Accent glows for variants */
+  .btn-primary:hover, .cta-button:hover {
+    box-shadow: 0 0 12px 0 #ffe06699, 0 2px 8px 0 rgba(0,0,0,0.08);
+  }
+  .btn-secondary:hover {
+    box-shadow: 0 0 12px 0 #60a5fa99, 0 2px 8px 0 rgba(0,0,0,0.08);
+  }
+  .btn-outline:hover, .btn-ghost:hover {
+    box-shadow: 0 0 10px 0 #fffbe699, 0 2px 8px 0 rgba(0,0,0,0.08);
+  }
+}
+
+button, .btn, .cta-button, .shadcn-btn {
+  @apply hover-scale-glow;
 }
 
 @keyframes gentleFloat {

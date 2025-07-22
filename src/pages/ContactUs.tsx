@@ -137,7 +137,7 @@ const ContactUs = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <Card className="max-w-lg mx-auto">
+          <Card className="max-w-lg mx-auto border-0 shadow-[0_0_24px_4px_#FFD70099]">
             <CardContent className="pt-6">
               <p className="text-muted-foreground mb-4">
                 Use one of these links to get around our ecosystem. Press this button to see our catalog and buy on the website.

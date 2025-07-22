@@ -63,21 +63,6 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
             View Instagram
           </Button>
         </div>
-
-        {/* Sign In CTA - Only show if not logged in */}
-        {!user && (
-          <div className="mt-4">
-            <Link to="/signin">
-              <Button
-                variant="secondary"
-                className="text-base px-8 py-3 rounded-xl font-medium flex items-center gap-2"
-              >
-                <User className="w-4 h-4" />
-                Sign In / Create Account
-              </Button>
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );

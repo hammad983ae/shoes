@@ -4,12 +4,17 @@ import CTAButtons from '@/components/CTAButtons';
 import SneakerCatalog from '@/components/SneakerCatalog';
 import ParticleExplosion from '@/components/ParticleExplosion';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import AuthModal from '@/components/AuthModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 type AppState = 'initial' | 'floating' | 'cta' | 'explosion' | 'catalog';
 
 const Index = () => {
   const [appState, setAppState] = useState<AppState>('initial');
   const [showParticles, setShowParticles] = useState(false);
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalWasClosed, setAuthModalWasClosed] = useState(false);
 
   useEffect(() => {
     // Faster initial sequence - max 1.5-2 seconds total
@@ -22,7 +27,23 @@ const Index = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (appState === 'catalog' && !user) {
+      setShowAuthModal(true);
+    }
+  }, [appState, user]);
+
   const handleShopNow = () => {
+    if (!user) {
+      setShowParticles(true);
+      setAppState('explosion');
+      setTimeout(() => {
+        setAppState('catalog');
+        setShowParticles(false);
+        setShowAuthModal(true);
+      }, 1000);
+      return;
+    }
     setShowParticles(true);
     setAppState('explosion');
     
@@ -48,6 +69,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen page-gradient relative overflow-hidden">
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} onOpenChange={(open) => {
+        setShowAuthModal(open);
+        if (!open) setAuthModalWasClosed(true);
+      }} />
       {/* Background Animation */}
       {(appState === 'floating' || appState === 'cta') && (
         <div className="absolute inset-0 animate-gradientShift bg-gradient-to-br from-background via-background to-background/95" />
