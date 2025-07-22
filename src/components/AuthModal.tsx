@@ -30,7 +30,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn, signInWithProvider, user } = useAuth();
+  const { signUp, signIn, user } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,17 +59,6 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
     }
   };
 
-  const handleProvider = async (provider: 'google' | 'discord') => {
-    setLoading(true);
-    setError(null);
-    try {
-      await signInWithProvider(provider);
-    } catch (err: any) {
-      setError(err.message || 'Provider login error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (fullPage) {
     return (
@@ -88,23 +77,6 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
               ? 'Create your account to save your cart and earn credits'
               : 'Sign in to your account to continue'}
           </p>
-          {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-          <div className="flex flex-col gap-3 mb-6">
-            <Button
-              onClick={() => handleProvider('google')}
-              className="w-full bg-white text-black border border-gray-200 hover:bg-gray-100 font-semibold"
-              disabled={loading}
-            >
-              Continue with Google
-            </Button>
-            <Button
-              onClick={() => handleProvider('discord')}
-              className="w-full bg-white text-black border border-gray-200 hover:bg-gray-100 font-semibold"
-              disabled={loading}
-            >
-              Continue with Discord
-            </Button>
-          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-yellow-300">Email</Label>
@@ -231,23 +203,6 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
           </p>
 
           {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-
-          <div className="flex flex-col gap-3 mb-6">
-            <Button
-              onClick={() => handleProvider('google')}
-              className="w-full bg-white text-black border border-gray-200 hover:bg-gray-100 font-semibold"
-              disabled={loading}
-            >
-              Continue with Google
-            </Button>
-            <Button
-              onClick={() => handleProvider('discord')}
-              className="w-full bg-white text-black border border-gray-200 hover:bg-gray-100 font-semibold"
-              disabled={loading}
-            >
-              Continue with Discord
-            </Button>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
