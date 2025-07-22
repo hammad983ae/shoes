@@ -50,13 +50,6 @@ interface UserCredits {
   total_spent: number | null;
 }
 
-interface Review {
-  id: string;
-  product_id: string;
-  rating: number;
-  review_text: string | null;
-  created_at: string;
-}
 
 interface Post {
   id: string;
@@ -120,7 +113,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [credits, setCredits] = useState<UserCredits | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<ProfileData>({ 
     display_name: '', 
@@ -137,6 +130,7 @@ const Profile = () => {
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
   const [postAnalytics, setPostAnalytics] = useState<PostAnalytic[]>([]);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [userReviews, setUserReviews] = useState<any[]>([]);
   
   // Modal states - back to original design
   const [isEditMode, setIsEditMode] = useState(false);
@@ -242,14 +236,14 @@ const Profile = () => {
 
       if (transactionsData) setTransactions(transactionsData);
 
-      // Fetch reviews
+      // Fetch product reviews from new table
       const { data: reviewsData } = await supabase
-        .from('reviews')
+        .from('product_reviews')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (reviewsData) setReviews(reviewsData);
+      if (reviewsData) setUserReviews(reviewsData);
 
       // Fetch posts
       const { data: postsData } = await supabase
@@ -633,10 +627,10 @@ const Profile = () => {
             <DialogTitle className="text-white">My Reviews</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {reviews.length === 0 ? (
+            {userReviews.length === 0 ? (
               <p className="text-gray-400 text-center py-8">No reviews yet</p>
             ) : (
-              reviews.map((review) => (
+              userReviews.map((review) => (
                 <div key={review.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex">
@@ -649,7 +643,7 @@ const Profile = () => {
                     </div>
                     <span className="text-white font-semibold">{review.rating}/5</span>
                   </div>
-                  <p className="text-gray-300 mb-2">{review.review_text}</p>
+                  <p className="text-gray-300 mb-2">{review.review_text || 'No review text'}</p>
                   <p className="text-gray-500 text-sm">
                     Product: {review.product_id} • {new Date(review.created_at).toLocaleDateString()}
                   </p>
