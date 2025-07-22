@@ -315,7 +315,7 @@ const Profile = () => {
 
   const uploadAvatar = async (blob: Blob): Promise<string> => {
     const fileName = `avatar-${user?.id}-${Date.now()}.jpg`;
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('avatars')
       .upload(fileName, blob, { cacheControl: '3600', upsert: true });
 
@@ -368,36 +368,6 @@ const Profile = () => {
       toast({ title: 'Profile updated successfully' });
     } catch (error: any) {
       toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const updateDetails = async () => {
-    if (!user) return;
-    try {
-      if (detailsForm.email !== user.email) {
-        const { error: emailError } = await supabase.auth.updateUser({ 
-          email: detailsForm.email 
-        });
-        if (emailError) throw emailError;
-      }
-
-      if (detailsForm.newPassword && detailsForm.newPassword === detailsForm.confirmPassword) {
-        const { error: passwordError } = await supabase.auth.updateUser({ 
-          password: detailsForm.newPassword 
-        });
-        if (passwordError) throw passwordError;
-      }
-
-      setIsEditDetailsOpen(false);
-      setDetailsForm({
-        email: detailsForm.email,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      toast({ title: 'Details updated successfully' });
-    } catch (error: any) {
-      toast({ title: 'Error updating details', description: error.message, variant: 'destructive' });
     }
   };
 
