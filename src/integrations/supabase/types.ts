@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      post_analytics: {
+        Row: {
+          bonus_credits: number | null
+          calculated_at: string
+          credits_earned: number
+          engagement_multiplier: number | null
+          id: string
+          top_post_id: string
+          user_id: string
+        }
+        Insert: {
+          bonus_credits?: number | null
+          calculated_at?: string
+          credits_earned?: number
+          engagement_multiplier?: number | null
+          id?: string
+          top_post_id: string
+          user_id: string
+        }
+        Update: {
+          bonus_credits?: number | null
+          calculated_at?: string
+          credits_earned?: number
+          engagement_multiplier?: number | null
+          id?: string
+          top_post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_analytics_top_post_id_fkey"
+            columns: ["top_post_id"]
+            isOneToOne: false
+            referencedRelation: "top_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_interactions: {
         Row: {
           created_at: string
@@ -145,6 +183,120 @@ export type Database = {
         }
         Relationships: []
       }
+      social_connections: {
+        Row: {
+          access_token: string | null
+          connected_at: string
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          platform: string
+          platform_user_id: string | null
+          refresh_token: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          platform: string
+          platform_user_id?: string | null
+          refresh_token?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          platform?: string
+          platform_user_id?: string | null
+          refresh_token?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      top_posts: {
+        Row: {
+          author_platform_id: string | null
+          author_username: string
+          comment_count: number | null
+          credits_earned: number | null
+          crowlix_user_id: string | null
+          description: string | null
+          engagement_score: number | null
+          hashtags: string[] | null
+          id: string
+          imported_at: string
+          last_updated_at: string
+          like_count: number | null
+          original_url: string
+          platform: string
+          platform_post_id: string
+          posted_at: string
+          share_count: number | null
+          tag_mentions: string[] | null
+          thumbnail_url: string | null
+          title: string | null
+          video_url: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author_platform_id?: string | null
+          author_username: string
+          comment_count?: number | null
+          credits_earned?: number | null
+          crowlix_user_id?: string | null
+          description?: string | null
+          engagement_score?: number | null
+          hashtags?: string[] | null
+          id?: string
+          imported_at?: string
+          last_updated_at?: string
+          like_count?: number | null
+          original_url: string
+          platform: string
+          platform_post_id: string
+          posted_at: string
+          share_count?: number | null
+          tag_mentions?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author_platform_id?: string | null
+          author_username?: string
+          comment_count?: number | null
+          credits_earned?: number | null
+          crowlix_user_id?: string | null
+          description?: string | null
+          engagement_score?: number | null
+          hashtags?: string[] | null
+          id?: string
+          imported_at?: string
+          last_updated_at?: string
+          like_count?: number | null
+          original_url?: string
+          platform?: string
+          platform_post_id?: string
+          posted_at?: string
+          share_count?: number | null
+          tag_mentions?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -240,6 +392,48 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          notifications_credits: boolean | null
+          notifications_email: boolean | null
+          notifications_push: boolean | null
+          notifications_social_mentions: boolean | null
+          privacy_analytics_visible: boolean | null
+          privacy_posts_visible: boolean | null
+          privacy_profile_visible: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notifications_credits?: boolean | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          notifications_social_mentions?: boolean | null
+          privacy_analytics_visible?: boolean | null
+          privacy_posts_visible?: boolean | null
+          privacy_profile_visible?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notifications_credits?: boolean | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          notifications_social_mentions?: boolean | null
+          privacy_analytics_visible?: boolean | null
+          privacy_posts_visible?: boolean | null
+          privacy_profile_visible?: boolean | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

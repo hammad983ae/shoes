@@ -4,64 +4,71 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Heart, Share, Plus, Filter, TrendingUp } from 'lucide-react';
+
+import { Search, TrendingUp, CheckCircle, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
-interface Post {
+interface TopPost {
   id: string;
-  user_id: string;
-  title: string;
-  content: string | null;
-  sneaker_tags: string[] | null;
-  brand_tags: string[] | null;
-  category_tags: string[] | null;
-  image_url: string | null;
-  engagement_score: number | null;
-  created_at: string;
-  profiles: {
+  platform: string;
+  platform_post_id: string;
+  original_url: string;
+  author_username: string;
+  crowlix_user_id: string | null;
+  title: string | null;
+  description: string | null;
+  thumbnail_url: string | null;
+  video_url: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  share_count: number;
+  engagement_score: number;
+  credits_earned: number;
+  posted_at: string;
+  profiles?: {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
 }
 
-interface PostForm {
-  title: string;
-  content: string;
-  sneaker_tags: string;
-  brand_tags: string;
-  category_tags: string;
-  image_url: string;
+interface UserProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
-const Feed = () => {
+
+const TopPosts = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const navigate = useNavigate();
+  const [topPosts, setTopPosts] = useState<TopPost[]>([]);
   const [sortBy, setSortBy] = useState('recent');
-  const [filterTag, setFilterTag] = useState('');
-  const [postForm, setPostForm] = useState<PostForm>({
-    title: '',
-    content: '',
-    sneaker_tags: '',
-    brand_tags: '',
-    category_tags: '',
-    image_url: ''
-  });
+  const [userSearch, setUserSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+  const [connectedAccountsCount, setConnectedAccountsCount] = useState(0);
 
   useEffect(() => {
-    fetchPosts();
-  }, [sortBy]);
+    fetchTopPosts();
+    if (user) {
+      fetchSocialConnections();
+    }
+  }, [sortBy, user]);
 
-  const fetchPosts = async () => {
+  useEffect(() => {
+    if (userSearch.trim()) {
+      searchUsers();
+    } else {
+      setSearchResults([]);
+    }
+  }, [userSearch]);
+
+  const fetchTopPosts = async () => {
     let query = supabase
-      .from('posts')
+      .from('top_posts')
       .select(`
         *,
         profiles (display_name, avatar_url)
@@ -70,241 +77,225 @@ const Feed = () => {
     if (sortBy === 'trending') {
       query = query.order('engagement_score', { ascending: false });
     } else {
-      query = query.order('created_at', { ascending: false });
+      query = query.order('posted_at', { ascending: false });
     }
 
     const { data, error } = await query;
     if (data && !error) {
-      setPosts(data as any);
+      setTopPosts(data as any);
     }
   };
 
-  const createPost = async () => {
-    if (!user || !postForm.title.trim()) {
-      toast({ title: 'Please fill in required fields', variant: 'destructive' });
-      return;
-    }
+  const searchUsers = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url')
+      .or(`display_name.ilike.%${userSearch}%`)
+      .limit(5);
 
-    const { error } = await supabase
-      .from('posts')
-      .insert({
-        user_id: user.id,
-        title: postForm.title,
-        content: postForm.content,
-        sneaker_tags: postForm.sneaker_tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        brand_tags: postForm.brand_tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        category_tags: postForm.category_tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        image_url: postForm.image_url
-      });
-
-    if (error) {
-      toast({ title: 'Error creating post', variant: 'destructive' });
-    } else {
-      toast({ title: 'Post created successfully!' });
-      setIsCreateOpen(false);
-      setPostForm({
-        title: '',
-        content: '',
-        sneaker_tags: '',
-        brand_tags: '',
-        category_tags: '',
-        image_url: ''
-      });
-      fetchPosts();
+    if (data && !error) {
+      setSearchResults(data);
     }
   };
 
-  const interactWithPost = async (postId: string, type: 'like' | 'view' | 'share') => {
+  const fetchSocialConnections = async () => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('post_interactions')
-      .upsert({
-        user_id: user.id,
-        post_id: postId,
-        interaction_type: type
-      });
+    const { data, error } = await supabase
+      .from('social_connections')
+      .select('platform, username, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
 
-    if (!error && type === 'like') {
-      toast({ title: 'Post liked!' });
+    if (data && !error) {
+      setConnectedAccountsCount(data.length);
     }
   };
 
-  const filteredPosts = posts.filter(post => {
-    if (!filterTag) return true;
-    return (
-      post.sneaker_tags?.some(tag => tag.toLowerCase().includes(filterTag.toLowerCase())) ||
-      post.brand_tags?.some(tag => tag.toLowerCase().includes(filterTag.toLowerCase())) ||
-      post.category_tags?.some(tag => tag.toLowerCase().includes(filterTag.toLowerCase()))
-    );
-  });
+  const handleLinkSocials = () => {
+    navigate('/profile', { state: { activeTab: 'socials' } });
+  };
+
+  const handleViewUserProfile = (userId: string) => {
+    navigate('/profile', { state: { viewUserId: userId } });
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    const icons = {
+      tiktok: '🎵',
+      instagram: '📷',
+      youtube: '📹',
+      x: '🐦',
+      reddit: '🔴'
+    };
+    return icons[platform as keyof typeof icons] || '📱';
+  };
 
   return (
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Your Feed</h1>
-        <div className="flex gap-4">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Most Recent</SelectItem>
-              <SelectItem value="trending">Trending</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {user && (
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Post
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Post</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Post title *"
-                    value={postForm.title}
-                    onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
-                  />
-                  <Textarea
-                    placeholder="Share your thoughts about sneakers..."
-                    value={postForm.content}
-                    onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Sneaker tags (comma separated)"
-                    value={postForm.sneaker_tags}
-                    onChange={(e) => setPostForm({ ...postForm, sneaker_tags: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Brand tags (comma separated)"
-                    value={postForm.brand_tags}
-                    onChange={(e) => setPostForm({ ...postForm, brand_tags: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Category tags (comma separated)"
-                    value={postForm.category_tags}
-                    onChange={(e) => setPostForm({ ...postForm, category_tags: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Image URL (optional)"
-                    value={postForm.image_url}
-                    onChange={(e) => setPostForm({ ...postForm, image_url: e.target.value })}
-                  />
-                  <Button onClick={createPost} className="w-full">Create Post</Button>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Top Posts</h1>
+          <div className="flex gap-4">
+            <Button
+              onClick={handleLinkSocials}
+              className={`transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg ${
+                connectedAccountsCount > 0 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-yellow-600 hover:bg-yellow-700'
+              }`}
+            >
+              {connectedAccountsCount > 0 ? (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {connectedAccountsCount} Accounts Connected
+                </>
+              ) : (
+                'Link Socials'
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* User Search */}
+        <div className="relative">
+          <div className="flex items-center gap-3">
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search for users by name..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              className="max-w-md"
+            />
+          </div>
+          {searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-lg mt-1 z-10 max-w-md ml-7">
+              {searchResults.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
+                  onClick={() => handleViewUserProfile(profile.id)}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={profile.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {profile.display_name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">
+                    {profile.display_name || 'Anonymous User'}
+                  </span>
                 </div>
-              </DialogContent>
-            </Dialog>
+              ))}
+            </div>
           )}
         </div>
-      </div>
 
-      <div className="flex gap-4 items-center">
-        <Filter className="w-4 h-4" />
-        <Input
-          placeholder="Filter by tags..."
-          value={filterTag}
-          onChange={(e) => setFilterTag(e.target.value)}
-          className="max-w-xs"
-        />
-      </div>
+        {/* Sort Toggle */}
+        <div className="flex gap-2">
+          <Button
+            variant={sortBy === 'recent' ? 'default' : 'outline'}
+            onClick={() => setSortBy('recent')}
+            size="sm"
+            className="transition-all duration-300 hover:transform hover:scale-105"
+          >
+            Most Recent
+          </Button>
+          <Button
+            variant={sortBy === 'trending' ? 'default' : 'outline'}
+            onClick={() => setSortBy('trending')}
+            size="sm"
+            className="transition-all duration-300 hover:transform hover:scale-105"
+          >
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Trending
+          </Button>
+        </div>
 
-      <div className="space-y-6">
-        {filteredPosts.map((post) => (
-          <Card key={post.id}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {post.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold">{post.profiles?.display_name || 'Anonymous'}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                <p className="text-muted-foreground">{post.content}</p>
-              </div>
-              
-              {post.image_url && (
-                <img
-                  src={post.image_url}
-                  alt={post.title}
-                  className="w-full max-h-96 object-cover rounded-lg"
-                />
-              )}
-              
-              <div className="flex flex-wrap gap-2">
-                {post.sneaker_tags?.map((tag, i) => (
-                  <Badge key={i} variant="default">{tag}</Badge>
-                ))}
-                {post.brand_tags?.map((tag, i) => (
-                  <Badge key={i} variant="secondary">{tag}</Badge>
-                ))}
-                {post.category_tags?.map((tag, i) => (
-                  <Badge key={i} variant="outline">{tag}</Badge>
-                ))}
-              </div>
-              
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="flex gap-4">
+        {/* Top Posts Feed */}
+        <div className="space-y-6">
+          {topPosts.map((post) => (
+            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{getPlatformIcon(post.platform)}</span>
+                    <div>
+                      <h3 className="font-semibold flex items-center gap-2">
+                        @{post.author_username}
+                        {post.crowlix_user_id && post.profiles && (
+                          <button
+                            onClick={() => handleViewUserProfile(post.crowlix_user_id!)}
+                            className="text-yellow-500 hover:text-yellow-400 text-sm"
+                          >
+                            ({post.profiles.display_name || 'Crowlix User'})
+                          </button>
+                        )}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(post.posted_at).toLocaleDateString()} • {post.platform}
+                      </p>
+                    </div>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => interactWithPost(post.id, 'like')}
-                    disabled={!user}
+                    onClick={() => window.open(post.original_url, '_blank')}
+                    className="transition-all duration-300 hover:transform hover:scale-105"
                   >
-                    <Heart className="w-4 h-4 mr-2" />
-                    Like
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => interactWithPost(post.id, 'share')}
-                    disabled={!user}
-                  >
-                    <Share className="w-4 h-4 mr-2" />
-                    Share
+                    <ExternalLink className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <TrendingUp className="w-4 h-4" />
-                  {post.engagement_score} interactions
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {post.title && (
+                  <h2 className="text-xl font-bold">{post.title}</h2>
+                )}
+                {post.description && (
+                  <p className="text-muted-foreground">{post.description}</p>
+                )}
+                
+                {(post.thumbnail_url || post.video_url) && (
+                  <div className="relative rounded-lg overflow-hidden">
+                    <img
+                      src={post.thumbnail_url || post.video_url || ''}
+                      alt={post.title || 'Post media'}
+                      className="w-full max-h-96 object-cover"
+                    />
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex gap-6 text-sm text-muted-foreground">
+                    <span>👀 {post.view_count.toLocaleString()}</span>
+                    <span>❤️ {post.like_count.toLocaleString()}</span>
+                    <span>💬 {post.comment_count.toLocaleString()}</span>
+                    <span>📤 {post.share_count.toLocaleString()}</span>
+                  </div>
+                  {post.credits_earned > 0 && (
+                    <div className="flex items-center gap-2 text-yellow-500 font-semibold">
+                      <span>🪙 {post.credits_earned} credits earned</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        
-        {filteredPosts.length === 0 && (
-          <Card className="bg-[#0a0a0a] border-[#FFD700]">
-            <CardContent className="text-center py-12">
-              <p className="text-muted-foreground">
-                {filterTag ? 'No posts found with that filter.' : 'No posts yet. Be the first to create one!'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {topPosts.length === 0 && (
+            <Card className="bg-[#0a0a0a] border-[#FFD700]">
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No posts yet. Be the first to create one!
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
     </div>
     </div>
   );
 };
 
-export default Feed;
+export default TopPosts;

@@ -14,7 +14,7 @@ const Index = () => {
   const [showParticles, setShowParticles] = useState(false);
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalWasClosed, setAuthModalWasClosed] = useState(false);
+  
 
   useEffect(() => {
     // Faster initial sequence - max 1.5-2 seconds total
@@ -72,7 +72,7 @@ const Index = () => {
       {/* Auth Modal */}
       <AuthModal open={showAuthModal} onOpenChange={(open) => {
         setShowAuthModal(open);
-        if (!open) setAuthModalWasClosed(true);
+        
       }} />
       {/* Background Animation */}
       {(appState === 'floating' || appState === 'cta') && (

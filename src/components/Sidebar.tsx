@@ -19,7 +19,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const links = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
-    { label: 'Your Feed', href: '/feed', icon: TrendingUp },
+    { label: 'Top Posts', href: '/feed', icon: TrendingUp },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Socials', href: '/contact', icon: Smartphone },
   ];
@@ -201,15 +201,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
               to={user ? "/profile" : "/signin"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
             >
-              {user && user.avatar_url ? (
-                <img
-                  src={user.avatar_url}
-                  alt="Profile"
-                  className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                />
-              ) : (
-                <User className="w-5 h-5 text-primary flex-shrink-0" />
-              )}
+              <User className="w-5 h-5 text-primary flex-shrink-0" />
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'

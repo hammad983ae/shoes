@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -600,22 +601,12 @@ const Profile = () => {
       <Dialog open={isSocialsOpen} onOpenChange={setIsSocialsOpen}>
         <DialogContent className="bg-gray-900 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Social Stats</DialogTitle>
+            <DialogTitle className="text-white">Social Connections</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">{posts.length}</div>
-                <div className="text-gray-400">Posts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">1.2K</div>
-                <div className="text-gray-400">Followers</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">845</div>
-                <div className="text-gray-400">Following</div>
-              </div>
+            <div className="text-center py-8">
+              <p className="text-gray-400 mb-4">Connect your social accounts to earn credits when you tag @CrowlixSells!</p>
+              <p className="text-gray-500 text-sm">Feature coming soon...</p>
             </div>
           </div>
         </DialogContent>
