@@ -187,29 +187,25 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
             </Button>
           </div>
 
-          {/* RIGHT: Scrollable content with custom scrollbar */}
+          {/* RIGHT: Scrollable content */}
           <div
-            className="flex flex-col p-8 h-full overflow-y-scroll"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#FFD600 transparent',
-            }}
+            className="flex flex-col p-8 h-full overflow-y-auto custom-scroll"
           >
-            {/* WebKit Scrollbar Styling */}
+            {/* Inject custom scrollbar styling */}
             <style>{`
               .custom-scroll::-webkit-scrollbar {
                 width: 8px;
-              }
-              .custom-scroll::-webkit-scrollbar-track {
-                background: transparent;
               }
               .custom-scroll::-webkit-scrollbar-thumb {
                 background-color: #FFD600;
                 border-radius: 4px;
               }
+              .custom-scroll::-webkit-scrollbar-track {
+                background: transparent;
+              }
             `}</style>
 
-            <div className="custom-scroll space-y-6">
+            <div className="space-y-6">
               {/* Product Info */}
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
@@ -250,7 +246,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 </span>
               </div>
 
-              {/* Size */}
+              {/* Size Selector */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Size</label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
