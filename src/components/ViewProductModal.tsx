@@ -195,7 +195,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               scrollbarColor: '#FFD600 transparent',
             }}
           >
-            {/* Ensure custom scrollbars in WebKit browsers */}
+            {/* WebKit Scrollbar Styling */}
             <style>{`
               .custom-scroll::-webkit-scrollbar {
                 width: 8px;
@@ -210,41 +210,47 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
             `}</style>
 
             <div className="custom-scroll space-y-6">
-              <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
-              <div className="flex items-center gap-2 mb-2">
-                {reviews.length === 0 ? (
-                  <span className="text-gray-400 text-sm">No reviews yet</span>
-                ) : (
-                  <>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < Math.round(
-                              reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                            )
-                              ? 'fill-[#FFD600] text-[#FFD600]'
-                              : 'text-gray-500'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-300">
-                      {(
-                        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                      ).toFixed(1)}{' '}
-                      ({reviews.length})
-                    </span>
-                  </>
-                )}
+              {/* Product Info */}
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
+                <div className="flex items-center gap-2 mb-2">
+                  {reviews.length === 0 ? (
+                    <span className="text-gray-400 text-sm">No reviews yet</span>
+                  ) : (
+                    <>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i <
+                              Math.round(
+                                reviews.reduce((sum, r) => sum + r.rating, 0) /
+                                  reviews.length
+                              )
+                                ? 'fill-[#FFD600] text-[#FFD600]'
+                                : 'text-gray-500'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-300">
+                        {(
+                          reviews.reduce((sum, r) => sum + r.rating, 0) /
+                          reviews.length
+                        ).toFixed(1)}{' '}
+                        ({reviews.length})
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
+                <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">
+                  {sneaker.category}
+                </span>
               </div>
-              <p className="text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
-              <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">
-                {sneaker.category}
-              </span>
 
-              {/* Size buttons */}
+              {/* Size */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Size</label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -337,7 +343,9 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   </div>
                 )}
                 {reviews.length === 0 ? (
-                  <p className="text-gray-400 text-sm">No reviews yet. Be the first to review!</p>
+                  <p className="text-gray-400 text-sm">
+                    No reviews yet. Be the first to review!
+                  </p>
                 ) : (
                   reviews.map((r) => (
                     <div
