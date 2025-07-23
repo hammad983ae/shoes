@@ -383,4 +383,4 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       onComplete={() => setIsAnimating(false)}
     />
   </>
-);
+)}
