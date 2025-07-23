@@ -205,35 +205,59 @@ const ViewProductModal = ({ isOpen, onClose, sneaker }: ViewProductModalProps) =
     finally{setReviewSubmitting(false);}
   };
 
-  // Parallax animation
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  useEffect(()=>{
-    const container=imageContainerRef.current;
-    const img=imageRef.current;
-    if(!container||!img)return;
-    let frame:number|null=null;
-    let targetX=0,targetY=0,currentX=0,currentY=0;
-    const maxMove=18,ease=0.12;
-    function animate(){
-      currentX+=(targetX-currentX)*ease;
-      currentY+=(targetY-currentY)*ease;
-      img.style.transform=`translate3d(${currentX}px,${currentY}px,0)`;
-      frame=requestAnimationFrame(animate);
-    }
-    function onMouseMove(e:MouseEvent){
-      const rect=container.getBoundingClientRect();
-      const x=(e.clientX-rect.left)/rect.width;
-      const y=(e.clientY-rect.top)/rect.height;
-      targetX=(0.5-x)*maxMove;
-      targetY=(0.5-y)*maxMove;
-    }
-    function onMouseLeave(){targetX=0;targetY=0;}
-    container.addEventListener('mousemove',onMouseMove);
-    container.addEventListener('mouseleave',onMouseLeave);
-    frame=requestAnimationFrame(animate);
-    return ()=>{container.removeEventListener('mousemove',onMouseMove);container.removeEventListener('mouseleave',onMouseLeave);if(frame)cancelAnimationFrame(frame);img.style.transform='';};
-  },[isOpen]);
+// Parallax animation
+const imageContainerRef = useRef<HTMLDivElement>(null);
+const imageRef = useRef<HTMLImageElement>(null);
+
+useEffect(() => {
+  const container = imageContainerRef.current;
+  const img = imageRef.current;
+
+  // ✅ If refs are not ready, just return a valid cleanup function
+  if (!container || !img) {
+    return () => {};
+  }
+
+  let frame: number | null = null;
+  let targetX = 0,
+    targetY = 0,
+    currentX = 0,
+    currentY = 0;
+  const maxMove = 18,
+    ease = 0.12;
+
+  function animate() {
+    currentX += (targetX - currentX) * ease;
+    currentY += (targetY - currentY) * ease;
+    img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    frame = requestAnimationFrame(animate);
+  }
+
+  function onMouseMove(e: MouseEvent) {
+    const rect = container.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    targetX = (0.5 - x) * maxMove;
+    targetY = (0.5 - y) * maxMove;
+  }
+
+  function onMouseLeave() {
+    targetX = 0;
+    targetY = 0;
+  }
+
+  container.addEventListener("mousemove", onMouseMove);
+  container.addEventListener("mouseleave", onMouseLeave);
+  frame = requestAnimationFrame(animate);
+
+  // ✅ Cleanup
+  return () => {
+    container.removeEventListener("mousemove", onMouseMove);
+    container.removeEventListener("mouseleave", onMouseLeave);
+    if (frame) cancelAnimationFrame(frame);
+    if (img) img.style.transform = "";
+  };
+}, [isOpen]);
 
   return (
     <>
