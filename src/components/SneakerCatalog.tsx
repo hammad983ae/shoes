@@ -153,7 +153,6 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
           sneaker={selectedProduct}
-          allSneakers={sneakerCatalog}
         />
       )}
     </div>
