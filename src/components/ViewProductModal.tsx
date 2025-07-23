@@ -84,12 +84,12 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       return;
     }
     const postIds = linkData.map((p) => p.post_id);
-    const { data: postsData, error: postsErr } = await supabase
+    const { data: postsData } = await supabase
       .from('top_posts')
       .select('id,title,thumbnail_url,author_username,posted_at')
       .in('id', postIds)
       .order('posted_at', { ascending: false });
-    if (!postsErr && postsData) {
+    if (postsData) {
       setPostsWithProduct(
         postsData.map((p: any) => ({
           id: p.id,
@@ -104,13 +104,13 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
 
   async function checkPurchaseHistory() {
     if (!user) return;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('purchase_history')
       .select('id')
       .eq('user_id', user.id)
       .eq('product_id', sneaker.id.toString())
       .maybeSingle();
-    if (!error && data) setHasPurchased(true);
+    if (data) setHasPurchased(true);
   }
 
   function handleAddToCart() {
@@ -176,7 +176,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               </Button>
             </div>
 
-            {/* RIGHT PANEL */}
+            {/* RIGHT PANEL WITH SCROLLBAR */}
             <div className="flex flex-col p-8 h-full overflow-y-auto custom-scroll">
               <style>{`
                 .custom-scroll::-webkit-scrollbar { width: 8px; }
@@ -184,7 +184,8 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
               `}</style>
 
-              <div className="space-y-6">
+              <div className="space-y-6 pb-10">
+                {/* Product Info */}
                 <div>
                   <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
                   <div className="flex items-center gap-2 mb-2">
@@ -210,7 +211,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">{sneaker.category}</span>
                 </div>
 
-                {/* Sizes */}
+                {/* Size Selector */}
                 <div>
                   <label className="text-sm font-medium text-white mb-3 block">Size</label>
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -261,7 +262,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   </Button>
                 </div>
 
-                {/* Posts */}
+                {/* Posts Featuring This Item */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4">Posts Featuring This Item</h3>
                   {postsWithProduct.length === 0 ? (
