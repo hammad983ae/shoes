@@ -144,53 +144,72 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
   };
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent
-          className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden"
-          hideClose
+  <>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden"
+        hideClose
+      >
+        <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
+
+        {/* Close Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background text-white"
         >
-          <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
+          <X className="w-5 h-5" />
+        </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background text-white"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-            {/* LEFT IMAGE */}
-            <div className="relative bg-black flex items-center justify-center p-4 h-full overflow-hidden">
-              <img
-                src={sneaker.image}
-                alt={sneaker.name}
-                className="w-full h-full object-contain select-none pointer-events-none"
-                draggable={false}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 left-4 bg-background/80 hover:bg-background"
-                onClick={() => toggleFavorite(sneaker.id)}
-              >
-                <Heart
-                  className={`w-5 h-5 ${
-                    isFavorite(sneaker.id)
-                      ? 'fill-red-500 text-red-500'
-                      : 'text-muted-foreground'
-                  }`}
-                />
-              </Button>
-            </div>
-
-            {/* RIGHT CONTENT */}
-            <div
-              className="flex flex-col p-8 h-full overflow-y-auto"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#FFD600 #1a1a1a' }}
+        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+          {/* LEFT: Product Image fills entire area */}
+          <div className="relative bg-black flex items-center justify-center h-full overflow-hidden">
+            <img
+              src={sneaker.image}
+              alt={sneaker.name}
+              className="w-full h-full object-cover select-none pointer-events-none"
+              draggable={false}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 left-4 bg-background/80 hover:bg-background"
+              onClick={() => toggleFavorite(sneaker.id)}
             >
+              <Heart
+                className={`w-5 h-5 ${
+                  isFavorite(sneaker.id)
+                    ? 'fill-red-500 text-red-500'
+                    : 'text-muted-foreground'
+                }`}
+              />
+            </Button>
+          </div>
+
+          {/* RIGHT: Scrollable content with custom scrollbar */}
+          <div
+            className="flex flex-col p-8 h-full overflow-y-scroll"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#FFD600 transparent',
+            }}
+          >
+            {/* Ensure custom scrollbars in WebKit browsers */}
+            <style>{`
+              .custom-scroll::-webkit-scrollbar {
+                width: 8px;
+              }
+              .custom-scroll::-webkit-scrollbar-track {
+                background: transparent;
+              }
+              .custom-scroll::-webkit-scrollbar-thumb {
+                background-color: #FFD600;
+                border-radius: 4px;
+              }
+            `}</style>
+
+            <div className="custom-scroll space-y-6">
               <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
               <div className="flex items-center gap-2 mb-2">
                 {reviews.length === 0 ? (
@@ -202,7 +221,9 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                         <Star
                           key={i}
                           className={`w-4 h-4 ${
-                            i < Math.round(getAverageRating())
+                            i < Math.round(
+                              reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                            )
                               ? 'fill-[#FFD600] text-[#FFD600]'
                               : 'text-gray-500'
                           }`}
@@ -210,7 +231,10 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                       ))}
                     </div>
                     <span className="text-sm text-gray-300">
-                      {getAverageRating().toFixed(1)} ({reviews.length})
+                      {(
+                        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                      ).toFixed(1)}{' '}
+                      ({reviews.length})
                     </span>
                   </>
                 )}
@@ -220,7 +244,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 {sneaker.category}
               </span>
 
-              {/* SIZES */}
+              {/* Size buttons */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Size</label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -237,7 +261,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 </div>
               </div>
 
-              {/* QUANTITY */}
+              {/* Quantity */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Quantity</label>
                 <Select value={quantity} onValueChange={setQuantity}>
@@ -245,7 +269,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {quantities.map((q) => (
+                    {['1', '2', '3', '4', '5'].map((q) => (
                       <SelectItem key={q} value={q}>
                         {q}
                       </SelectItem>
@@ -254,7 +278,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 </Select>
               </div>
 
-              {/* BUTTONS */}
+              {/* Buttons */}
               <div className="flex gap-4 mt-6">
                 <Button
                   onClick={handleAddToCart}
@@ -273,7 +297,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 </Button>
               </div>
 
-              {/* POSTS SECTION */}
+              {/* Posts Featuring This Item */}
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Posts Featuring This Item</h3>
                 {postsWithProduct.length === 0 ? (
@@ -302,7 +326,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 )}
               </div>
 
-              {/* REVIEWS */}
+              {/* Reviews */}
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Reviews</h3>
                 {!hasPurchased && (
@@ -344,15 +368,15 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DialogContent>
+    </Dialog>
 
-      <CartAnimation
-        isAnimating={isAnimating}
-        startPosition={{ x: window.innerWidth / 2, y: window.innerHeight / 2 }}
-        endPosition={{ x: 64, y: 64 }}
-        onComplete={() => setIsAnimating(false)}
-      />
-    </>
-  );
-}
+    <CartAnimation
+      isAnimating={isAnimating}
+      startPosition={{ x: window.innerWidth / 2, y: window.innerHeight / 2 }}
+      endPosition={{ x: 64, y: 64 }}
+      onComplete={() => setIsAnimating(false)}
+    />
+  </>
+);
