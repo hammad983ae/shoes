@@ -25,7 +25,6 @@ import {
   MessageSquare,
   Instagram,
   Youtube,
-  Twitter,
   Check,
   ArrowLeft,
   Upload,
@@ -105,8 +104,6 @@ const socialPlatforms = [
   { name: 'TikTok', icon: Video, platform: 'tiktok' },
   { name: 'Instagram', icon: Instagram, platform: 'instagram' },
   { name: 'YouTube', icon: Youtube, platform: 'youtube' },
-  { name: 'X (Twitter)', icon: Twitter, platform: 'x' },
-  { name: 'Reddit', icon: MessageSquare, platform: 'reddit' },
 ];
 
 const Profile = () => {
@@ -164,6 +161,14 @@ const Profile = () => {
   useEffect(() => {
     if (user) fetchUserData();
   }, [user]);
+
+  // Handle navigation state for auto-opening socials modal
+  useEffect(() => {
+    const openSocialsModal = window.history.state?.usr?.openSocialsModal;
+    if (openSocialsModal) {
+      setIsSocialsOpen(true);
+    }
+  }, []);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -386,38 +391,10 @@ const Profile = () => {
   };
 
   const connectSocialPlatform = async (platform: string) => {
-    if (platform === 'Instagram') {
-      try {
-        const { facebookLogin } = await import('@/utils/facebookLogin');
-        const auth = await facebookLogin();
-        console.log('✅ Instagram/Facebook login success:', auth);
-        // TODO: Send auth.accessToken and auth.userID to Supabase to store as linked account
-        // Example:
-        // await supabase.from('social_connections').insert({
-        //   user_id: user?.id,
-        //   platform: 'instagram',
-        //   platform_user_id: auth.userID,
-        //   access_token: auth.accessToken,
-        //   username: 'temp_username' // Get from FB Graph API
-        // });
-        toast({ 
-          title: 'Success!', 
-          description: 'Instagram account connected successfully!' 
-        });
-      } catch (err) {
-        console.error('❌ Login error:', err);
-        toast({ 
-          title: 'Connection Failed', 
-          description: 'Failed to connect Instagram account. Please try again.',
-          variant: 'destructive'
-        });
-      }
-    } else {
-      toast({ 
-        title: 'Coming Soon', 
-        description: `${platform} connection will be available soon!` 
-      });
-    }
+    toast({ 
+      title: 'Coming Soon', 
+      description: `${platform} connection will be available soon!` 
+    });
   };
 
   const isPlatformConnected = (platform: string) => {
@@ -516,13 +493,12 @@ const Profile = () => {
               {/* Bottom Bar */}
               <div className="flex justify-between items-center pt-4 border-t border-gray-700">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setIsTransactionHistoryOpen(true)}
-                  className="text-gray-400 hover:text-white btn-hover-glow"
+                  variant="outline"
+                  className="flex-1 border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
                 >
-                  <History className="w-4 h-4 mr-1" />
-                  <span className="text-xs">History</span>
+                  <History className="w-4 h-4 mb-1" />
+                  <span className="text-xs">Transaction History</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -726,19 +702,6 @@ const Profile = () => {
                   );
                 })}
                 
-                {/* View Post Analytics Button at bottom of socials modal */}
-                <div className="pt-4 border-t border-gray-700">
-                  <Button
-                    onClick={() => {
-                      setIsSocialsOpen(false);
-                      setIsAnalyticsOpen(true);
-                    }}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl"
-                  >
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    View Post Analytics
-                  </Button>
-                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -944,7 +907,7 @@ const Profile = () => {
       </div>
 
       {/* Documentation Section - Fixed at bottom */}
-      <div className="bg-background/80 backdrop-blur-sm border-t border-border py-4 px-6">
+      <div className="py-4 px-6">
         <div className="max-w-md mx-auto text-center">
           <h4 className="text-foreground text-sm font-medium mb-3">Documentation</h4>
           <div className="flex justify-center gap-3">
@@ -952,7 +915,7 @@ const Profile = () => {
               variant="outline"
               size="sm"
               onClick={() => window.open('/privacy', '_blank')}
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-3 py-1"
+              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-2 py-1 h-7"
             >
               Privacy Policy
             </Button>
@@ -960,7 +923,7 @@ const Profile = () => {
               variant="outline"
               size="sm"
               onClick={() => window.open('/terms', '_blank')}
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-3 py-1"
+              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-2 py-1 h-7"
             >
               Terms of Service
             </Button>

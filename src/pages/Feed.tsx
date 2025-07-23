@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Search, TrendingUp, CheckCircle, ExternalLink, Plus, Upload, Link } from 'lucide-react';
+import { Search, TrendingUp, ExternalLink, Plus, Upload, Link } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -57,11 +57,11 @@ const TopPosts = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [userSearch, setUserSearch] = useState('');
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-  const [connectedAccountsCount, setConnectedAccountsCount] = useState(0);
+  
   
   // Create Post Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createStep, setCreateStep] = useState<'upload' | 'product' | 'settings'>('upload');
+  const [createStep, setCreateStep] = useState<'upload' | 'settings'>('upload');
   const [uploadMethod, setUploadMethod] = useState<'file' | 'link'>('file');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [socialLink, setSocialLink] = useState('');
@@ -74,7 +74,6 @@ const TopPosts = () => {
   useEffect(() => {
     fetchTopPosts();
     if (user) {
-      fetchSocialConnections();
       fetchPurchasedProducts();
     }
   }, [sortBy, user]);
@@ -128,19 +127,6 @@ const TopPosts = () => {
     }
   };
 
-  const fetchSocialConnections = async () => {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('social_connections')
-      .select('platform, username, is_active')
-      .eq('user_id', user.id)
-      .eq('is_active', true);
-
-    if (data && !error) {
-      setConnectedAccountsCount(data.length);
-    }
-  };
 
   const fetchPurchasedProducts = async () => {
     if (!user) return;
@@ -164,7 +150,7 @@ const TopPosts = () => {
   };
 
   const handleLinkSocials = () => {
-    navigate('/profile', { state: { activeTab: 'socials' } });
+    navigate('/profile', { state: { openSocialsModal: true } });
   };
 
   const handleCreatePost = () => {
@@ -198,8 +184,6 @@ const TopPosts = () => {
         });
         return;
       }
-      setCreateStep('product');
-    } else if (createStep === 'product') {
       setCreateStep('settings');
     }
   };
@@ -305,20 +289,11 @@ const TopPosts = () => {
             </Button>
             <Button
               onClick={handleLinkSocials}
-              className={`transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg ${
-                connectedAccountsCount > 0 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-yellow-600 hover:bg-yellow-700'
-              }`}
+              variant="outline"
+              className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg border-[#FFD600] text-[#FFD600] bg-transparent hover:bg-[#FFD600]/10"
             >
-              {connectedAccountsCount > 0 ? (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {connectedAccountsCount} Accounts Connected
-                </>
-              ) : (
-                'Link Socials'
-              )}
+              <Link className="w-4 h-4 mr-2" />
+              Link Socials
             </Button>
           </div>
         </div>
@@ -520,16 +495,7 @@ const TopPosts = () => {
                 </div>
               )}
 
-              <div className="flex justify-end">
-                <Button onClick={handleNextStep} className="bg-[#FFD600] text-black hover:bg-[#E6C200]">
-                  Next: Choose Product
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {createStep === 'product' && (
-            <div className="space-y-6">
+              {/* Product Selection on Same Page */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Choose Product (Optional)</h3>
                 <p className="text-sm text-gray-400 mb-4">
@@ -550,12 +516,9 @@ const TopPosts = () => {
                 </Select>
               </div>
 
-              <div className="flex gap-4">
-                <Button variant="outline" onClick={() => setCreateStep('upload')} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={handleNextStep} className="flex-1 bg-[#FFD600] text-black hover:bg-[#E6C200]">
-                  Next: Settings
+              <div className="flex justify-end">
+                <Button onClick={handleNextStep} className="bg-[#FFD600] text-black hover:bg-[#E6C200]">
+                  Continue
                 </Button>
               </div>
             </div>
@@ -565,6 +528,30 @@ const TopPosts = () => {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Post Settings</h3>
+                
+                {/* Image vs Video Handling */}
+                {uploadMethod === 'file' && uploadedFile && uploadedFile.type.startsWith('video/') && (
+                  <div className="mb-4">
+                    <label className="text-sm text-white mb-2 block">Upload Post Thumbnail (Optional)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#FFD600] file:text-black hover:file:bg-[#E6C200] w-full"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      If no thumbnail is uploaded, the first frame of the video will be used with a video icon overlay.
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm text-white mb-2 block">Description</label>
+                  <textarea
+                    placeholder="Write a description for your post..."
+                    className="w-full p-3 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 resize-none"
+                    rows={3}
+                  />
+                </div>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded border border-gray-600">
@@ -592,11 +579,17 @@ const TopPosts = () => {
                       className="w-4 h-4 text-[#FFD600] bg-gray-700 border-gray-600 rounded focus:ring-[#FFD600]"
                     />
                   </div>
+
+                  {/* Placeholder Privacy Settings */}
+                  <div className="p-3 bg-gray-800/30 rounded border border-gray-600/50">
+                    <h4 className="text-sm font-medium text-white mb-2">Privacy Settings</h4>
+                    <p className="text-xs text-gray-500">Additional privacy options coming soon...</p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <Button variant="outline" onClick={() => setCreateStep('product')} className="flex-1">
+                <Button variant="outline" onClick={() => setCreateStep('upload')} className="flex-1">
                   Back
                 </Button>
                 <Button 
@@ -609,6 +602,7 @@ const TopPosts = () => {
               </div>
             </div>
           )}
+
         </DialogContent>
       </Dialog>
     </div>
