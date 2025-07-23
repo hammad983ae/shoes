@@ -71,10 +71,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link.",
-        });
+        if (referralCode) {
+          // Show referral discount notification for referred users
+          toast({
+            title: "Welcome! 🎉",
+            description: "You'll get 10% off your first order thanks to your referral link!",
+          });
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link.",
+          });
+        }
       }
 
       return { error };

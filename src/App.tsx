@@ -17,6 +17,7 @@ import Feed from "./pages/Feed";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import SneakerCatalog from "./components/SneakerCatalog";
+import { ReferralDiscountNotification } from "./components/ReferralDiscountNotification";
 
 const App = () => (
   <AuthProvider>
@@ -42,6 +43,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <ReferralDiscountNotification />
             </Layout>
           </BrowserRouter>
         </TooltipProvider>

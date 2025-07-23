@@ -494,20 +494,19 @@ const Profile = () => {
               <div className="flex justify-between items-center pt-4 border-t border-gray-700">
                 <Button
                   onClick={() => setIsTransactionHistoryOpen(true)}
-                  variant="outline"
-                  className="flex-1 border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
+                  variant="ghost"
+                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200"
                 >
-                  <History className="w-4 h-4 mb-1" />
-                  <span className="text-xs">Transaction History</span>
+                  <History className="w-4 h-4 mr-2" />
+                  Transaction History
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setIsSettingsOpen(true)}
-                  className="text-gray-400 hover:text-white btn-hover-glow"
+                  variant="ghost"
+                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200"
                 >
-                  <Settings className="w-4 h-4 mr-1" />
-                  <span className="text-xs">Settings</span>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
                 </Button>
               </div>
             </div>
@@ -909,21 +908,30 @@ const Profile = () => {
       {/* Documentation Section - Fixed at bottom */}
       <div className="py-4 px-6">
         <div className="max-w-md mx-auto text-center">
-          <h4 className="text-foreground text-sm font-medium mb-3">Documentation</h4>
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-4">
             <Button
-              variant="outline"
+              variant="link"
               size="sm"
+              className="text-gray-400 hover:text-yellow-500"
+              onClick={() => window.open('/docs', '_blank')}
+            >
+              Documentation
+            </Button>
+            <span className="text-gray-600">|</span>
+            <Button
+              variant="link"
+              size="sm"
+              className="text-gray-400 hover:text-yellow-500"
               onClick={() => window.open('/privacy', '_blank')}
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-2 py-1 h-7"
             >
               Privacy Policy
             </Button>
+            <span className="text-gray-600">|</span>
             <Button
-              variant="outline"
+              variant="link"
               size="sm"
+              className="text-gray-400 hover:text-yellow-500"
               onClick={() => window.open('/terms', '_blank')}
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs px-2 py-1 h-7"
             >
               Terms of Service
             </Button>

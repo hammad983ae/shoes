@@ -506,7 +506,7 @@ const TopPosts = () => {
                     <SelectValue placeholder="Choose a product or select 'No product'" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No product</SelectItem>
+                    <SelectItem value="no-product">No product</SelectItem>
                     {purchasedProducts.map((product) => (
                       <SelectItem key={product.product_id} value={product.product_id}>
                         {product.product_name}
