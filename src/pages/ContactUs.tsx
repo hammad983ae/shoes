@@ -29,7 +29,7 @@ const ContactUs = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <a 
-                href="https://instagram.com"
+                href="https://www.instagram.com/cralluxsells/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
@@ -37,7 +37,7 @@ const ContactUs = () => {
                 <Instagram className="w-6 h-6 text-pink-500" />
                 <div>
                   <p className="font-semibold">Instagram</p>
-                  <p className="text-sm text-muted-foreground">@crallux_sneakers</p>
+                  <p className="text-sm text-muted-foreground">@cralluxsells</p>
                 </div>
               </a>
 
@@ -94,7 +94,7 @@ const ContactUs = () => {
                   <Mail className="w-6 h-6 text-primary" />
                   <div>
                     <p className="font-semibold">Email:</p>
-                    <p className="text-sm text-muted-foreground">hello@crallux.com</p>
+                    <p className="text-sm text-muted-foreground">doppelsells@gmail.com</p>
                   </div>
                 </div>
               </CardContent>
