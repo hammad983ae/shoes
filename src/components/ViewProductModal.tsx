@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, X, Star } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import CartAnimation from './CartAnimation';
 
@@ -33,7 +32,9 @@ interface Review {
   review_text: string | null;
   review_images: string[] | null;
   created_at: string;
-  profiles?: { display_name: string | null } | null;
+  profiles?: {
+    display_name: string | null;
+  } | null;
 }
 
 interface PostWithProduct {
@@ -54,18 +55,20 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
   const [isAnimating, setIsAnimating] = useState(false);
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
-  const { user } = useAuth();
 
   const sizes = ['6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','12.5','13'];
   const quantities = ['1','2','3','4','5'];
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [postsWithProduct, setPostsWithProduct] = useState<PostWithProduct[]>([]);
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       loadReviews();
       loadPosts();
+      // fake purchase check, replace with real purchase check
+      setHasPurchased(false);
     }
   }, [isOpen, sneaker.id]);
 
@@ -85,14 +88,14 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       .eq('product_id', sneaker.id.toString())
       .limit(4);
     if (rel && rel.length > 0) {
-      const ids = rel.map(r => r.post_id);
+      const ids = rel.map((r) => r.post_id);
       const { data: posts } = await supabase
         .from('top_posts')
         .select('id,title,description,thumbnail_url,video_url,author_username,platform,original_url,posted_at')
         .in('id', ids)
         .order('posted_at', { ascending: false });
       if (posts) {
-        setPostsWithProduct(posts.map(p => ({ ...p, created_at: p.posted_at })));
+        setPostsWithProduct(posts.map((p) => ({ ...p, created_at: p.posted_at })));
       }
     }
   }
@@ -258,7 +261,10 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   <h3 className="text-lg font-semibold text-white mb-4">Posts Featuring This Item</h3>
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {postsWithProduct.map((post) => (
-                      <div key={post.id} className="relative bg-gray-900/40 rounded-lg p-3 border border-gray-700 hover:border-[#FFD600]/50 transition-colors">
+                      <div
+                        key={post.id}
+                        className="relative bg-gray-900/40 rounded-lg p-3 border border-gray-700 hover:border-[#FFD600]/50 transition-colors"
+                      >
                         {(post.thumbnail_url || post.video_url) && (
                           <img
                             src={post.thumbnail_url || post.video_url || ''}
@@ -287,11 +293,21 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               {/* REVIEWS */}
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Reviews</h3>
+                {!hasPurchased && (
+                  <div className="bg-yellow-900/20 border border-yellow-600/30 rounded p-3 mb-3">
+                    <p className="text-yellow-400 text-sm">
+                      You must purchase this product to submit a review.
+                    </p>
+                  </div>
+                )}
                 {reviews.length === 0 && (
                   <div className="text-gray-400 text-sm">No reviews yet. Be the first!</div>
                 )}
                 {reviews.map((rev) => (
-                  <div key={rev.id} className="border-l-2 border-[#FFD600]/20 pl-4 bg-gray-900/30 p-3 rounded mb-3">
+                  <div
+                    key={rev.id}
+                    className="border-l-2 border-[#FFD600]/20 pl-4 bg-gray-900/30 p-3 rounded mb-3"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-sm text-white">
                         {rev.profiles?.display_name || 'Anonymous'}
@@ -300,7 +316,9 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-3 h-3 ${i < rev.rating ? 'fill-[#FFD600] text-[#FFD600]' : 'text-gray-500'}`}
+                            className={`w-3 h-3 ${
+                              i < rev.rating ? 'fill-[#FFD600] text-[#FFD600]' : 'text-gray-500'
+                            }`}
                           />
                         ))}
                       </div>
