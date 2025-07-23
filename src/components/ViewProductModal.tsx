@@ -384,4 +384,3 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
     />
   </>
 );
-}
