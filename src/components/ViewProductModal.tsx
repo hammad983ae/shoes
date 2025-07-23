@@ -266,12 +266,11 @@ useEffect(() => {
   };
 }, [isOpen]);
 
-
 return (
   <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm"
+        className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm flex flex-col"
         hideClose
       >
         <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
@@ -286,17 +285,18 @@ return (
           <X className="w-5 h-5" />
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-          {/* Left Side Image */}
+        {/* Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 flex-1 min-h-0">
+          {/* Left side - Image */}
           <div
             ref={imageContainerRef}
-            className="relative bg-black/20 flex items-center justify-center h-full w-full overflow-hidden"
+            className="relative bg-black/20 flex items-center justify-center p-4 min-h-0"
           >
             <img
               ref={imageRef}
               src={sneaker.image}
               alt={sneaker.name}
-              className="w-full h-full object-contain transition-transform duration-300 select-none pointer-events-none"
+              className="max-h-full max-w-full object-contain select-none pointer-events-none"
               draggable={false}
             />
             <Button
@@ -315,16 +315,13 @@ return (
             </Button>
           </div>
 
-          {/* Right Side Scrollable Content */}
+          {/* Right side - Scrollable */}
           <div
-            className="flex flex-col p-8 overflow-y-auto h-full"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#FFD600 #1a1a1a',
-            }}
+            className="flex flex-col p-8 overflow-y-auto min-h-0"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: '#FFD600 #1a1a1a' }}
           >
-            {/* Product Info */}
             <div className="space-y-6">
+              {/* Product info */}
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">
                   {sneaker.name}
@@ -359,6 +356,14 @@ return (
                   {sneaker.category}
                 </span>
               </div>
+              {/* … keep your rest of content here … */}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
+);
 
 
                 {/* Sizes */}
