@@ -7,8 +7,6 @@ import { useCart } from '@/contexts/CartContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import CartAnimation from './CartAnimation';
 
 interface Sneaker {
@@ -35,9 +33,7 @@ interface Review {
   review_text: string | null;
   review_images: string[] | null;
   created_at: string;
-  profiles?: {
-    display_name: string | null;
-  } | null;
+  profiles?: { display_name: string | null } | null;
 }
 
 interface PostWithProduct {
@@ -52,105 +48,53 @@ interface PostWithProduct {
   created_at: string;
 }
 
-export default function ViewProductModal({
-  isOpen,
-  onClose,
-  sneaker,
-}: ViewProductModalProps) {
+export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProductModalProps) {
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [isAnimating, setIsAnimating] = useState(false);
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const sizes = ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
-  const quantities = ['1', '2', '3', '4', '5'];
+  const sizes = ['6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','12.5','13'];
+  const quantities = ['1','2','3','4','5'];
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [reviewImages, setReviewImages] = useState<File[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [hasPurchased, setHasPurchased] = useState(false);
   const [postsWithProduct, setPostsWithProduct] = useState<PostWithProduct[]>([]);
-
-  // image refs
-  const imageContainerRef = useRef<HTMLDivElement | null>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       loadReviews();
-      loadPostsWithProduct();
-      if (user) checkPurchaseHistory();
+      loadPosts();
     }
-  }, [isOpen, sneaker.id, user]);
+  }, [isOpen, sneaker.id]);
 
   async function loadReviews() {
-    try {
-      const { data, error } = await supabase
-        .from('product_reviews')
-        .select('*')
-        .eq('product_id', sneaker.id.toString())
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const withProfiles = await Promise.all(
-        (data || []).map(async (rev) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('user_id', rev.user_id)
-            .maybeSingle();
-          return { ...rev, profiles: profile };
-        })
-      );
-      setReviews(withProfiles);
-    } catch (e) {
-      console.error(e);
-    }
+    const { data } = await supabase
+      .from('product_reviews')
+      .select('*')
+      .eq('product_id', sneaker.id.toString())
+      .order('created_at', { ascending: false });
+    if (data) setReviews(data);
   }
 
-  async function loadPostsWithProduct() {
-    try {
-      const { data: rel } = await supabase
-        .from('posts_products')
-        .select('post_id')
-        .eq('product_id', sneaker.id.toString())
-        .limit(4);
-      if (!rel || rel.length === 0) {
-        setPostsWithProduct([]);
-        return;
-      }
-      const ids = rel.map((i) => i.post_id);
+  async function loadPosts() {
+    const { data: rel } = await supabase
+      .from('posts_products')
+      .select('post_id')
+      .eq('product_id', sneaker.id.toString())
+      .limit(4);
+    if (rel && rel.length > 0) {
+      const ids = rel.map(r => r.post_id);
       const { data: posts } = await supabase
         .from('top_posts')
         .select('id,title,description,thumbnail_url,video_url,author_username,platform,original_url,posted_at')
         .in('id', ids)
         .order('posted_at', { ascending: false });
-
       if (posts) {
-        setPostsWithProduct(posts.map((p) => ({ ...p, created_at: p.posted_at })));
+        setPostsWithProduct(posts.map(p => ({ ...p, created_at: p.posted_at })));
       }
-    } catch (e) {
-      console.error(e);
     }
-  }
-
-  async function checkPurchaseHistory() {
-    if (!user) return;
-    const { data } = await supabase
-      .from('purchase_history')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('product_id', sneaker.id.toString())
-      .maybeSingle();
-    setHasPurchased(!!data);
   }
 
   function handleAddToCart() {
@@ -175,8 +119,7 @@ export default function ViewProductModal({
 
   const getAverageRating = () => {
     if (reviews.length === 0) return 0;
-    const total = reviews.reduce((acc, r) => acc + r.rating, 0);
-    return total / reviews.length;
+    return reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
   };
 
   return (
@@ -187,6 +130,7 @@ export default function ViewProductModal({
           hideClose
         >
           <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
+
           <Button
             variant="ghost"
             size="icon"
@@ -197,16 +141,12 @@ export default function ViewProductModal({
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-            {/* Left side image */}
-            <div
-              ref={imageContainerRef}
-              className="relative bg-black flex items-center justify-center p-4 h-full overflow-hidden"
-            >
+            {/* LEFT IMAGE */}
+            <div className="relative bg-black flex items-center justify-center p-4 h-full overflow-hidden">
               <img
-                ref={imageRef}
                 src={sneaker.image}
                 alt={sneaker.name}
-                className="max-w-full max-h-full object-contain select-none pointer-events-none"
+                className="w-full h-full object-cover select-none pointer-events-none"
                 draggable={false}
               />
               <Button
@@ -225,15 +165,11 @@ export default function ViewProductModal({
               </Button>
             </div>
 
-            {/* Right side scrollable */}
+            {/* RIGHT CONTENT */}
             <div
               className="flex flex-col p-8 h-full overflow-y-auto"
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#FFD600 #1a1a1a',
-              }}
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#FFD600 #1a1a1a' }}
             >
-              {/* === Product info === */}
               <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
               <div className="flex items-center gap-2 mb-2">
                 {reviews.length === 0 ? (
@@ -263,7 +199,7 @@ export default function ViewProductModal({
                 {sneaker.category}
               </span>
 
-              {/* Size selector */}
+              {/* SIZES */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Size</label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -280,7 +216,7 @@ export default function ViewProductModal({
                 </div>
               </div>
 
-              {/* Quantity */}
+              {/* QUANTITY */}
               <div className="mt-6">
                 <label className="text-sm font-medium text-white mb-3 block">Quantity</label>
                 <Select value={quantity} onValueChange={setQuantity}>
@@ -297,7 +233,7 @@ export default function ViewProductModal({
                 </Select>
               </div>
 
-              {/* Buttons */}
+              {/* BUTTONS */}
               <div className="flex gap-4 mt-6">
                 <Button
                   onClick={handleAddToCart}
@@ -316,8 +252,63 @@ export default function ViewProductModal({
                 </Button>
               </div>
 
-              {/* === Keep your Posts Featuring This Item, Reviews, etc. below here === */}
-              {/* Your existing posts/reviews code goes here unchanged */}
+              {/* POSTS */}
+              {postsWithProduct.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-white mb-4">Posts Featuring This Item</h3>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {postsWithProduct.map((post) => (
+                      <div key={post.id} className="relative bg-gray-900/40 rounded-lg p-3 border border-gray-700 hover:border-[#FFD600]/50 transition-colors">
+                        {(post.thumbnail_url || post.video_url) && (
+                          <img
+                            src={post.thumbnail_url || post.video_url || ''}
+                            alt={post.title || 'Post media'}
+                            className="w-full h-20 object-cover rounded mb-2"
+                          />
+                        )}
+                        <div className="text-xs text-gray-300 truncate">@{post.author_username}</div>
+                        <div className="text-xs text-gray-500">
+                          {post.platform} • {new Date(post.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => console.log('See all posts')}
+                    className="w-full border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600] hover:text-black"
+                  >
+                    See all posts with this product
+                  </Button>
+                </div>
+              )}
+
+              {/* REVIEWS */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Reviews</h3>
+                {reviews.length === 0 && (
+                  <div className="text-gray-400 text-sm">No reviews yet. Be the first!</div>
+                )}
+                {reviews.map((rev) => (
+                  <div key={rev.id} className="border-l-2 border-[#FFD600]/20 pl-4 bg-gray-900/30 p-3 rounded mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm text-white">
+                        {rev.profiles?.display_name || 'Anonymous'}
+                      </span>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3 h-3 ${i < rev.rating ? 'fill-[#FFD600] text-[#FFD600]' : 'text-gray-500'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300">{rev.review_text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -329,22 +320,6 @@ export default function ViewProductModal({
         endPosition={{ x: 64, y: 64 }}
         onComplete={() => setIsAnimating(false)}
       />
-
-      {/* Review image lightbox */}
-      {selectedImage && (
-        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-          <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-4 bg-black/95 border-white">
-            <DialogTitle className="sr-only">Review Image</DialogTitle>
-            <div className="flex items-center justify-center h-full">
-              <img
-                src={selectedImage}
-                alt="Review image"
-                className="max-w-full max-h-full object-contain"
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </>
   );
 }
