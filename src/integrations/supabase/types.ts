@@ -93,6 +93,10 @@ export type Database = {
           engagement_score: number | null
           id: string
           image_url: string | null
+          media_url: string | null
+          post_type: string | null
+          show_socials: boolean | null
+          show_username: boolean | null
           sneaker_tags: string[] | null
           title: string
           updated_at: string
@@ -106,6 +110,10 @@ export type Database = {
           engagement_score?: number | null
           id?: string
           image_url?: string | null
+          media_url?: string | null
+          post_type?: string | null
+          show_socials?: boolean | null
+          show_username?: boolean | null
           sneaker_tags?: string[] | null
           title: string
           updated_at?: string
@@ -119,10 +127,35 @@ export type Database = {
           engagement_score?: number | null
           id?: string
           image_url?: string | null
+          media_url?: string | null
+          post_type?: string | null
+          show_socials?: boolean | null
+          show_username?: boolean | null
           sneaker_tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      posts_products: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          product_id?: string
         }
         Relationships: []
       }
@@ -132,6 +165,7 @@ export type Database = {
           id: string
           product_id: string
           rating: number
+          review_images: string[] | null
           review_text: string | null
           updated_at: string
           user_id: string
@@ -141,6 +175,7 @@ export type Database = {
           id?: string
           product_id: string
           rating: number
+          review_images?: string[] | null
           review_text?: string | null
           updated_at?: string
           user_id: string
@@ -150,6 +185,7 @@ export type Database = {
           id?: string
           product_id?: string
           rating?: number
+          review_images?: string[] | null
           review_text?: string | null
           updated_at?: string
           user_id?: string
@@ -194,6 +230,42 @@ export type Database = {
           referrals_count?: number | null
           referred_by?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      purchase_history: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          product_id: string
+          product_name: string
+          purchase_date: string
+          purchase_price: number
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id: string
+          product_name: string
+          purchase_date?: string
+          purchase_price: number
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string
+          product_name?: string
+          purchase_date?: string
+          purchase_price?: number
+          quantity?: number
           user_id?: string
         }
         Relationships: []
@@ -437,6 +509,54 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_posts: {
+        Row: {
+          created_at: string
+          credits_earned: number | null
+          description: string | null
+          engagement_score: number | null
+          id: string
+          media_type: string | null
+          media_url: string | null
+          product_id: string | null
+          show_socials: boolean | null
+          show_username: boolean | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_earned?: number | null
+          description?: string | null
+          engagement_score?: number | null
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          product_id?: string | null
+          show_socials?: boolean | null
+          show_username?: boolean | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_earned?: number | null
+          description?: string | null
+          engagement_score?: number | null
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          product_id?: string | null
+          show_socials?: boolean | null
+          show_username?: boolean | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
