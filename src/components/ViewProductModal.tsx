@@ -213,27 +213,30 @@ useEffect(() => {
   const container = imageContainerRef.current;
   const img = imageRef.current;
 
-  // ✅ If refs are not ready, just return a valid cleanup function
+  // If refs aren't available yet, exit early with a valid cleanup
   if (!container || !img) {
     return () => {};
   }
 
   let frame: number | null = null;
-  let targetX = 0,
-    targetY = 0,
-    currentX = 0,
-    currentY = 0;
-  const maxMove = 18,
-    ease = 0.12;
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  const maxMove = 18;
+  const ease = 0.12;
 
   function animate() {
     currentX += (targetX - currentX) * ease;
     currentY += (targetY - currentY) * ease;
-    img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    if (img) {
+      img.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    }
     frame = requestAnimationFrame(animate);
   }
 
   function onMouseMove(e: MouseEvent) {
+    if (!container) return; // ✅ null check
     const rect = container.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
@@ -250,14 +253,19 @@ useEffect(() => {
   container.addEventListener("mouseleave", onMouseLeave);
   frame = requestAnimationFrame(animate);
 
-  // ✅ Cleanup
   return () => {
-    container.removeEventListener("mousemove", onMouseMove);
-    container.removeEventListener("mouseleave", onMouseLeave);
+    // ✅ Cleanup with null checks
+    if (container) {
+      container.removeEventListener("mousemove", onMouseMove);
+      container.removeEventListener("mouseleave", onMouseLeave);
+    }
     if (frame) cancelAnimationFrame(frame);
-    if (img) img.style.transform = "";
+    if (img) {
+      img.style.transform = "";
+    }
   };
 }, [isOpen]);
+
 
   return (
     <>
