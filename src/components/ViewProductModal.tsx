@@ -267,56 +267,99 @@ useEffect(() => {
 }, [isOpen]);
 
 
-  return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 overflow-hidden border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm" hideClose>
-          <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
-          {/* Close Button */}
-          <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background text-white" onClick={onClose}>
-            <X className="w-5 h-5" />
-          </Button>
+return (
+  <>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm"
+        hideClose
+      >
+        <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-            {/* Left Side Image */}
-            <div ref={imageContainerRef} className="relative bg-black/20 flex items-center justify-center p-4 h-full">
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                <img
-                  ref={imageRef}
-                  src={sneaker.image}
-                  alt={sneaker.name}
-                  className="w-full h-full object-contain transition-transform duration-300 select-none pointer-events-none"
-                  draggable={false}
-                />
-                <Button variant="ghost" size="icon" className="absolute top-4 left-4 bg-background/80 hover:bg-background" onClick={()=>toggleFavorite(sneaker.id)}>
-                  <Heart className={`w-5 h-5 ${isFavorite(sneaker.id)?'fill-red-500 text-red-500':'text-muted-foreground'}`} />
-                </Button>
-              </div>
-            </div>
+        {/* Close Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background text-white"
+          onClick={onClose}
+        >
+          <X className="w-5 h-5" />
+        </Button>
 
-            {/* Right Side Scrollable Content */}
-            <div className="flex flex-col p-8 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-[#FFD600] scrollbar-track-gray-800">
-              {/* Product Info */}
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
-                  <div className="flex items-center gap-2 mb-2">
-                    {reviews.length===0?(
-                      <span className="text-gray-400 text-sm">No reviews yet</span>
-                    ):(
-                      <>
-                        <div className="flex">
-                          {[...Array(5)].map((_,i)=>(
-                            <Star key={i} className={`w-4 h-4 ${i<Math.round(getAverageRating())?'fill-[#FFD600] text-[#FFD600]':'text-gray-500'}`} />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-300">{getAverageRating().toFixed(1)} ({reviews.length})</span>
-                      </>
-                    )}
-                  </div>
-                  <p className="text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
-                  <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">{sneaker.category}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+          {/* Left Side Image */}
+          <div
+            ref={imageContainerRef}
+            className="relative bg-black/20 flex items-center justify-center h-full w-full overflow-hidden"
+          >
+            <img
+              ref={imageRef}
+              src={sneaker.image}
+              alt={sneaker.name}
+              className="w-full h-full object-contain transition-transform duration-300 select-none pointer-events-none"
+              draggable={false}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 left-4 bg-background/80 hover:bg-background"
+              onClick={() => toggleFavorite(sneaker.id)}
+            >
+              <Heart
+                className={`w-5 h-5 ${
+                  isFavorite(sneaker.id)
+                    ? 'fill-red-500 text-red-500'
+                    : 'text-muted-foreground'
+                }`}
+              />
+            </Button>
+          </div>
+
+          {/* Right Side Scrollable Content */}
+          <div
+            className="flex flex-col p-8 overflow-y-auto h-full"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#FFD600 #1a1a1a',
+            }}
+          >
+            {/* Product Info */}
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  {sneaker.name}
+                </h1>
+                <div className="flex items-center gap-2 mb-2">
+                  {reviews.length === 0 ? (
+                    <span className="text-gray-400 text-sm">No reviews yet</span>
+                  ) : (
+                    <>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.round(getAverageRating())
+                                ? 'fill-[#FFD600] text-[#FFD600]'
+                                : 'text-gray-500'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-300">
+                        {getAverageRating().toFixed(1)} ({reviews.length})
+                      </span>
+                    </>
+                  )}
                 </div>
+                <p className="text-2xl font-bold text-[#FFD600] mb-1">
+                  {sneaker.price}
+                </p>
+                <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">
+                  {sneaker.category}
+                </span>
+              </div>
+
 
                 {/* Sizes */}
                 <div>
