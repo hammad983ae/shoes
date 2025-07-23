@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
@@ -30,9 +30,6 @@ interface Review {
   rating: number;
   review_text: string | null;
   created_at: string;
-  profiles?: {
-    display_name: string | null;
-  } | null;
 }
 
 interface PostWithProduct {
@@ -70,7 +67,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
   async function loadReviews() {
     const { data, error } = await supabase
       .from('product_reviews')
-      .select('*, profiles(display_name)')
+      .select('*')
       .eq('product_id', sneaker.id.toString())
       .order('created_at', { ascending: false });
     if (!error && data) setReviews(data as Review[]);
@@ -87,12 +84,22 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       return;
     }
     const postIds = linkData.map((p) => p.post_id);
-    const { data: posts, error: postsErr } = await supabase
+    const { data: postsData, error: postsErr } = await supabase
       .from('top_posts')
-      .select('id,title,thumbnail_url,author_username,created_at')
+      .select('id,title,thumbnail_url,author_username,posted_at')
       .in('id', postIds)
-      .order('created_at', { ascending: false });
-    if (!postsErr && posts) setPostsWithProduct(posts as PostWithProduct[]);
+      .order('posted_at', { ascending: false });
+    if (!postsErr && postsData) {
+      setPostsWithProduct(
+        postsData.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          thumbnail_url: p.thumbnail_url,
+          author_username: p.author_username,
+          created_at: p.posted_at
+        }))
+      );
+    }
   }
 
   async function checkPurchaseHistory() {
@@ -141,7 +148,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
         >
           <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
 
-          {/* Close Button */}
+          {/* Close */}
           <Button
             variant="ghost"
             size="icon"
@@ -165,13 +172,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                 className="absolute top-4 left-4 bg-background/80 hover:bg-background"
                 onClick={() => toggleFavorite(sneaker.id)}
               >
-                <Heart
-                  className={`w-5 h-5 ${
-                    isFavorite(sneaker.id)
-                      ? 'fill-red-500 text-red-500'
-                      : 'text-muted-foreground'
-                  }`}
-                />
+                <Heart className={`w-5 h-5 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
               </Button>
             </div>
 
@@ -184,7 +185,6 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               `}</style>
 
               <div className="space-y-6">
-                {/* Product Info */}
                 <div>
                   <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
                   <div className="flex items-center gap-2 mb-2">
@@ -197,23 +197,17 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                             <Star
                               key={i}
                               className={`w-4 h-4 ${
-                                i < Math.round(avgRating)
-                                  ? 'fill-[#FFD600] text-[#FFD600]'
-                                  : 'text-gray-500'
+                                i < Math.round(avgRating) ? 'fill-[#FFD600] text-[#FFD600]' : 'text-gray-500'
                               }`}
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-gray-300">
-                          {avgRating.toFixed(1)} ({reviews.length})
-                        </span>
+                        <span className="text-sm text-gray-300">{avgRating.toFixed(1)} ({reviews.length})</span>
                       </>
                     )}
                   </div>
                   <p className="text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
-                  <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">
-                    {sneaker.category}
-                  </span>
+                  <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">{sneaker.category}</span>
                 </div>
 
                 {/* Sizes */}
@@ -242,9 +236,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                     </SelectTrigger>
                     <SelectContent>
                       {quantities.map((q) => (
-                        <SelectItem key={q} value={q}>
-                          {q}
-                        </SelectItem>
+                        <SelectItem key={q} value={q}>{q}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -269,7 +261,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   </Button>
                 </div>
 
-                {/* Posts Featuring This Item */}
+                {/* Posts */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4">Posts Featuring This Item</h3>
                   {postsWithProduct.length === 0 ? (
@@ -277,21 +269,12 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   ) : (
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       {postsWithProduct.map((p) => (
-                        <div
-                          key={p.id}
-                          className="relative bg-gray-900/40 rounded-lg p-3 border border-gray-700 hover:border-[#FFD600]/50 transition-colors"
-                        >
+                        <div key={p.id} className="bg-gray-900/40 rounded-lg p-3 border border-gray-700">
                           {p.thumbnail_url && (
-                            <img
-                              src={p.thumbnail_url}
-                              alt={p.title || 'Post media'}
-                              className="w-full h-20 object-cover rounded mb-2"
-                            />
+                            <img src={p.thumbnail_url} alt={p.title || 'Post media'} className="w-full h-20 object-cover rounded mb-2" />
                           )}
                           <div className="text-xs text-gray-300 truncate">@{p.author_username}</div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(p.created_at).toLocaleDateString()}
-                          </div>
+                          <div className="text-xs text-gray-500">{new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
                       ))}
                     </div>
@@ -303,32 +286,19 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   <h3 className="text-lg font-semibold text-white mb-4">Reviews</h3>
                   {!hasPurchased && (
                     <div className="bg-yellow-900/20 border border-yellow-600/30 rounded p-3 mb-3">
-                      <p className="text-yellow-400 text-sm">
-                        You must purchase this product to submit a review.
-                      </p>
+                      <p className="text-yellow-400 text-sm">You must purchase this product to submit a review.</p>
                     </div>
                   )}
-                  {reviews.length === 0 && (
-                    <p className="text-gray-400 text-sm">No reviews yet. Be the first!</p>
-                  )}
+                  {reviews.length === 0 && <p className="text-gray-400 text-sm">No reviews yet. Be the first!</p>}
                   {reviews.map((r) => (
-                    <div
-                      key={r.id}
-                      className="border-l-2 border-[#FFD600]/20 pl-4 bg-gray-900/30 p-3 rounded mb-3"
-                    >
+                    <div key={r.id} className="border-l-2 border-[#FFD600]/20 pl-4 bg-gray-900/30 p-3 rounded mb-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm text-white">
-                          {r.profiles?.display_name || 'Anonymous'}
-                        </span>
+                        <span className="font-medium text-sm text-white">Anonymous</span>
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-3 h-3 ${
-                                i < r.rating
-                                  ? 'fill-[#FFD600] text-[#FFD600]'
-                                  : 'text-gray-500'
-                              }`}
+                              className={`w-3 h-3 ${i < r.rating ? 'fill-[#FFD600] text-[#FFD600]' : 'text-gray-500'}`}
                             />
                           ))}
                         </div>
