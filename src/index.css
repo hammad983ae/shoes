@@ -355,3 +355,16 @@ button, .btn, .cta-button, .shadcn-btn {
   animation-fill-mode: forwards;
   animation-duration: 1.2s; /* adjust how long the fade takes */
 }
+
+/* Product Image Optimization */
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}

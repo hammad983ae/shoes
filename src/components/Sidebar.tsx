@@ -45,7 +45,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
     { label: 'Top Posts', href: '/feed', icon: TrendingUp },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
-    { label: 'Socials', href: '/contact', icon: Smartphone },
+    { label: 'Socials', href: '/contact-us', icon: Smartphone },
   ];
 
   const handleSignOut = async () => {

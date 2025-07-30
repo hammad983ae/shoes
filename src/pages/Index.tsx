@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FloatingCards from '@/components/FloatingCards';
 import CTAButtons from '@/components/CTAButtons';
 import SneakerCatalog from '@/components/SneakerCatalog';
@@ -14,6 +15,7 @@ const Index = () => {
   const [showParticles, setShowParticles] = useState(false);
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const navigate = useNavigate();
   
 
   useEffect(() => {
@@ -27,30 +29,17 @@ const Index = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (appState === 'catalog' && !user) {
-      setShowAuthModal(true);
-    }
-  }, [appState, user]);
+  // Remove auto-showing AuthModal on catalog state, now handled by Shop Now logic
 
   const handleShopNow = () => {
     if (!user) {
-      setShowParticles(true);
-      setAppState('explosion');
-      setTimeout(() => {
-        setAppState('catalog');
-        setShowParticles(false);
-        setShowAuthModal(true);
-      }, 1000);
+      setShowAuthModal(true);
       return;
     }
     setShowParticles(true);
     setAppState('explosion');
-    
-    // Transition to catalog after explosion
     setTimeout(() => {
-      setAppState('catalog');
-      setShowParticles(false);
+      navigate('/catalog');
     }, 1000);
   };
 
@@ -72,13 +61,7 @@ const Index = () => {
       {/* Auth Modal */}
       <AuthModal open={showAuthModal} onOpenChange={(open) => {
         setShowAuthModal(open);
-        
       }} />
-      {/* Background Animation */}
-      {(appState === 'floating' || appState === 'cta') && (
-        <div className="absolute inset-0 animate-gradientShift bg-gradient-to-br from-background via-background to-background/95" />
-      )}
-
       {/* Interactive Particles */}
       <InteractiveParticles isActive={appState === 'floating' || appState === 'cta'} />
 

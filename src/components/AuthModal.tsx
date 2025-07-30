@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferralCode } from '@/hooks/useReferralCode';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -33,6 +33,8 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
   const [displayName, setDisplayName] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp, signIn, user } = useAuth();
   const { referralCode, clearReferralCode } = useReferralCode();
   const [error, setError] = useState<string | null>(null);
@@ -132,13 +134,20 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-4 h-4" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-black/70 border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
+                  className="pl-10 pr-10 bg-black/70 border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-yellow-200"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
             {isSignUp && (
@@ -148,13 +157,20 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-4 h-4" />
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 bg-black/70 border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
+                    className="pl-10 pr-10 bg-black/70 border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-yellow-200"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             )}
@@ -165,6 +181,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                   checked={agreedToTerms}
                   onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
                   className="mt-0.5"
+                  required
                 />
                 <Label htmlFor="terms-fullpage" className="text-yellow-300 text-sm leading-relaxed">
                   I agree to the{' '}
@@ -290,13 +307,20 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-4 h-4" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-black border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
+                  className="pl-10 pr-10 bg-black border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-yellow-200"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -307,13 +331,20 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-300 w-4 h-4" />
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 bg-black border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
+                    className="pl-10 pr-10 bg-black border-yellow-400 text-yellow-100 placeholder-yellow-300 focus:border-yellow-400"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-300 hover:text-yellow-200"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             )}
@@ -325,6 +356,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                   checked={agreedToTerms}
                   onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
                   className="mt-0.5"
+                  required
                 />
                 <Label htmlFor="terms-modal" className="text-yellow-300 text-sm leading-relaxed">
                   I agree to the{' '}

@@ -1,6 +1,10 @@
 import { ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import ChatBotWidget from './ChatBotWidget';
+import AnnouncementBar from './AnnouncementBar';
+import { useAuth, isAuthenticated } from '@/contexts/AuthContext';
+import AuthModal from './AuthModal';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,17 +14,29 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   if (isHomePage) {
     return <>{children}</>;
   }
 
+  if (!isAuthenticated(user)) {
+    return (
+      <>
+        <AuthModal open={true} onOpenChange={setShowAuthModal} />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementBar />
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="ml-16 transition-all duration-300">
+      <div className="transition-all duration-300 md:ml-16">
         {children}
       </div>
+      <ChatBotWidget />
     </div>
   );
 };

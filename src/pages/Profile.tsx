@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ const socialPlatforms = [
 ];
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [credits, setCredits] = useState<UserCredits | null>(null);
@@ -132,7 +133,7 @@ const Profile = () => {
   const [userReviews, setUserReviews] = useState<any[]>([]);
   
   // Modal states - back to original design
-  const [isEditMode, setIsEditMode] = useState(false);
+  const navigate = useNavigate();
   const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isSocialsOpen, setIsSocialsOpen] = useState(false);
@@ -373,7 +374,6 @@ const Profile = () => {
         avatar_url: previewAvatar,
         bio: editForm.bio
       }));
-      setIsEditMode(false);
       toast({ title: 'Profile updated successfully' });
     } catch (error: any) {
       console.error('Profile update error:', error);
@@ -401,19 +401,19 @@ const Profile = () => {
     return socialConnections.some(conn => conn.platform === platform && conn.is_active);
   };
 
+  if (loading) return <div className="min-h-screen flex items-center justify-center page-gradient"><span className="text-lg text-gray-400">Loading...</span></div>;
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
 
   return (
     <div className="min-h-screen page-gradient flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-8 w-full">
         <div className="w-full max-w-md mx-auto relative">
           <InteractiveParticles isActive={true} />
           
-          {!isEditMode ? (
-            /* Main Profile Card - Original Layout */
-            <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
+          {/* Main Profile Card - Always Rendered */}
+          <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-4 sm:p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
               {/* Profile Header */}
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 w-full">
                 <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
                   <AvatarImage src={profile.avatar_url || undefined} />
                   <AvatarFallback className="bg-yellow-500 text-black font-bold text-xl">
@@ -442,27 +442,27 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+              {/* Stats Grid - now always 3 columns, smaller on mobile */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 w-full">
+                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
                   <Users className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-lg font-bold text-white">{profile.referrals_count}</div>
-                  <div className="text-xs text-gray-400">People Referred</div>
+                  <div className="text-base sm:text-lg font-bold text-white">{profile.referrals_count}</div>
+                  <div className="text-[10px] sm:text-xs text-gray-400">People Referred</div>
                 </div>
-                <div className="text-center p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
                   <Award className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-lg font-bold text-white">{posts.length}</div>
-                  <div className="text-xs text-gray-400">Posts</div>
+                  <div className="text-base sm:text-lg font-bold text-white">{posts.length}</div>
+                  <div className="text-[10px] sm:text-xs text-gray-400">Posts</div>
                 </div>
-                <div className="text-center p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
                   <BarChart3 className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-lg font-bold text-white">{postAnalytics.reduce((sum, a) => sum + a.credits_earned, 0)}</div>
-                  <div className="text-xs text-gray-400">Credits Earned</div>
+                  <div className="text-base sm:text-lg font-bold text-white">{postAnalytics.reduce((sum, a) => sum + a.credits_earned, 0)}</div>
+                  <div className="text-[10px] sm:text-xs text-gray-400">Credits Earned</div>
                 </div>
               </div>
 
               {/* Quick Action Buttons */}
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 mb-4 w-full">
                 <Button
                   onClick={() => setIsReviewsOpen(true)}
                   variant="outline"
@@ -483,7 +483,7 @@ const Profile = () => {
 
               {/* Edit Profile Button */}
               <Button
-                onClick={() => setIsEditMode(true)}
+                onClick={() => navigate('/edit-profile')}
                 className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl btn-hover-glow"
               >
                 <Edit2 className="w-4 h-4 mr-2" />
@@ -491,7 +491,7 @@ const Profile = () => {
               </Button>
 
               {/* Bottom Bar */}
-              <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+              <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-700 w-full gap-2">
                 <Button
                   onClick={() => setIsTransactionHistoryOpen(true)}
                   variant="ghost"
@@ -510,80 +510,6 @@ const Profile = () => {
                 </Button>
               </div>
             </div>
-          ) : (
-            /* Edit Profile Subpage - New Design */
-            <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
-              {/* Back Button */}
-              <Button
-                onClick={() => setIsEditMode(false)}
-                variant="ghost"
-                className="mb-4 text-gray-400 hover:text-white btn-hover-glow"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Profile
-              </Button>
-
-              <div className="space-y-6">
-                {/* Avatar Section */}
-                <div className="text-center">
-                  <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-yellow-500 shadow-lg">
-                    <AvatarImage src={previewAvatar || undefined} />
-                    <AvatarFallback className="bg-yellow-500 text-black font-bold text-2xl">
-                      {editForm.display_name?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button
-                    onClick={() => document.getElementById('avatar-upload')?.click()}
-                    variant="outline"
-                    className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 btn-hover-glow"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Choose File
-                  </Button>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                </div>
-
-                {/* Username */}
-                <div>
-                  <Label htmlFor="display_name" className="text-gray-300 mb-2 block">Username</Label>
-                  <Input
-                    id="display_name"
-                    value={editForm.display_name}
-                    onChange={(e) => setEditForm({...editForm, display_name: e.target.value})}
-                    className="bg-gray-800 border-gray-700 text-white"
-                    placeholder="Enter your username"
-                  />
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <Label htmlFor="bio" className="text-gray-300 mb-2 block">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={editForm.bio}
-                    onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                    className="bg-gray-800 border-gray-700 text-white"
-                    placeholder="Tell us about yourself"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Save Button */}
-                <Button
-                  onClick={updateProfile}
-                  className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl btn-hover-glow"
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          )}
 
           {/* Avatar Crop Modal */}
           <Dialog open={isAvatarCropOpen} onOpenChange={setIsAvatarCropOpen}>
@@ -905,32 +831,32 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Documentation Section - Fixed at bottom */}
-      <div className="py-4 px-6">
+      {/* Documentation Section - Fixed at bottom, now smaller and fits on mobile */}
+      <div className="py-2 px-2 sm:py-4 sm:px-6">
         <div className="max-w-md mx-auto text-center">
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-row flex-wrap justify-center gap-1 sm:gap-4 w-full">
             <Button
               variant="link"
               size="sm"
-              className="text-gray-400 hover:text-yellow-500"
-              onClick={() => window.open('/docs', '_blank')}
+              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
+              onClick={() => window.open('/return-policy', '_blank')}
             >
-              Documentation
+              Return Policy
             </Button>
-            <span className="text-gray-600">|</span>
+            <span className="text-gray-600 hidden sm:inline">|</span>
             <Button
               variant="link"
               size="sm"
-              className="text-gray-400 hover:text-yellow-500"
+              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
               onClick={() => window.open('/privacy', '_blank')}
             >
               Privacy Policy
             </Button>
-            <span className="text-gray-600">|</span>
+            <span className="text-gray-600 hidden sm:inline">|</span>
             <Button
               variant="link"
               size="sm"
-              className="text-gray-400 hover:text-yellow-500"
+              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
               onClick={() => window.open('/terms', '_blank')}
             >
               Terms of Service

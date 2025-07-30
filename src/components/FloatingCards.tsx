@@ -1,19 +1,10 @@
 import { useEffect, useState } from 'react';
-import sneaker1 from '@/assets/sneaker-1.jpg';
-import sneaker2 from '@/assets/sneaker-2.jpg';
-import sneaker3 from '@/assets/sneaker-3.jpg';
-import sneaker4 from '@/assets/sneaker-4.jpg';
 
 interface FloatingCardsProps {
   isBackground?: boolean;
 }
 
-const sneakerData = [
-  { id: 1, image: sneaker1, price: '$180', name: 'Air Jordan Retro' },
-  { id: 2, image: sneaker2, price: '$120', name: 'Running Pro' },
-  { id: 3, image: sneaker3, price: '$200', name: 'Basketball Elite' },
-  { id: 4, image: sneaker4, price: '$140', name: 'Lifestyle Classic' },
-];
+const sneakerData: Array<{ id: number; image: string; price: string; name: string }> = [];
 
 const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -40,7 +31,7 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
       }}
     >
       <div className="relative w-full h-full flex items-center justify-center">
-        <div className="flex gap-8">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center justify-center w-full">
           {sneakerData.map((sneaker) => (
             <div
               key={sneaker.id}
@@ -61,7 +52,7 @@ const FloatingCards = ({ isBackground = false }: FloatingCardsProps) => {
                   <img 
                     src={sneaker.image} 
                     alt={sneaker.name}
-                    className="w-full h-full object-contain"
+                    className="product-image"
                   />
                 </div>
                 <div className="text-center">

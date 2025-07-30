@@ -2,11 +2,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, Heart } from 'lucide-react';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useState } from 'react';
 
 
 interface Sneaker {
   id: number;
-  image: string;
+  images: string[];
   price: string;
   name: string;
   category: string;
@@ -25,6 +26,18 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
     onViewProduct?.(sneaker);
   };
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const totalImages = sneaker.images.length;
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
+  };
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
+  };
+
   return (
     <Card 
       className="product-card group cursor-pointer border-0 overflow-hidden"
@@ -36,16 +49,41 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
       }}
     >
       <CardContent className="p-0">
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden" style={{ aspectRatio: '2/3' }}>
           <img 
-            src={sneaker.image} 
+            src={sneaker.images[currentIndex]} 
             alt={sneaker.name}
-            className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+            className="product-image"
           />
-          
+          {/* Carousel Controls */}
+          {totalImages > 1 && (
+            <>
+              <button
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
+                onClick={handlePrev}
+                aria-label="Previous image"
+              >
+                &#8592;
+              </button>
+              <button
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
+                onClick={handleNext}
+                aria-label="Next image"
+              >
+                &#8594;
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {sneaker.images.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`w-2 h-2 rounded-full ${i === currentIndex ? 'bg-primary' : 'bg-gray-400'} inline-block`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
           {/* Heart Icon */}
           <Button
             variant="ghost"
@@ -58,7 +96,6 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           >
             <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </Button>
-          
           {/* View Product Button */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
             <Button
@@ -73,18 +110,17 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
             </Button>
           </div>
         </div>
-        
         {/* Product Info */}
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2 max-h-[2.5em]">
               {sneaker.name}
             </h3>
-            <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
-              {sneaker.category}
+            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+              {sneaker.brand}
             </span>
           </div>
-          <p className="text-xl font-bold text-primary mb-4">
+          <p className="text-lg font-bold text-primary mb-2">
             {sneaker.price}
           </p>
         </div>

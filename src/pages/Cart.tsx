@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
@@ -11,17 +11,36 @@ import InteractiveParticles from '@/components/InteractiveParticles';
 const Cart = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, clearCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [coupon, setCoupon] = useState('');
+  const [redeemState, setRedeemState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [showAuthBlock, setShowAuthBlock] = useState(!user);
   const [showPostPurchase, setShowPostPurchase] = useState(false);
   const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
   
-  // For size editing
-  const sizes = ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
+  // For size editing - handle both EU and US sizes
+  const getSizesForItem = (item: any) => {
+    // If size is a string (EU sizing), show EU sizes with US conversion
+    if (typeof item.size === 'string' && !isNaN(parseInt(item.size))) {
+      const euSizes = [
+        { eu: '39', us: '6' }, { eu: '40', us: '6.5' }, { eu: '41', us: '7' },
+        { eu: '42', us: '7.5' }, { eu: '43', us: '8' }, { eu: '44', us: '8.5' },
+        { eu: '45', us: '9' }, { eu: '46', us: '9.5' }, { eu: '47', us: '10' },
+        { eu: '48', us: '10.5' }, { eu: '49', us: '11' }, { eu: '50', us: '11.5' },
+        { eu: '51', us: '12' }, { eu: '52', us: '12.5' }, { eu: '53', us: '13' }
+      ];
+      return euSizes;
+    } else {
+      // US sizes
+      return ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
+    }
+  };
 
   // Placeholder for updating size (in real app, would update cart context)
   function handleSizeChange(item: any, newSize: string) {
     // Remove old item, add new with same quantity
     removeItem(item.id, item.size);
-    updateQuantity(item.id, parseFloat(newSize), item.quantity);
+    updateQuantity(item.id, newSize, item.quantity);
   }
 
   // Estimated tax (e.g., 8%)
@@ -30,10 +49,7 @@ const Cart = () => {
   const total = subtotal + estimatedTax;
 
   const handleCheckout = () => {
-    // Store purchased items for post-purchase modal
-    setPurchasedItems([...items]);
-    clearCart();
-    setShowPostPurchase(true);
+    navigate('/checkout-instructions');
   };
 
   const handleContinueAnyways = () => {
@@ -41,32 +57,47 @@ const Cart = () => {
     handleCheckout();
   };
 
-  if (items.length === 0) {
-  return (
-    <div className="min-h-screen page-gradient relative">
-      <InteractiveParticles isActive={true} />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>
-        </div>
-
-        <div className="max-w-2xl mx-auto text-center">
-          <Card>
-            <CardContent className="pt-12 pb-12">
-              <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-6">
-                Looks like you haven't added any sneakers to your cart yet.
-              </p>
-              <Button asChild className="btn-hover-glow">
-                <Link to="/catalog">
-                  Start Shopping
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+  if (!user) {
+    return (
+      <div className="min-h-screen page-gradient flex items-center justify-center px-4">
+        <Card className="max-w-md w-full mx-auto text-center p-8">
+          <CardContent>
+            <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-2xl font-bold mb-4">You must be signed in or create an account to continue with your purchase.</h2>
+            <div className="flex flex-col gap-3 mt-6">
+              <Button className="w-full" onClick={() => navigate('/signin')}>Sign In</Button>
+              <Button className="w-full" variant="outline" onClick={() => navigate('/signin?mode=signup')}>Create Account</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen page-gradient relative">
+        <InteractiveParticles isActive={true} />
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>
+          </div>
+          <div className="max-w-2xl mx-auto text-center">
+            <Card>
+              <CardContent className="pt-12 pb-12">
+                <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
+                <p className="text-muted-foreground mb-6">
+                  Looks like you haven't added any sneakers to your cart yet.
+                </p>
+                <Button asChild className="btn-hover-glow">
+                  <Link to="/catalog">
+                    Start Shopping
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -99,9 +130,13 @@ const Cart = () => {
                         value={item.size}
                         onChange={e => handleSizeChange(item, e.target.value)}
                       >
-                        {sizes.map(size => (
-                          <option key={size} value={size}>{size}</option>
-                        ))}
+                        {getSizesForItem(item).map(size => {
+                          if (typeof size === 'string') {
+                            return <option key={size} value={size}>{size}</option>;
+                          } else {
+                            return <option key={size.eu} value={size.eu}>{size.eu} ({size.us})</option>;
+                          }
+                        })}
                       </select>
                     </div>
                     <p className="text-primary font-bold mt-1">{item.price}</p>
@@ -163,32 +198,26 @@ const Cart = () => {
                 </div>
               </div>
 
-              {!user ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-center text-muted-foreground mb-4">
-                      Sign in to save your cart and earn rewards!
-                    </p>
-                    <div className="flex gap-2">
-                      <Button asChild className="flex-1">
-                        <Link to="/signin">Sign In</Link>
-                      </Button>
-                      <Button variant="outline" className="flex-1" onClick={handleContinueAnyways}>
-                        Continue Anyways
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Button onClick={handleCheckout} className="w-full" size="lg">
-                  Proceed to Checkout
+              {/* Coupon code input */}
+              <div className="flex items-center gap-2 mt-4">
+                <input
+                  type="text"
+                  value={coupon}
+                  onChange={e => setCoupon(e.target.value)}
+                  placeholder="Redeem coupon code"
+                  className="flex-1 border rounded px-3 py-2 text-sm bg-background"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => setRedeemState('success')} // Placeholder handler
+                  disabled={redeemState === 'loading'}
+                >
+                  {redeemState === 'loading' ? '...' : 'Redeem'}
                 </Button>
-              )}
-
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/catalog">
-                  Continue Shopping
-                </Link>
+              </div>
+              {/* Checkout button */}
+              <Button onClick={handleCheckout} className="w-full mt-4" size="lg">
+                Checkout
               </Button>
             </CardContent>
           </Card>

@@ -150,6 +150,14 @@ const TopPosts = () => {
   };
 
   const handleLinkSocials = () => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to link your socials',
+        variant: 'destructive',
+      });
+      return;
+    }
     navigate('/profile', { state: { openSocialsModal: true } });
   };
 
@@ -192,40 +200,36 @@ const TopPosts = () => {
     setIsSubmitting(true);
     try {
       let mediaUrl = '';
-      
       if (uploadMethod === 'file' && uploadedFile) {
         // Upload file to Supabase storage
         const fileExt = uploadedFile.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `user-posts/${fileName}`;
-
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, uploadedFile);
-
         if (uploadError) throw uploadError;
-
         const { data: { publicUrl } } = supabase.storage
           .from('avatars')
           .getPublicUrl(filePath);
-
         mediaUrl = publicUrl;
       } else if (uploadMethod === 'link') {
         mediaUrl = socialLink;
       }
 
-      const { error } = await supabase
-        .from('user_posts')
-        .insert({
-          user_id: user!.id,
-          media_url: mediaUrl,
-          media_type: uploadMethod === 'file' ? (uploadedFile?.type.startsWith('video/') ? 'video' : 'image') : 'link',
-          product_id: selectedProduct || null,
-          show_socials: showSocials,
-          show_username: showUsername
-        });
+      // Get the current user's ID from supabase.auth
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) throw new Error('User not authenticated');
 
-      if (error) throw error;
+      await supabase.from('user_posts').insert({
+        user_id: userId,
+        media_url: mediaUrl,
+        media_type: uploadMethod === 'file' ? (uploadedFile?.type.startsWith('video/') ? 'video' : 'image') : 'link',
+        product_id: selectedProduct || null,
+        show_socials: showSocials,
+        show_username: showUsername
+      });
 
       // Link to product if selected
       if (selectedProduct) {
@@ -277,80 +281,97 @@ const TopPosts = () => {
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
       <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Top Posts</h1>
-          <div className="flex gap-4">
-            <Button
-              onClick={handleCreatePost}
-              className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg bg-[#FFD600] text-black hover:bg-[#E6C200]"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Post
-            </Button>
-            <Button
-              onClick={handleLinkSocials}
-              variant="outline"
-              className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg border-[#FFD600] text-[#FFD600] bg-transparent hover:bg-[#FFD600]/10"
-            >
-              <Link className="w-4 h-4 mr-2" />
-              Link Socials
-            </Button>
-          </div>
-        </div>
-
-        {/* User Search */}
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <Search className="w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search for users by name..."
-              value={userSearch}
-              onChange={(e) => setUserSearch(e.target.value)}
-              className="max-w-md"
-            />
-          </div>
-          {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-lg mt-1 z-10 max-w-md ml-7">
-              {searchResults.map((profile) => (
-                <div
-                  key={profile.id}
-                  className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
-                  onClick={() => handleViewUserProfile(profile.id)}
-                >
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={profile.avatar_url || undefined} />
-                    <AvatarFallback>
-                      {profile.display_name?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">
-                    {profile.display_name || 'Anonymous User'}
-                  </span>
-                </div>
-              ))}
+        <div className="flex flex-col gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
+            <h1 className="text-3xl font-bold mb-2">Top Posts</h1>
+            {/* Mobile: Small, thin buttons above search bar, centered; Desktop: original position/size */}
+            <div className="flex gap-2 sm:hidden justify-end items-center mb-2 w-full">
+              <Button
+                onClick={handleCreatePost}
+                className="px-2 py-1 h-8 min-w-0 text-xs rounded-md bg-[#FFD600] text-black hover:bg-[#E6C200] font-semibold"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Create
+              </Button>
+              <Button
+                onClick={handleLinkSocials}
+                variant="outline"
+                className="px-2 py-1 h-8 min-w-0 text-xs rounded-md border-[#FFD600] text-[#FFD600] bg-transparent hover:bg-[#FFD600]/10 font-semibold"
+              >
+                <Link className="w-4 h-4 mr-1" />
+                Socials
+              </Button>
             </div>
-          )}
-        </div>
-
-        {/* Sort Toggle */}
-        <div className="flex gap-2">
-          <Button
-            variant={sortBy === 'recent' ? 'default' : 'outline'}
-            onClick={() => setSortBy('recent')}
-            size="sm"
-            className="transition-all duration-300 hover:transform hover:scale-105"
-          >
-            Most Recent
-          </Button>
-          <Button
-            variant={sortBy === 'trending' ? 'default' : 'outline'}
-            onClick={() => setSortBy('trending')}
-            size="sm"
-            className="transition-all duration-300 hover:transform hover:scale-105"
-          >
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Trending
-          </Button>
+            {/* Desktop: original position/size */}
+            <div className="hidden sm:flex flex-row gap-2 w-auto">
+              <Button
+                onClick={handleCreatePost}
+                className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg bg-[#FFD600] text-black hover:bg-[#E6C200] text-base font-semibold"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Post
+              </Button>
+              <Button
+                onClick={handleLinkSocials}
+                variant="outline"
+                className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg border-[#FFD600] text-[#FFD600] bg-transparent hover:bg-[#FFD600]/10 text-base font-semibold"
+              >
+                <Link className="w-4 h-4 mr-2" />
+                Link Socials
+              </Button>
+            </div>
+          </div>
+          <div className="relative mt-2">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search for users by name..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="max-w-md text-xs sm:text-base"
+              />
+            </div>
+            {searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-lg mt-1 z-10 max-w-md ml-7">
+                {searchResults.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
+                    onClick={() => handleViewUserProfile(profile.id)}
+                  >
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={profile.avatar_url || undefined} />
+                      <AvatarFallback>
+                        {profile.display_name?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">
+                      {profile.display_name || 'Anonymous User'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex flex-row gap-2 mt-2 w-full">
+            <Button
+              variant={sortBy === 'recent' ? 'default' : 'outline'}
+              onClick={() => setSortBy('recent')}
+              size="sm"
+              className="flex-1 transition-all duration-300 hover:transform hover:scale-105 text-xs sm:text-base"
+            >
+              Most Recent
+            </Button>
+            <Button
+              variant={sortBy === 'trending' ? 'default' : 'outline'}
+              onClick={() => setSortBy('trending')}
+              size="sm"
+              className="flex-1 transition-all duration-300 hover:transform hover:scale-105 text-xs sm:text-base"
+            >
+              <TrendingUp className="w-4 h-4 mr-1" />
+              Trending
+            </Button>
+          </div>
         </div>
 
         {/* Top Posts Feed */}
@@ -485,13 +506,14 @@ const TopPosts = () => {
                 </div>
               ) : (
                 <div>
-                  <label className="text-sm text-white mb-2 block">Instagram, YouTube, or TikTok Link</label>
+                  <label className="text-sm text-white mb-2 block">Instagram or YouTube link</label>
                   <Input
-                    placeholder="https://instagram.com/p/..."
+                    placeholder="Coming Soon"
                     value={socialLink}
-                    onChange={(e) => setSocialLink(e.target.value)}
-                    className="bg-gray-800 border-gray-600"
+                    disabled
+                    className="bg-gray-800 border-gray-600 opacity-60 cursor-not-allowed"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
                 </div>
               )}
 

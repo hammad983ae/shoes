@@ -4,11 +4,11 @@ import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'luc
 import { Link } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
-const ContactUs = () => {
+const Socials = () => {
   return (
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-8 w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Socials</h1>
       </div>
@@ -21,7 +21,7 @@ const ContactUs = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
           {/* Social Media */}
           <Card className="bg-[#0a0a0a] border-[#FFD700]">
             <CardHeader>
@@ -103,32 +103,32 @@ const ContactUs = () => {
             {/* Stores */}
             <Card className="bg-[#0a0a0a] border-[#FFD700]">
               <CardHeader>
-                <CardTitle>Stores</CardTitle>
+                <CardTitle>Our Stores</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <a 
-                  href="https://depop.com"
+                  href="https://www.instagram.com/cralluxsells/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
                 >
-                  <Users className="w-6 h-6 text-red-500" />
+                  <Instagram className="w-6 h-6 text-pink-500" />
                   <div>
-                    <p className="font-semibold">Depop</p>
-                    <p className="text-sm text-muted-foreground">Prices are negotiable.</p>
+                    <p className="font-semibold">Instagram Store</p>
+                    <p className="text-sm text-muted-foreground">Shop our latest drops</p>
                   </div>
                 </a>
 
                 <a 
-                  href="https://telegram.org"
+                  href="https://tiktok.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
                 >
-                  <Send className="w-6 h-6 text-blue-500" />
+                  <Music className="w-6 h-6 text-black" />
                   <div>
-                    <p className="font-semibold">Telegram</p>
-                    <p className="text-sm text-muted-foreground">Buy in bulk.</p>
+                    <p className="font-semibold">TikTok Shop</p>
+                    <p className="text-sm text-muted-foreground">Exclusive TikTok deals</p>
                   </div>
                 </a>
               </CardContent>
@@ -136,24 +136,67 @@ const ContactUs = () => {
           </div>
         </div>
 
-        <div className="mt-12 text-center">
-          <Card className="max-w-lg mx-auto border-0 shadow-[0_0_24px_4px_#FFD70099]">
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground mb-4">
-                Use one of these links to get around our ecosystem. Press this button to see our catalog and buy on the website.
-              </p>
-              <Button asChild>
-                <Link to="/catalog">
-                  Continue Shopping
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Contact Form */}
+        <Card className="mt-12 bg-[#0a0a0a] border-[#FFD700]">
+          <CardHeader>
+            <CardTitle>Get in Touch</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Have a Question?</h3>
+                <p className="text-muted-foreground mb-4">
+                  We're here to help! Send us a message and we'll respond as soon as possible.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-primary" />
+                    <span className="text-sm">doppelsells@gmail.com</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                    <span className="text-sm">DM us on Instagram</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <textarea 
+                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none resize-none"
+                    rows={4}
+                    placeholder="How can we help you?"
+                  />
+                </div>
+                <Button className="w-full btn-hover-glow">
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Message
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
     </div>
   );
 };
 
-export default ContactUs;
+export default Socials; 

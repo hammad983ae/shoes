@@ -14,6 +14,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+export function isAuthenticated(user: any) {
+  return !!user;
+}
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -141,6 +145,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           title: "Signed out",
           description: "You've been signed out successfully.",
         });
+        // Redirect to home page after successful sign out
+        window.location.href = '/';
       }
     } catch (error: any) {
       toast({
