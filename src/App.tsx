@@ -21,6 +21,7 @@ import Terms from "./pages/Terms";
 import SneakerCatalog from "./components/SneakerCatalog";
 import { ReferralDiscountNotification } from "./components/ReferralDiscountNotification";
 import ReturnPolicy from "./pages/ReturnPolicy";
+import OptInPolicy from "./pages/OptInPolicy";
 import ChatBotWidget from "./components/ChatBotWidget";
 import CheckoutInstructions from "./pages/CheckoutInstructions";
 
@@ -49,6 +50,7 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/return-policy" element={<ReturnPolicy />} />
+                <Route path="/opt-in-policy" element={<OptInPolicy />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

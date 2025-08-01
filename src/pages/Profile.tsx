@@ -831,14 +831,14 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Documentation Section - Fixed at bottom, now smaller and fits on mobile */}
-      <div className="py-2 px-2 sm:py-4 sm:px-6">
-        <div className="max-w-md mx-auto text-center">
-          <div className="flex flex-row flex-wrap justify-center gap-1 sm:gap-4 w-full">
+      {/* Footer Links - Fixed at bottom, centered and properly spaced */}
+      <div className="mt-auto py-4 px-4">
+        <div className="flex justify-center items-center">
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4">
             <Button
               variant="link"
               size="sm"
-              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
+              className="text-[12px] sm:text-sm px-2 py-1 text-gray-400 hover:text-yellow-500 transition-colors duration-200"
               onClick={() => window.open('/return-policy', '_blank')}
             >
               Return Policy
@@ -847,7 +847,7 @@ const Profile = () => {
             <Button
               variant="link"
               size="sm"
-              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
+              className="text-[12px] sm:text-sm px-2 py-1 text-gray-400 hover:text-yellow-500 transition-colors duration-200"
               onClick={() => window.open('/privacy', '_blank')}
             >
               Privacy Policy
@@ -856,10 +856,19 @@ const Profile = () => {
             <Button
               variant="link"
               size="sm"
-              className="text-[12px] px-1 sm:px-3 py-1 text-gray-400 hover:text-yellow-500 min-w-0"
+              className="text-[12px] sm:text-sm px-2 py-1 text-gray-400 hover:text-yellow-500 transition-colors duration-200"
               onClick={() => window.open('/terms', '_blank')}
             >
               Terms of Service
+            </Button>
+            <span className="text-gray-600 hidden sm:inline">|</span>
+            <Button
+              variant="link"
+              size="sm"
+              className="text-[12px] sm:text-sm px-2 py-1 text-gray-400 hover:text-yellow-500 transition-colors duration-200"
+              onClick={() => window.open('/opt-in-policy', '_blank')}
+            >
+              Opt-In Policy
             </Button>
           </div>
         </div>
