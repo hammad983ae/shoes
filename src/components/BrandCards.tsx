@@ -76,12 +76,12 @@ const BrandCards = () => {
             <div
               key={brand.id}
               onClick={() => handleBrandClick(brand)}
-              className="brand-card-horizontal group cursor-pointer transition-all duration-500 ease-out flex-shrink-0 snap-center"
+              className="group cursor-pointer transition-all duration-500 ease-out flex-shrink-0 snap-center w-48 sm:w-56 md:w-64 md:group-hover:w-96"
               style={{
                 '--hover-delay': `${index * 50}ms`
               } as React.CSSProperties}
             >
-              <div className="relative h-64 w-48 sm:h-72 sm:w-56 md:h-80 md:w-64 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 md:group-hover:w-96 group-hover:z-10">
+              <div className="relative h-64 sm:h-72 md:h-80 w-full rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
                 {/* Static Left Section Container */}
                 <div className="absolute left-0 top-0 w-48 sm:w-56 md:w-64 h-full z-20">
                   {/* Brand Background */}
@@ -115,7 +115,7 @@ const BrandCards = () => {
                 </div>
 
                 {/* Extended Right Section (Revealed on Hover) */}
-                <div className="hidden md:block absolute right-0 top-0 w-32 h-full opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
+                <div className="hidden md:block absolute left-64 top-0 w-32 h-full opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
                   <div 
                     className="absolute inset-0 w-full h-full"
                     style={{
