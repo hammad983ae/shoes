@@ -39,9 +39,13 @@ const MainCatalogNavBar = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if click is outside both search container AND results dropdown
+      // Check if click is outside search container
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false);
+        // Check if click is not on the dimmed background
+        const target = event.target as HTMLElement;
+        if (!target.closest('.search-results-container')) {
+          setShowResults(false);
+        }
       }
     };
 
@@ -52,8 +56,8 @@ const MainCatalogNavBar = ({
   const handleProductClick = (sneaker: Sneaker) => {
     setShowResults(false);
     setSearchTerm('');
-    // Navigate to full catalog with search
-    navigate(`/full-catalog?search=${encodeURIComponent(sneaker.name)}`);
+    // Navigate to full catalog with product ID to auto-open modal
+    navigate(`/full-catalog?product=${sneaker.id}`);
   };
 
   const handleShopAll = () => {
@@ -89,7 +93,7 @@ const MainCatalogNavBar = ({
               <div className="fixed inset-0 bg-black/50 z-40" />
               
               {/* Results Container */}
-              <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+              <div className="search-results-container absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
                 {filteredResults.length > 0 ? (
                   <>
                     {/* Results */}

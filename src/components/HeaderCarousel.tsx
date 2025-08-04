@@ -111,12 +111,12 @@ const HeaderCarousel = () => {
             }}
           >
             <div className="absolute inset-0 bg-black/20" />
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8 max-w-4xl mx-auto">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
                 {slide.title}
               </h2>
               {slide.subtitle && (
-                <p className="text-lg md:text-xl opacity-90 mb-6">
+                <p className="text-base md:text-lg opacity-90 mb-6 max-w-2xl">
                   {slide.subtitle}
                 </p>
               )}

@@ -28,11 +28,21 @@ const FullCatalog = () => {
   const { getFavoriteProducts } = useFavorites();
   const { user } = useAuth();
 
-  // Handle URL parameters for brand filtering
+  // Handle URL parameters for brand filtering and auto-open product modal
   useEffect(() => {
     const brandParam = searchParams.get('brand');
+    const productParam = searchParams.get('product');
+    
     if (brandParam) {
       setSelectedBrands([brandParam]);
+    }
+    
+    // Auto-open product modal if product ID is provided
+    if (productParam) {
+      const product = sneakerCatalog.find(s => s.id.toString() === productParam);
+      if (product) {
+        handleViewProduct(product);
+      }
     }
   }, [searchParams]);
 
