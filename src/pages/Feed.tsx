@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Search, TrendingUp, ExternalLink, Plus, Upload, Link } from 'lucide-react';
+import { Search, TrendingUp, Plus, Upload, Link } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
