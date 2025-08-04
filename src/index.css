@@ -708,17 +708,3 @@ button, .btn, .cta-button, .shadcn-btn {
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--brand-charcoal));
 }
-
-/* Custom Utility Classes */
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.brand-scroll-container:hover .brand-scroll-wrapper {
-  scroll-behavior: smooth;
-}

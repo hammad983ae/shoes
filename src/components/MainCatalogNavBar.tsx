@@ -41,10 +41,10 @@ const MainCatalogNavBar = ({
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Check if click is outside search container
+      // Check if click is outside search container and not on the dim overlay
       if (searchRef.current && !searchRef.current.contains(target)) {
         // Also check if it's not clicking on the search results container
-        if (!target.closest('.search-results-container')) {
+        if (!target.closest('.search-results-container') && !target.closest('.search-dim-overlay')) {
           setShowResults(false);
         }
       }
@@ -69,8 +69,8 @@ const MainCatalogNavBar = ({
   const handleProductClick = (sneaker: Sneaker) => {
     setShowResults(false);
     setSearchTerm('');
-    // Navigate to catalog/sneakers with product ID to auto-open modal
-    navigate(`/catalog/sneakers?product=${sneaker.id}`);
+    // Navigate to full catalog with product ID to auto-open modal
+    navigate(`/full-catalog?product=${sneaker.id}`);
   };
 
   const handleShopAll = () => {

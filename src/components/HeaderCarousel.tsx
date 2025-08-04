@@ -93,9 +93,9 @@ const HeaderCarousel = () => {
   };
 
   return (
-    <div className="relative w-screen h-96 overflow-hidden -ml-16 group cursor-pointer">
+    <div className="relative w-screen h-96 overflow-hidden -ml-16">
       {/* Slides */}
-      <div className="relative w-full h-full transition-transform duration-300 ease-out group-hover:scale-105">
+      <div className="relative w-full h-full">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -112,7 +112,7 @@ const HeaderCarousel = () => {
           >
             <div className="absolute inset-0 bg-black/20" />
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8 max-w-4xl mx-auto">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight max-w-3xl">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
                 {slide.title}
               </h2>
               {slide.subtitle && (
