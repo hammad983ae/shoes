@@ -79,7 +79,7 @@ const HeaderCarousel = () => {
   };
 
   return (
-    <div className="relative w-full h-96 overflow-hidden -ml-16 -mr-4">
+    <div className="relative w-full h-96 overflow-hidden -ml-16 -mr-0">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -117,41 +117,44 @@ const HeaderCarousel = () => {
         ))}
       </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-        {slides.map((_, index) => (
+      {/* Dots and Arrows Container */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20">
+        {/* Dots */}
+        <div className="flex space-x-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentSlide
+                  ? 'bg-white scale-125'
+                  : 'bg-white/50 hover:bg-white/75'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Arrows */}
+        <div className="flex space-x-4">
           <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-              index === currentSlide
-                ? 'bg-white scale-125'
-                : 'bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+            onClick={goToPrevious}
+            className="text-white hover:text-white/75 transition-all duration-200"
+            disabled={isTransitioning}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
 
-      {/* Navigation Arrows - Moved below dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-4 z-20">
-        <button
-          onClick={goToPrevious}
-          className="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-200"
-          disabled={isTransitioning}
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        <button
-          onClick={goToNext}
-          className="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-200"
-          disabled={isTransitioning}
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+          <button
+            onClick={goToNext}
+            className="text-white hover:text-white/75 transition-all duration-200"
+            disabled={isTransitioning}
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </div>
       </div>
     </div>
   );
