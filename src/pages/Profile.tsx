@@ -27,8 +27,8 @@ import {
   Instagram,
   Youtube,
   Check,
-  // ArrowLeft,
-  // Upload,
+  Bell,
+  Wallet,
   Video
 } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
@@ -111,8 +111,11 @@ const socialPlatforms = [
 const Profile = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [credits, setCredits] = useState<UserCredits | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   const [posts, setPosts] = useState<Post[]>([]);
   const [profile, setProfile] = useState<ProfileData>({ 
@@ -134,12 +137,12 @@ const Profile = () => {
   const [userReviews, setUserReviews] = useState<any[]>([]);
   
   // Modal states - back to original design
-  const navigate = useNavigate();
   const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isSocialsOpen, setIsSocialsOpen] = useState(false);
   const [isTransactionHistoryOpen, setIsTransactionHistoryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Form states
   // const [editForm, setEditForm] = useState({
@@ -270,6 +273,19 @@ const Profile = () => {
 
       if (postsData) setPosts(postsData);
 
+      // Fetch notifications
+      const { data: notificationsData } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (notificationsData) {
+        setNotifications(notificationsData);
+        const unreadNotifications = notificationsData.filter(n => !n.is_read);
+        setUnreadCount(unreadNotifications.length);
+      }
+
     } catch (error: any) {
       console.error('Error fetching user data:', error);
     }
@@ -397,6 +413,22 @@ const Profile = () => {
     }
   };
 
+  const markNotificationAsRead = async (notificationId: string) => {
+    try {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+      
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error: any) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
   const connectSocialPlatform = async (platform: string) => {
     toast({ 
       title: 'Coming Soon', 
@@ -428,14 +460,42 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-white">
-                    {profile.display_name || 'Anonymous User'}
-                  </h2>
-                  {profile.bio && (
-                    <p className="text-gray-300 text-sm mt-1">{profile.bio}</p>
-                  )}
-                  <p className="text-gray-400 text-sm mt-1">{user.email}</p>
-                  <p className="text-gray-500 text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
+                  <div className="flex items-center justify-between w-full">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">
+                        {profile.display_name || 'Anonymous User'}
+                      </h2>
+                      {profile.bio && (
+                        <p className="text-gray-300 text-sm mt-1">{profile.bio}</p>
+                      )}
+                      <p className="text-gray-400 text-sm mt-1">{user.email}</p>
+                      <p className="text-gray-500 text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
+                    </div>
+                    {/* Top Right Icons */}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate('/wallet')}
+                        className="relative text-gray-400 hover:text-yellow-500"
+                      >
+                        <Wallet className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsNotificationsOpen(true)}
+                        className="relative text-gray-400 hover:text-yellow-500"
+                      >
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -792,7 +852,8 @@ const Profile = () => {
               </DialogHeader>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Privacy</h3>
+                  <h3 className="text-2xl font-bold text-white">Settings</h3>
+                  <h4 className="text-lg font-semibold text-white">Privacy</h4>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="public-profile" className="text-gray-300">Public Profile</Label>
                     <Switch
@@ -801,39 +862,45 @@ const Profile = () => {
                       onCheckedChange={(checked) => setSettings({...settings, privacy_public_profile: checked})}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="show-email" className="text-gray-300">Show Email</Label>
-                    <Switch
-                      id="show-email"
-                      checked={settings.privacy_show_email}
-                      onCheckedChange={(checked) => setSettings({...settings, privacy_show_email: checked})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Notifications</h3>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="email-notifications" className="text-gray-300">Email Notifications</Label>
-                    <Switch
-                      id="email-notifications"
-                      checked={settings.notifications_email}
-                      onCheckedChange={(checked) => setSettings({...settings, notifications_email: checked})}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="push-notifications" className="text-gray-300">Push Notifications</Label>
-                    <Switch
-                      id="push-notifications"
-                      checked={settings.notifications_push}
-                      onCheckedChange={(checked) => setSettings({...settings, notifications_push: checked})}
-                    />
-                  </div>
                 </div>
 
                 <Button onClick={updateSettings} className="w-full">
                   Save Settings
                 </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Notifications Modal */}
+          <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+            <DialogContent className="bg-gray-900 border-gray-700 max-w-md max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-white">Notifications</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                {notifications.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No notifications yet</p>
+                ) : (
+                  notifications.map((notification) => (
+                    <div 
+                      key={notification.id} 
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        notification.is_read 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-gray-700 border-yellow-500/30'
+                      }`}
+                      onClick={() => !notification.is_read && markNotificationAsRead(notification.id)}
+                    >
+                      <p className="text-white text-sm">{notification.message}</p>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {new Date(notification.created_at).toLocaleString()}
+                      </p>
+                      {!notification.is_read && (
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </DialogContent>
           </Dialog>

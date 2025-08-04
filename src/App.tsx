@@ -15,6 +15,7 @@ import SignIn from "./pages/SignIn";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import EditCredentials from "./pages/EditCredentials";
+import Wallet from "./pages/Wallet";
 import Feed from "./pages/Feed";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/edit-credentials" element={<EditCredentials />} />
+                <Route path="/wallet" element={<Wallet />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/top-posts" element={<Feed />} />
                 <Route path="/credits" element={<GetFreeCredits />} />
