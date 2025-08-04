@@ -93,7 +93,7 @@ const HeaderCarousel = () => {
   };
 
   return (
-    <div className="relative w-screen h-96 overflow-hidden -ml-16">
+    <div className="relative w-screen h-96 overflow-hidden ml-0 md:-ml-16">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -111,7 +111,7 @@ const HeaderCarousel = () => {
             }}
           >
             <div className="absolute inset-0 bg-black/20" />
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8 max-w-4xl mx-auto">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 md:px-8 max-w-4xl mx-auto">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
                 {slide.title}
               </h2>
@@ -149,11 +149,11 @@ const HeaderCarousel = () => {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`transition-all duration-200 rounded-full ${
                 index === currentSlide
                   ? 'bg-white scale-125'
                   : 'bg-white/50 hover:bg-white/75'
-              }`}
+              } w-2 h-2 md:w-3 md:h-3`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
