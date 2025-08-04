@@ -20,14 +20,14 @@ const HeaderCarousel = () => {
       id: 1,
       title: "Website Launched – 20% Off All Sneakers Until August 19th",
       subtitle: "Limited time offer on all premium sneakers",
-      backgroundImage: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      backgroundImage: "linear-gradient(135deg, hsl(var(--brand-yellow)) 0%, hsl(var(--brand-charcoal)) 100%)",
       link: "/signup"
     },
     {
       id: 2,
       title: "Join Our Telegram for Exclusive Bulk Purchase Deals",
       subtitle: "Get access to wholesale prices and early releases",
-      backgroundImage: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      backgroundImage: "linear-gradient(135deg, hsl(var(--brand-charcoal)) 0%, hsl(var(--brand-black)) 100%)",
       link: "/socials"
     }
   ];
@@ -46,10 +46,14 @@ const HeaderCarousel = () => {
   const goToNext = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-      setTimeout(() => setIsTransitioning(false), 300);
-    }, 300);
+    
+    // Seamless infinite scroll - no visual reset
+    setCurrentSlide((prev) => {
+      const nextSlide = (prev + 1) % slides.length;
+      return nextSlide;
+    });
+    
+    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   const goToPrevious = () => {
@@ -113,27 +117,8 @@ const HeaderCarousel = () => {
         ))}
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-200 z-20"
-        disabled={isTransitioning}
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-
-      <button
-        onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-200 z-20"
-        disabled={isTransitioning}
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
-
       {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
         {slides.map((_, index) => (
           <button
             key={index}
@@ -146,6 +131,27 @@ const HeaderCarousel = () => {
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
+      </div>
+
+      {/* Navigation Arrows - Moved below dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-4 z-20">
+        <button
+          onClick={goToPrevious}
+          className="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-200"
+          disabled={isTransitioning}
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={goToNext}
+          className="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-200"
+          disabled={isTransitioning}
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );

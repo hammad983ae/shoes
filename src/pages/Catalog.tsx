@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import ViewProductModal from '@/components/ViewProductModal';
 import SignupIncentiveModal from '@/components/SignupIncentiveModal';
-import StickyNavBar from '@/components/StickyNavBar';
+import MainCatalogNavBar from '@/components/MainCatalogNavBar';
 import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import BrandCards from '@/components/BrandCards';
@@ -17,24 +17,17 @@ import { Sneaker } from '@/types/global';
 const Catalog = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('name-asc');
-  const [showFavorites, setShowFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Sneaker | null>(null);
   const [showIncentiveModal, setShowIncentiveModal] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<Sneaker | null>(null);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  // const { getFavoriteProducts } = useFavorites();
   const { user } = useAuth();
 
-  // Handle URL parameters for brand filtering
+  // Handle URL parameters - kept for potential future use
   useEffect(() => {
     const brandParam = searchParams.get('brand');
+    // Could be used for search functionality in the future
     if (brandParam) {
-      setSelectedBrands([brandParam]);
+      console.log('Brand filter:', brandParam);
     }
   }, [searchParams]);
 
@@ -70,24 +63,10 @@ const Catalog = () => {
 
       {/* Main content */}
       <div className="relative z-10 md:ml-16">
-        {/* Sticky Navigation Bar */}
-        <StickyNavBar
+        {/* Main Catalog Navigation Bar */}
+        <MainCatalogNavBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          showFavorites={showFavorites}
-          setShowFavorites={setShowFavorites}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          selectedBrands={selectedBrands}
-          setSelectedBrands={setSelectedBrands}
-          selectedColors={selectedColors}
-          setSelectedColors={setSelectedColors}
-          selectedTypes={selectedTypes}
-          setSelectedTypes={setSelectedTypes}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
         />
 
         {/* Header Carousel */}

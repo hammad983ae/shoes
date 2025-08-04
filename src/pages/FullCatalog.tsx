@@ -4,7 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import ProductCard from '@/components/ProductCard';
 import ViewProductModal from '@/components/ViewProductModal';
 import SignupIncentiveModal from '@/components/SignupIncentiveModal';
-import StickyNavBar from '@/components/StickyNavBar';
+import FullCatalogNavBar from '@/components/FullCatalogNavBar';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -110,8 +110,8 @@ const FullCatalog = () => {
 
       {/* Main content */}
       <div className="relative z-10 md:ml-16">
-        {/* Sticky Navigation Bar */}
-        <StickyNavBar
+        {/* Full Catalog Navigation Bar */}
+        <FullCatalogNavBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           showFavorites={showFavorites}

@@ -36,6 +36,11 @@
 
     --radius: 0.75rem;
 
+    /* Brand Colors */
+    --brand-yellow: 48 100% 50%;
+    --brand-charcoal: 0 0% 13%;
+    --brand-black: 0 0% 6%;
+
     /* Premium gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(47 96% 60%));
     --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(220 14% 10%));
@@ -103,6 +108,11 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Brand Colors for dark mode */
+    --brand-yellow: 48 100% 50%;
+    --brand-charcoal: 0 0% 13%;
+    --brand-black: 0 0% 6%;
   }
 }
 
@@ -590,4 +600,65 @@ button, .btn, .cta-button, .shadcn-btn {
   box-shadow: 0 0 10px #FFD600, 0 0 20px #FFA500, 0 0 30px #FF6B35;
   animation: explode 1.2s ease-out forwards;
   pointer-events: none;
+}
+
+/* Brand card expansion and sparkle animations */
+@keyframes shimmer {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 0.4;
+  }
+  25% { 
+    transform: scale(1.2) rotate(90deg);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(0.8) rotate(180deg);
+    opacity: 1;
+  }
+  75% { 
+    transform: scale(1.1) rotate(270deg);
+    opacity: 0.6;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { 
+    opacity: 0.3;
+    filter: brightness(0.8);
+  }
+  50% { 
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+/* Brand card container with expansion effect */
+.brand-card-container {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+}
+
+.brand-card-container:hover {
+  transform: scaleX(1.3);
+  z-index: 10;
+}
+
+.brand-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.brand-cards-grid .brand-card-container:hover ~ .brand-card-container {
+  transform: translateX(20%);
 }

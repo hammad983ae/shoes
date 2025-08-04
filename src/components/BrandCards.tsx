@@ -68,12 +68,12 @@ const BrandCards = () => {
   return (
     <div className="w-full">
       <h2 className="text-2xl font-bold text-foreground mb-6">Explore By Brand</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="brand-cards-grid">
         {brands.map((brand) => (
           <div
             key={brand.id}
             onClick={() => handleBrandClick(brand)}
-            className="group cursor-pointer transition-all duration-300 hover:scale-105"
+            className="brand-card-container group cursor-pointer"
           >
             <div className={`relative h-80 rounded-lg overflow-hidden ${brand.color} shadow-lg hover:shadow-xl transition-shadow duration-300`}>
               {/* Brand Logo */}
@@ -108,27 +108,30 @@ const BrandCards = () => {
                 </p>
               </div>
 
-              {/* Enhanced Hover Effects */}
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-transparent group-hover:from-purple-500/20 group-hover:via-pink-500/10 group-hover:to-blue-500/20 transition-all duration-500" />
+              {/* Enhanced Hover Effects with Brand Colors */}
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-transparent group-hover:from-hsl(var(--brand-yellow))/20 group-hover:via-hsl(var(--brand-charcoal))/10 group-hover:to-hsl(var(--brand-black))/20 transition-all duration-500" />
               
-              {/* Sparkle Effects */}
+              {/* Dynamic Sparkle Effects */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="absolute top-1/4 left-1/4 animate-pulse">
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
+                <div className="absolute top-1/4 left-1/4 animate-shimmer">
+                  <Sparkles className="w-4 h-4" style={{ color: 'hsl(var(--brand-yellow))' }} />
                 </div>
-                <div className="absolute top-1/3 right-1/3 animate-pulse delay-100">
-                  <Sparkles className="w-3 h-3 text-pink-300" />
+                <div className="absolute top-1/3 right-1/3 animate-twinkle delay-100">
+                  <Sparkles className="w-3 h-3" style={{ color: 'hsl(var(--brand-yellow))' }} />
                 </div>
-                <div className="absolute bottom-1/3 left-1/3 animate-pulse delay-200">
-                  <Sparkles className="w-2 h-2 text-blue-300" />
+                <div className="absolute bottom-1/3 left-1/3 animate-shimmer delay-200">
+                  <Sparkles className="w-2 h-2" style={{ color: 'hsl(var(--brand-charcoal))' }} />
                 </div>
-                <div className="absolute bottom-1/4 right-1/4 animate-pulse delay-300">
-                  <Sparkles className="w-3 h-3 text-green-300" />
+                <div className="absolute bottom-1/4 right-1/4 animate-twinkle delay-300">
+                  <Sparkles className="w-3 h-3" style={{ color: 'hsl(var(--brand-yellow))' }} />
+                </div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-shimmer delay-150">
+                  <Sparkles className="w-5 h-5" style={{ color: 'hsl(var(--brand-yellow))' }} />
                 </div>
               </div>
 
-              {/* Vignette Glow Effect */}
-              <div className="absolute inset-0 rounded-lg group-hover:shadow-[0_0_30px_rgba(147,51,234,0.3)] transition-shadow duration-500" />
+              {/* Brand Color Glow Effect */}
+              <div className="absolute inset-0 rounded-lg group-hover:shadow-[0_0_30px_hsl(var(--brand-yellow)/0.4)] transition-shadow duration-500" />
             </div>
           </div>
         ))}
@@ -137,4 +140,4 @@ const BrandCards = () => {
   );
 };
 
-export default BrandCards; 
+export default BrandCards;
