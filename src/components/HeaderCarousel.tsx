@@ -144,7 +144,7 @@ const HeaderCarousel = () => {
         </button>
 
         {/* Dots */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -153,7 +153,7 @@ const HeaderCarousel = () => {
                 index === currentSlide
                   ? 'bg-white scale-125'
                   : 'bg-white/50 hover:bg-white/75'
-              } w-1.5 h-1.5 md:w-3 md:h-3`}
+              } w-1 h-1 md:w-3 md:h-3`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
