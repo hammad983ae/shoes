@@ -17,35 +17,35 @@ const BrandCards = () => {
       id: 1,
       name: 'Rick Owens',
       logo: 'RO',
-      image: 'linear-gradient(135deg, #FFD600 0%, #212121 50%, #101010 100%)',
+      image: '/lovable-uploads/26a26a51-3a01-4611-b2fa-734fba29526b.png',
       color: 'bg-brand-charcoal'
     },
     {
       id: 2,
       name: 'Nike',
       logo: 'NIKE',
-      image: 'linear-gradient(135deg, #101010 0%, #FFD600 50%, #212121 100%)',
+      image: '/lovable-uploads/6f2d9f14-f4c9-4f0f-a0f7-7ebbada9cb46.png',
       color: 'bg-brand-black'
     },
     {
       id: 3,
       name: 'Maison Margiela',
       logo: 'MM',
-      image: 'linear-gradient(135deg, #212121 0%, #101010 50%, #FFD600 100%)',
+      image: '/lovable-uploads/1e141ffa-8795-4656-9fe4-3fa91464589b.png',
       color: 'bg-brand-yellow'
     },
     {
       id: 4,
       name: 'Jordan',
       logo: 'JORDAN',
-      image: 'linear-gradient(135deg, #FFD600 0%, #101010 50%, #212121 100%)',
+      image: '/lovable-uploads/29149801-446e-4423-8a4b-73bad7e16eac.png',
       color: 'bg-brand-charcoal'
     },
     {
       id: 5,
       name: 'Louis Vuitton',
       logo: 'LV',
-      image: 'linear-gradient(135deg, #212121 0%, #FFD600 50%, #101010 100%)',
+      image: '/lovable-uploads/5f31d87b-9d4e-4776-869a-7e690b4b196c.png',
       color: 'bg-brand-black'
     }
   ];
@@ -84,9 +84,12 @@ const BrandCards = () => {
               <div className="relative h-64 sm:h-72 md:h-80 w-48 sm:w-56 md:w-64 md:group-hover:w-96 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
                 {/* Brand Background - Always Full Width */}
                 <div 
-                  className="absolute inset-0 w-full h-full"
+                  className="absolute inset-0 w-full h-full bg-white"
                   style={{
-                    background: brand.image,
+                    backgroundImage: `url(${brand.image})`,
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
                   }}
                 />
                 <div className="absolute inset-0 bg-black/30" />
