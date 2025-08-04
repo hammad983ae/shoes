@@ -150,10 +150,10 @@ const HeaderCarousel = () => {
   key={index}
   onClick={() => goToSlide(index)}
   className={`transition-all duration-200 rounded-full ${
-    index === currentSlide
-      ? 'bg-white scale-110'
-      : 'bg-white/50 hover:bg-white/75'
-  } w-2 h-2 md:w-3 md:h-3`}
+  index === currentSlide
+    ? 'bg-white'
+    : 'bg-white/50 hover:bg-white/75'
+} w-2 h-2 md:w-3 md:h-3`}
   aria-label={`Go to slide ${index + 1}`}
 />
           ))}
