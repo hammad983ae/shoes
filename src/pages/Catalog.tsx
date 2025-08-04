@@ -62,7 +62,7 @@ const Catalog = () => {
       <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={() => {}} />
 
       {/* Main content */}
-      <div className="relative z-10 md:ml-16">
+      <div className="relative z-10 ml-0 md:ml-16">
         {/* Main Catalog Navigation Bar */}
         <MainCatalogNavBar
           searchTerm={searchTerm}
@@ -72,12 +72,12 @@ const Catalog = () => {
         {/* Header Carousel */}
         <HeaderCarousel />
 
-        <div className="px-4 py-8">
+        <div className="px-2 sm:px-4 py-4 sm:py-8">
           <SneakerCarousel onViewProduct={handleViewProduct} />
         </div>
 
         {/* Brand Cards Section */}
-        <div className="px-4 py-8">
+        <div className="px-2 sm:px-4 py-4 sm:py-8">
           <BrandCards />
         </div>
       </div>

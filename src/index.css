@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -166,12 +167,32 @@
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
     min-height: 100vh;
     overflow-x: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Global page gradient for consistency */
   .page-gradient {
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
     min-height: 100vh;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+    
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Touch-friendly scrolling */
+    .scrollable-content {
+      -webkit-overflow-scrolling: touch;
+    }
   }
 }
 
@@ -707,4 +728,51 @@ button, .btn, .cta-button, .shadcn-btn {
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--brand-charcoal));
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Hide scrollbars on mobile for cleaner look */
+  .scrollbar-hide-mobile {
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide-mobile::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Touch-friendly horizontal scrolling */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  
+  /* Better button touch targets on mobile */
+  button, .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text selection on touch */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Smooth scrolling for carousels */
+  .carousel-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .carousel-item {
+    scroll-snap-align: center;
+  }
 }

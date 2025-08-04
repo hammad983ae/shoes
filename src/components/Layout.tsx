@@ -30,7 +30,7 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="transition-all duration-300 md:ml-16">
+      <div className="transition-all duration-300 ml-0 md:ml-16">
         {children}
       </div>
       <ChatBotWidget />

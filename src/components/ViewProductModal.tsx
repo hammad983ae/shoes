@@ -173,7 +173,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
           <DialogContent
-            className="max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden"
+            className="max-w-xs sm:max-w-md md:max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden"
             hideClose
           >
             <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
@@ -183,9 +183,9 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background text-white"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-background/80 hover:bg-background text-white"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
     
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full w-full">
@@ -254,7 +254,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               </div>
     
               {/* RIGHT PANEL WITH SCROLLBAR */}
-              <div className="flex flex-col p-4 sm:p-8 h-full min-h-0 overflow-y-auto overflow-x-hidden custom-scroll scrollbar-thin scrollbar-thumb-[#FFD600] scrollbar-track-[#232323] w-full" style={{ maxHeight: '100vh' }}>
+              <div className="flex flex-col p-3 sm:p-6 md:p-8 h-full min-h-0 overflow-y-auto overflow-x-hidden custom-scroll scrollbar-thin scrollbar-thumb-[#FFD600] scrollbar-track-[#232323] w-full" style={{ maxHeight: '100vh' }}>
                 <style>{`
                   .custom-scroll {
                     scrollbar-width: thin;
@@ -273,10 +273,10 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   }
                 `}</style>
     
-                <div className="space-y-4 sm:space-y-6 pb-10 w-full">
+                <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-10 w-full">
                   {/* Product Info */}
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">{sneaker.name}</h1>
                     <div className="flex items-center gap-2 mb-2">
                       {reviews.length === 0 ? (
                         <span className="text-gray-400 text-sm">No reviews yet</span>
@@ -300,8 +300,8 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                         </>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
-                    <span className="text-sm text-gray-300 bg-gray-800 px-3 py-1 rounded-full">
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-[#FFD600] mb-1">{sneaker.price}</p>
+                    <span className="text-xs sm:text-sm text-gray-300 bg-gray-800 px-2 sm:px-3 py-1 rounded-full">
                       {sneaker.brand}
                     </span>
                   </div>
@@ -311,7 +311,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                     <label className="text-sm font-medium text-white mb-3 block">
                       Size {sneaker.sizing === 'EU' && <span className="text-gray-400 text-xs">(EU with US conversion)</span>}
                     </label>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 w-full">
                       {sizes.map((sizeOption) => {
                         const isEuSize = sneaker.sizing === 'EU' && typeof sizeOption === 'object';
                         const sizeValue = isEuSize ? (sizeOption as any).eu : sizeOption;
@@ -322,7 +322,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                             key={isEuSize ? (sizeOption as any).eu : sizeOption}
                             variant={isSelected ? 'default' : 'outline'}
                             onClick={() => setSelectedSize(sizeValue)}
-                            className="h-12 text-sm"
+                            className="h-10 sm:h-12 text-xs sm:text-sm"
                           >
                             {isEuSize ? `${(sizeOption as any).eu} (${(sizeOption as any).us})` : String(sizeOption)}
                           </Button>

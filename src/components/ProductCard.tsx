@@ -117,16 +117,16 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           </div>
         </div>
         {/* Product Info */}
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2 max-h-[2.5em]">
+        <div className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
+            <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2 max-h-[2.5em] truncate">
               {sneaker.name}
             </h3>
-            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full self-start">
               {sneaker.brand || 'Premium'}
             </span>
           </div>
-          <p className="text-lg font-bold text-primary mb-2">
+          <p className="text-base sm:text-lg font-bold text-primary mb-2">
             {sneaker.price}
           </p>
         </div>

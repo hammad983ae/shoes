@@ -44,39 +44,40 @@ const FullCatalogNavBar = ({
   const navigate = useNavigate();
 
   return (
-    <div className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 -ml-16">
-      <div className="px-8 py-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
+    <div className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 ml-0 md:-ml-16">
+      <div className="px-2 sm:px-4 md:px-8 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center w-full">
           {/* Back Button */}
           <Button
             variant="outline"
             onClick={() => navigate('/catalog')}
-            className="flex items-center gap-2 btn-hover-glow"
+            className="flex items-center gap-2 btn-hover-glow text-sm w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
 
           {/* Search Bar */}
-          <div className="relative flex-1 max-w-md w-full">
+          <div className="relative flex-1 max-w-xs sm:max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search sneakers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full"
+              className="pl-10 w-full text-sm"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               variant={showFavorites ? "default" : "outline"}
               onClick={() => setShowFavorites(!showFavorites)}
-              className="flex items-center gap-2 btn-hover-glow"
+              className="flex items-center justify-center gap-2 btn-hover-glow text-sm w-full sm:w-auto"
             >
               <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
-              Show Favorites
+              <span className="hidden sm:inline">Show Favorites</span>
+              <span className="sm:hidden">Favorites</span>
             </Button>
             
             <FilterPanel

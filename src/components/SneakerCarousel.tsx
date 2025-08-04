@@ -43,11 +43,11 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[1.4rem] font-bold text-foreground">Sneaker Collection</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 text-center sm:text-left">
+        <h2 className="text-xl sm:text-[1.4rem] font-bold text-foreground">Sneaker Collection</h2>
         <Button
           onClick={() => navigate('/full-catalog')}
-          className="flex items-center gap-2 btn-hover-glow"
+          className="flex items-center justify-center gap-2 btn-hover-glow text-sm w-full sm:w-auto"
         >
           Shop All Sneakers
           <ChevronRight className="w-4 h-4" />
@@ -56,7 +56,7 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
 
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
+        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory touch-pan-x"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -64,7 +64,7 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
         }}
       >
         {sneakerCatalog.map((sneaker, index) => (
-          <div key={sneaker.id} className="flex-shrink-0 w-64">
+          <div key={sneaker.id} className="flex-shrink-0 w-48 sm:w-56 md:w-64 snap-center">
             <ProductCard
               sneaker={sneaker}
               index={index}

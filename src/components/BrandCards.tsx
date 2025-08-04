@@ -67,11 +67,11 @@ const BrandCards = () => {
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl font-bold text-foreground mb-6">Explore By Brand</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 text-center sm:text-left">Explore By Brand</h2>
       
       {/* Horizontal Scrollable Container */}
       <div className="relative">
-        <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x">
           {brands.map((brand, index) => (
             <div
               key={brand.id}
@@ -81,9 +81,9 @@ const BrandCards = () => {
                 '--hover-delay': `${index * 50}ms`
               } as React.CSSProperties}
             >
-              <div className="relative h-80 w-64 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 group-hover:w-96 group-hover:z-10">
+              <div className="relative h-64 w-48 sm:h-72 sm:w-56 md:h-80 md:w-64 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 md:group-hover:w-96 group-hover:z-10">
                 {/* Static Left Section Container */}
-                <div className="absolute left-0 top-0 w-64 h-full z-20">
+                <div className="absolute left-0 top-0 w-48 sm:w-56 md:w-64 h-full z-20">
                   {/* Brand Background */}
                   <div 
                     className="absolute inset-0 w-full h-full"
@@ -94,20 +94,20 @@ const BrandCards = () => {
                   <div className="absolute inset-0 bg-black/30" />
                   
                   {/* Fixed Text Container */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-4 z-10">
+                  <div className="absolute inset-0 flex flex-col justify-between p-3 sm:p-4 z-10">
                     {/* Brand Logo - Fixed Position */}
                     <div className="flex-shrink-0">
-                      <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold text-white">
+                      <div className="px-2 py-1 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-bold text-white">
                         {brand.logo}
                       </div>
                     </div>
 
                     {/* Brand Name - Fixed Position */}
                     <div className="flex-shrink-0">
-                      <h3 className="text-lg font-bold text-white">
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-white">
                         {brand.name}
                       </h3>
-                      <p className="text-sm opacity-75 text-white">
+                      <p className="text-xs sm:text-sm opacity-75 text-white">
                         {getBrandFilteredSneakers(brand.name)} sneakers
                       </p>
                     </div>
@@ -115,7 +115,7 @@ const BrandCards = () => {
                 </div>
 
                 {/* Extended Right Section (Revealed on Hover) */}
-                <div className="absolute right-0 top-0 w-32 h-full opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
+                <div className="hidden md:block absolute right-0 top-0 w-32 h-full opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
                   <div 
                     className="absolute inset-0 w-full h-full"
                     style={{

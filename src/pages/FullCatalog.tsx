@@ -119,7 +119,7 @@ const FullCatalog = () => {
       <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={() => {}} />
 
       {/* Main content */}
-      <div className="relative z-10 md:ml-16">
+      <div className="relative z-10 ml-0 md:ml-16">
         {/* Full Catalog Navigation Bar */}
         <FullCatalogNavBar
           searchTerm={searchTerm}
@@ -140,8 +140,8 @@ const FullCatalog = () => {
           setPriceRange={setPriceRange}
         />
 
-        <div className="flex justify-center px-4 py-8 w-full">
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 max-w-screen-2xl w-full">
+        <div className="flex justify-center px-2 sm:px-4 py-4 sm:py-8 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 max-w-screen-2xl w-full">
             {filteredAndSortedSneakers.map((sneaker, index) => (
               <ProductCard 
                 key={sneaker.id} 
