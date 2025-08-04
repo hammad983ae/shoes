@@ -226,7 +226,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered);
+      filtered = getFavoriteProducts(filtered as any);
     }
 
     // Sort sneakers

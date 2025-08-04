@@ -9,7 +9,7 @@ import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, addItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [coupon, setCoupon] = useState('');
@@ -36,11 +36,19 @@ const Cart = () => {
     }
   };
 
-  // Placeholder for updating size (in real app, would update cart context)
   function handleSizeChange(item: any, newSize: string) {
     // Remove old item, add new with same quantity
     removeItem(item.id, item.size);
-    updateQuantity(item.id, newSize, Number(newQuantity));
+    // Re-add with new size and same quantity
+    for (let i = 0; i < item.quantity; i++) {
+      addItem({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        size: newSize
+      });
+    }
   }
 
   // Estimated tax (e.g., 8%)

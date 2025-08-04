@@ -77,7 +77,7 @@ const Catalog = () => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered);
+      filtered = getFavoriteProducts(filtered as any);
     }
 
     // Sort sneakers
@@ -135,7 +135,6 @@ const Catalog = () => {
         {/* Header Carousel */}
         <HeaderCarousel />
 
-        {/* Sneaker Collection Section */}
         <div className="px-4 py-8">
           <SneakerCarousel onViewProduct={handleViewProduct} />
         </div>
