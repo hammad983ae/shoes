@@ -39,6 +39,7 @@ const MainCatalogNavBar = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Check if click is outside both search container AND results dropdown
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowResults(false);
       }
@@ -73,7 +74,11 @@ const MainCatalogNavBar = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 w-full bg-transparent border-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              onFocus={() => searchTerm.trim() && setShowResults(true)}
+              onFocus={() => {
+                if (searchTerm.trim()) {
+                  setShowResults(true);
+                }
+              }}
             />
           </div>
 
@@ -81,10 +86,10 @@ const MainCatalogNavBar = ({
           {showResults && (
             <>
               {/* Background Dim */}
-              <div className="fixed inset-0 bg-black/50 -z-10" />
+              <div className="fixed inset-0 bg-black/50 z-40" />
               
               {/* Results Container */}
-              <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-xl max-h-96 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
                 {filteredResults.length > 0 ? (
                   <>
                     {/* Results */}

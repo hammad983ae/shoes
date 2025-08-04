@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Slide {
   id: number;
@@ -14,6 +15,7 @@ const HeaderCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const slides: Slide[] = [
     {
@@ -21,14 +23,14 @@ const HeaderCarousel = () => {
       title: "Website Launched – 20% Off All Sneakers Until August 19th",
       subtitle: "Limited time offer on all premium sneakers",
       backgroundImage: "linear-gradient(135deg, hsl(var(--brand-yellow)) 0%, hsl(var(--brand-charcoal)) 100%)",
-      link: "/signup"
+      link: "promo"
     },
     {
       id: 2,
       title: "Join Our Telegram for Exclusive Bulk Purchase Deals",
       subtitle: "Get access to wholesale prices and early releases",
       backgroundImage: "linear-gradient(135deg, hsl(var(--brand-charcoal)) 0%, hsl(var(--brand-black)) 100%)",
-      link: "/socials"
+      link: "/contact-us"
     }
   ];
 
@@ -75,11 +77,23 @@ const HeaderCarousel = () => {
   };
 
   const handleSlideClick = () => {
-    navigate(slides[currentSlide].link);
+    const currentLink = slides[currentSlide].link;
+    
+    if (currentLink === "promo") {
+      // 20% Off Promo - check if user is logged in
+      if (user) {
+        navigate('/full-catalog');
+      } else {
+        navigate('/signin');
+      }
+    } else {
+      // Direct navigation for other links
+      navigate(currentLink);
+    }
   };
 
   return (
-    <div className="relative w-full h-96 overflow-hidden -ml-16 -mr-0">
+    <div className="relative w-screen h-96 overflow-hidden -ml-16">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -118,7 +132,17 @@ const HeaderCarousel = () => {
       </div>
 
       {/* Dots and Arrows Container */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20">
+        {/* Left Arrow */}
+        <button
+          onClick={goToPrevious}
+          className="text-white hover:text-white/75 transition-all duration-200"
+          disabled={isTransitioning}
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
         {/* Dots */}
         <div className="flex space-x-2">
           {slides.map((_, index) => (
@@ -135,26 +159,15 @@ const HeaderCarousel = () => {
           ))}
         </div>
 
-        {/* Navigation Arrows */}
-        <div className="flex space-x-4">
-          <button
-            onClick={goToPrevious}
-            className="text-white hover:text-white/75 transition-all duration-200"
-            disabled={isTransitioning}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-
-          <button
-            onClick={goToNext}
-            className="text-white hover:text-white/75 transition-all duration-200"
-            disabled={isTransitioning}
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
+        {/* Right Arrow */}
+        <button
+          onClick={goToNext}
+          className="text-white hover:text-white/75 transition-all duration-200"
+          disabled={isTransitioning}
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );
