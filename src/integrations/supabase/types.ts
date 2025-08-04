@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
           created_at: string
@@ -224,9 +248,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accepted_terms: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string
+          credits: number | null
           display_name: string | null
           id: string
           referral_code: string | null
@@ -236,9 +262,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accepted_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          credits?: number | null
           display_name?: string | null
           id?: string
           referral_code?: string | null
@@ -248,9 +276,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accepted_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          credits?: number | null
           display_name?: string | null
           id?: string
           referral_code?: string | null
