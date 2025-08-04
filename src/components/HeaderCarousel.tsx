@@ -149,7 +149,7 @@ const HeaderCarousel = () => {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-0.5 h-0.5 md:w-3 md:h-3 rounded-full transition-all duration-200 ${
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
                 index === currentSlide
                   ? 'bg-white'
                   : 'bg-white/50 hover:bg-white/75'
