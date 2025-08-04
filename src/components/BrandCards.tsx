@@ -70,8 +70,17 @@ const BrandCards = () => {
       <h2 className="text-2xl font-bold text-foreground mb-6">Explore By Brand</h2>
       
       {/* Horizontal Scrollable Container */}
-      <div className="relative">
-        <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
+      <div 
+        className="relative brand-scroll-container"
+        onWheel={(e) => {
+          const container = e.currentTarget.querySelector('.brand-scroll-wrapper') as HTMLElement;
+          if (container) {
+            e.preventDefault();
+            container.scrollLeft += e.deltaY;
+          }
+        }}
+      >
+        <div className="brand-scroll-wrapper flex gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory hide-scrollbar">
           {brands.map((brand, index) => (
             <div
               key={brand.id}

@@ -56,29 +56,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      // Check for referral code in URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlReferralCode = urlParams.get('ref');
+      const finalReferralCode = referralCode || urlReferralCode;
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
             display_name: displayName || email.split('@')[0],
-            referral_code: referralCode || null,
+            referral_code: finalReferralCode || null,
             accepted_terms: acceptedTerms || false
           }
         }
       });
 
       if (error) {
+        console.error('Supabase auth error:', error);
         toast({
           title: "Sign up failed",
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        // Profile creation is now handled by database trigger
+      } else if (data?.user) {
+        // Profile creation should be handled by database trigger
+        // But we'll add additional error handling to ensure it works
 
-        if (referralCode) {
+        if (finalReferralCode) {
           // Show referral discount notification for referred users
           toast({
             title: "Welcome! 🎉",
@@ -94,9 +101,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       return { error };
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: "Sign up failed",
-        description: error.message,
+        description: error.message || "Database error saving new user",
         variant: "destructive",
       });
       return { error };
