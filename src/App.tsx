@@ -24,7 +24,7 @@ import { ReferralDiscountNotification } from "./components/ReferralDiscountNotif
 import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
 import ReferralRedirect from "./components/ReferralRedirect";
-import ChatBotWidget from "./components/ChatBotWidget";
+
 import CheckoutInstructions from "./pages/CheckoutInstructions";
 
 const App = () => (

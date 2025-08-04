@@ -51,7 +51,7 @@ export const useReferral = () => {
         .select('credits_earned')
         .eq('user_id', user.id);
 
-      const totalCreditsEarned = analytics?.reduce((sum, a) => sum + a.credits_earned, 0) || 0;
+      const totalCreditsEarned = analytics?.reduce((sum, a) => sum + (a.credits_earned || 0), 0) || 0;
 
       if (profile) {
         setReferralData({

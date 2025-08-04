@@ -1,17 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferral } from '@/hooks/useReferral';
-import { useToast } from '@/hooks/use-toast';
+
 import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
 const GetFreeCredits = () => {
   const { user } = useAuth();
   const { referralData, copyReferralLink, shareReferralLink } = useReferral();
-  const { toast } = useToast();
   const [dollarAmount, setDollarAmount] = useState(1);
   const credits = dollarAmount * 100;
 

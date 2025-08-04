@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, Coins } from 'lucide-react';
+import { Trophy, Users } from 'lucide-react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import LeaderboardRow from './LeaderboardRow';
 

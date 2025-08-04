@@ -47,6 +47,7 @@ export type Database = {
       post_analytics: {
         Row: {
           created_at: string
+          credits_earned: number | null
           id: string
           interaction_type: string
           interaction_value: number | null
@@ -55,6 +56,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          credits_earned?: number | null
           id?: string
           interaction_type: string
           interaction_value?: number | null
@@ -63,6 +65,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          credits_earned?: number | null
           id?: string
           interaction_type?: string
           interaction_value?: number | null
@@ -227,6 +230,7 @@ export type Database = {
           display_name: string | null
           id: string
           referral_code: string | null
+          referrals_count: number | null
           referred_by: string | null
           updated_at: string
           user_id: string
@@ -238,6 +242,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           referral_code?: string | null
+          referrals_count?: number | null
           referred_by?: string | null
           updated_at?: string
           user_id: string
@@ -249,6 +254,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           referral_code?: string | null
+          referrals_count?: number | null
           referred_by?: string | null
           updated_at?: string
           user_id?: string
@@ -506,6 +512,7 @@ export type Database = {
       user_credits: {
         Row: {
           current_balance: number | null
+          earned_from_referrals: number | null
           id: string
           total_earned: number | null
           total_spent: number | null
@@ -514,6 +521,7 @@ export type Database = {
         }
         Insert: {
           current_balance?: number | null
+          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null
@@ -522,6 +530,7 @@ export type Database = {
         }
         Update: {
           current_balance?: number | null
+          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null

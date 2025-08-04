@@ -3,15 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, Heart } from 'lucide-react';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useState } from 'react';
-
-
-interface Sneaker {
-  id: number;
-  images: string[];
-  price: string;
-  name: string;
-  category: string;
-}
+import { Sneaker } from '@/types/global';
 
 interface ProductCardProps {
   sneaker: Sneaker;
@@ -27,7 +19,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
   };
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const totalImages = sneaker.images.length;
+  const totalImages = sneaker.images?.length || 1;
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,7 +51,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
                 transform: `translateX(-${currentIndex * 100}%)`
               }}
             >
-              {sneaker.images.map((image, index) => (
+              {(sneaker.images || [sneaker.image]).map((image, index) => (
                 <img 
                   key={index}
                   src={image} 
@@ -87,7 +79,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
                 &#8594;
               </button>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
-                {sneaker.images.map((_, i) => (
+                {(sneaker.images || [sneaker.image]).map((_, i) => (
                   <span
                     key={i}
                     className={`w-2 h-2 rounded-full ${i === currentIndex ? 'bg-primary' : 'bg-gray-400'} inline-block`}
@@ -131,7 +123,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
               {sneaker.name}
             </h3>
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
-              {sneaker.brand}
+              {sneaker.brand || 'Premium'}
             </span>
           </div>
           <p className="text-lg font-bold text-primary mb-2">

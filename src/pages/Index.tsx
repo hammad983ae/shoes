@@ -6,18 +6,18 @@ import SneakerCatalog from '@/components/SneakerCatalog';
 import ParticleExplosion from '@/components/ParticleExplosion';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import AuthModal from '@/components/AuthModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { useReferralCode } from '@/hooks/useReferralCode';
+
+
 
 type AppState = 'initial' | 'floating' | 'cta' | 'explosion' | 'catalog';
 
 const Index = () => {
   const [appState, setAppState] = useState<AppState>('initial');
   const [showParticles, setShowParticles] = useState(false);
-  const { user } = useAuth();
+  
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
-  const { referralCode } = useReferralCode();
+  
   
 
   useEffect(() => {
@@ -52,14 +52,6 @@ const Index = () => {
     }, 1200); // Match the explosion animation duration
   };
 
-  const handleBackToHome = () => {
-    setAppState('initial');
-    setShowParticles(false);
-    
-    // Restart the initial sequence
-    setTimeout(() => setAppState('floating'), 200);
-    setTimeout(() => setAppState('cta'), 1500);
-  };
 
   const handleViewInstagram = () => {
     window.open('https://instagram.com', '_blank');
