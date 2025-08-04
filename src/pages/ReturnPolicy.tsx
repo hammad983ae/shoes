@@ -11,7 +11,7 @@ export default function ReturnPolicy() {
             <p>At Crallux Sells, customer satisfaction is important to us. Please read our policy carefully before ordering.</p>
             <h2 className="text-2xl font-bold mt-8">Returns</h2>
             <p>All sales are final unless the item arrives significantly damaged or incorrect.</p>
-            <p>To request a return for a damaged or incorrect item, contact us within 3 calendar days of delivery at <a href="mailto:doppelsells@gmail.com" className="text-primary hover:underline">doppelsells@gmail.com</a> with:</p>
+            <p>To request a return for a damaged or incorrect item, contact us within 3 calendar days of delivery at <a href="mailto:cralluxmaster@protonmail.com" className="text-primary hover:underline">cralluxmaster@protonmail.com</a> with:</p>
             <ul>
               <li>Your order number</li>
               <li>Photos of the item and packaging</li>
@@ -34,7 +34,7 @@ export default function ReturnPolicy() {
             <h2 className="text-2xl font-bold mt-8">Shipping for Returns</h2>
             <p>Customers are responsible for return shipping costs unless the return is due to an error on our part (damaged or incorrect item).</p>
             <h2 className="text-2xl font-bold mt-8">Contact</h2>
-            <p>For any return or order issue, email <a href="mailto:doppelsells@gmail.com" className="text-primary hover:underline">doppelsells@gmail.com</a> within 3 days of delivery.</p>
+            <p>For any return or order issue, email <a href="mailto:cralluxmaster@protonmail.com" className="text-primary hover:underline">cralluxmaster@protonmail.com</a> within 3 days of delivery.</p>
           </div>
         </div>
       </div>

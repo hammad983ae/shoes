@@ -23,7 +23,7 @@ POLICIES:
 - Returns: All sales final unless damaged/incorrect. 3-day return window.
 - Shipping: FREE 5-9 day shipping on all orders
 - Payment: Stripe processing, must be signed in to purchase
-- Contact: doppelsells@gmail.com
+- Contact: cralluxmaster@protonmail.com
 
 REFERRAL SYSTEM:
 - Users earn 10% back in credits for successful referrals
@@ -42,7 +42,7 @@ AUTHENTICITY:
 
 BUSINESS DETAILS:
 - Website: https://cralluxsells.com
-- Email: doppelsells@gmail.com
+- Email: cralluxmaster@protonmail.com
 - 24/7 online support
 - Premium sneaker marketplace
 
@@ -72,7 +72,7 @@ function stripThinking(text: string): string {
 function validateResponse(response: string): boolean {
   const keyFacts = [
     'cralluxsells.com',
-    'doppelsells@gmail.com',
+    'cralluxmaster@protonmail.com',
     '5-9 days',
     'FREE shipping',
     '3 days',
@@ -195,7 +195,7 @@ export default function ChatBotWidget() {
       
       // Validate response accuracy
       if (!validateResponse(aiText)) {
-        aiText += '\n\n*For the most accurate information, please contact doppelsells@gmail.com*';
+        aiText += '\n\n*For the most accurate information, please contact cralluxmaster@protonmail.com*';
       }
       
       setMessages((msgs) => [...msgs, { sender: 'ai', text: aiText }]);

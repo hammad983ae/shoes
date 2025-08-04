@@ -42,7 +42,7 @@ export default function Terms() {
             <h2 className="text-2xl font-bold mt-8">11. Governing Law</h2>
             <p>These Terms are governed by the laws of the United States and your state of residence, without regard to conflict of law principles.</p>
             <h2 className="text-2xl font-bold mt-8">Contact</h2>
-            <p>For questions, email <a href="mailto:doppelsells@gmail.com" className="text-primary hover:underline">doppelsells@gmail.com</a>.</p>
+            <p>For questions, email <a href="mailto:cralluxmaster@protonmail.com" className="text-primary hover:underline">cralluxmaster@protonmail.com</a>.</p>
           </div>
         </div>
       </div>

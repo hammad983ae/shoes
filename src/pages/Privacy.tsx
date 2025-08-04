@@ -31,7 +31,7 @@ export default function Privacy() {
               <li><b>Legal Requirements:</b> If required to comply with law, regulation, or valid legal process.</li>
             </ul>
             <h2 className="text-2xl font-bold mt-8">4. Data Retention</h2>
-            <p>We keep your data only as long as necessary for business purposes or to comply with applicable laws. You may request deletion by emailing doppelsells@gmail.com.</p>
+            <p>We keep your data only as long as necessary for business purposes or to comply with applicable laws. You may request deletion by emailing cralluxmaster@protonmail.com.</p>
             <h2 className="text-2xl font-bold mt-8">5. Your Rights</h2>
             <ul>
               <li>Access, update, or correct your account information at any time.</li>
@@ -47,7 +47,7 @@ export default function Privacy() {
             <h2 className="text-2xl font-bold mt-8">9. Updates</h2>
             <p>We may update this Privacy Policy periodically. Updates will be posted with a new effective date.</p>
             <h2 className="text-2xl font-bold mt-8">Contact</h2>
-            <p>If you have questions or requests, email <a href="mailto:doppelsells@gmail.com" className="text-primary hover:underline">doppelsells@gmail.com</a>.</p>
+            <p>If you have questions or requests, email <a href="mailto:cralluxmaster@protonmail.com" className="text-primary hover:underline">cralluxmaster@protonmail.com</a>.</p>
           </div>
         </div>
       </div>

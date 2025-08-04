@@ -3,7 +3,7 @@ export const CHATBOT_KNOWLEDGE = {
     returns: {
       general: "All sales are final unless item arrives significantly damaged or incorrect",
       timeframe: "Returns must be requested within 3 days of delivery",
-      process: "Email doppelsells@gmail.com with order number and photos",
+      process: "Email cralluxmaster@protonmail.com with order number and photos",
       shipping: "Customers responsible for return shipping unless error is ours",
       refund: "Refunds processed within 7-10 business days after inspection",
       eligibility: "Items must be unused and in original condition with all packaging",
@@ -23,7 +23,7 @@ export const CHATBOT_KNOWLEDGE = {
     }
   },
   business: {
-    contact: "doppelsells@gmail.com",
+    contact: "cralluxmaster@protonmail.com",
     website: "https://cralluxsells.com",
     hours: "24/7 online support",
     location: "Online business",
@@ -64,7 +64,7 @@ export const FAQ_DATA = {
   },
   returns: {
     question: "What's your return policy?",
-    answer: "All sales are final unless item arrives damaged or incorrect. 3-day return window. Email doppelsells@gmail.com with order number and photos."
+    answer: "All sales are final unless item arrives damaged or incorrect. 3-day return window. Email cralluxmaster@protonmail.com with order number and photos."
   },
   payment: {
     question: "What payment methods do you accept?",
@@ -84,6 +84,6 @@ export const FAQ_DATA = {
   },
   contact: {
     question: "How do I contact support?",
-    answer: "Email doppelsells@gmail.com for any questions or support needs."
+    answer: "Email cralluxmaster@protonmail.com for any questions or support needs."
   }
 }; 
