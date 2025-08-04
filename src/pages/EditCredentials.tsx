@@ -32,8 +32,7 @@ export default function EditCredentials() {
       setError('New passwords do not match.');
       return;
     }
-    // TODO: Add Supabase update logic here
-    // On success:
+    // TODO: Implement email/password update logic with Supabase
     navigate('/edit-profile');
   };
 

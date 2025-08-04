@@ -115,8 +115,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('View Product clicked for:', sneaker.name);
-                handleViewProduct();
+              handleViewProduct();
               }}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow"
             >

@@ -66,7 +66,7 @@ const TopPosts = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchPosts = useCallback(async () => {
-    console.log('Fetching posts...');
+    
     const { data, error } = await supabase
       .from('posts')
       .select(`
@@ -75,7 +75,7 @@ const TopPosts = () => {
       `)
       .order('created_at', { ascending: false });
 
-    console.log('Posts fetch result:', { data, error });
+    
     if (data && !error) {
       setPosts(data as unknown as Post[]);
     } else if (error) {
@@ -125,7 +125,7 @@ const TopPosts = () => {
     const productFilter = searchParams.get('product');
     if (productFilter) {
       // Optional: Add filtering logic here
-      console.log('Filtering by product:', productFilter);
+      
     }
   }, [searchParams]);
 
@@ -219,13 +219,13 @@ const TopPosts = () => {
   const handleSubmitPost = async () => {
     setIsSubmitting(true);
     try {
-      console.log('Starting post creation...');
+      
       let mediaUrl = '';
       let postTitle = '';
       let postType = 'link';
       
              if (uploadMethod === 'file' && uploadedFile) {
-         console.log('Uploading file:', uploadedFile.name);
+         
          
          // Generate unique filename
          const fileExt = uploadedFile.name.split('.').pop();
@@ -261,13 +261,13 @@ const TopPosts = () => {
          mediaUrl = publicUrl;
          postTitle = uploadedFile.name;
          postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
-         console.log('File uploaded successfully, URL:', mediaUrl);
+         
          
        } else if (uploadMethod === 'link') {
         mediaUrl = socialLink;
         postTitle = 'Social Media Post';
         postType = 'link';
-        console.log('Using social link:', mediaUrl);
+        
       }
 
       const { data: userData } = await supabase.auth.getUser();

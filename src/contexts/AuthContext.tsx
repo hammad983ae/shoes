@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -76,21 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
-        // Create profile for the new user
-        if (data.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: data.user.id,
-              display_name: displayName || email.split('@')[0],
-              referral_code: referralCode || null,
-              accepted_terms: acceptedTerms || false
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-          }
-        }
+        // Profile creation is now handled by database trigger
 
         if (referralCode) {
           // Show referral discount notification for referred users

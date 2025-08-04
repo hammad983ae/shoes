@@ -14,31 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_requests: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
-          bonus_credits: number | null
-          calculated_at: string
-          credits_earned: number
-          engagement_multiplier: number | null
+          created_at: string
           id: string
+          interaction_type: string
+          interaction_value: number | null
           top_post_id: string
           user_id: string
         }
         Insert: {
-          bonus_credits?: number | null
-          calculated_at?: string
-          credits_earned?: number
-          engagement_multiplier?: number | null
+          created_at?: string
           id?: string
+          interaction_type: string
+          interaction_value?: number | null
           top_post_id: string
           user_id: string
         }
         Update: {
-          bonus_credits?: number | null
-          calculated_at?: string
-          credits_earned?: number
-          engagement_multiplier?: number | null
+          created_at?: string
           id?: string
+          interaction_type?: string
+          interaction_value?: number | null
           top_post_id?: string
           user_id?: string
         }
@@ -194,40 +221,34 @@ export type Database = {
       }
       profiles: {
         Row: {
-          agreed_to_terms: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string | null
           id: string
           referral_code: string | null
-          referrals_count: number | null
           referred_by: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          agreed_to_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
           referral_code?: string | null
-          referrals_count?: number | null
           referred_by?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          agreed_to_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
           referral_code?: string | null
-          referrals_count?: number | null
           referred_by?: string | null
           updated_at?: string
           user_id?: string
@@ -270,6 +291,39 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          credits_earned: number | null
+          id: string
+          referral_code: string
+          referred_user_id: string
+          referrer_user_id: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          credits_earned?: number | null
+          id?: string
+          referral_code: string
+          referred_user_id: string
+          referrer_user_id: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          credits_earned?: number | null
+          id?: string
+          referral_code?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           created_at: string
@@ -302,38 +356,32 @@ export type Database = {
       }
       social_connections: {
         Row: {
-          access_token: string | null
-          connected_at: string
+          created_at: string
           id: string
-          is_active: boolean
-          last_sync_at: string | null
+          is_verified: boolean | null
           platform: string
-          platform_user_id: string | null
-          refresh_token: string | null
+          profile_url: string | null
+          updated_at: string
           user_id: string
           username: string
         }
         Insert: {
-          access_token?: string | null
-          connected_at?: string
+          created_at?: string
           id?: string
-          is_active?: boolean
-          last_sync_at?: string | null
+          is_verified?: boolean | null
           platform: string
-          platform_user_id?: string | null
-          refresh_token?: string | null
+          profile_url?: string | null
+          updated_at?: string
           user_id: string
           username: string
         }
         Update: {
-          access_token?: string | null
-          connected_at?: string
+          created_at?: string
           id?: string
-          is_active?: boolean
-          last_sync_at?: string | null
+          is_verified?: boolean | null
           platform?: string
-          platform_user_id?: string | null
-          refresh_token?: string | null
+          profile_url?: string | null
+          updated_at?: string
           user_id?: string
           username?: string
         }
@@ -341,74 +389,65 @@ export type Database = {
       }
       top_posts: {
         Row: {
-          author_platform_id: string | null
           author_username: string
           comment_count: number | null
+          created_at: string
           credits_earned: number | null
           crowlix_user_id: string | null
           description: string | null
           engagement_score: number | null
-          hashtags: string[] | null
           id: string
-          imported_at: string
-          last_updated_at: string
           like_count: number | null
-          original_url: string
+          original_url: string | null
           platform: string
           platform_post_id: string
-          posted_at: string
+          posted_at: string | null
           share_count: number | null
-          tag_mentions: string[] | null
           thumbnail_url: string | null
           title: string | null
+          updated_at: string
           video_url: string | null
           view_count: number | null
         }
         Insert: {
-          author_platform_id?: string | null
           author_username: string
           comment_count?: number | null
+          created_at?: string
           credits_earned?: number | null
           crowlix_user_id?: string | null
           description?: string | null
           engagement_score?: number | null
-          hashtags?: string[] | null
           id?: string
-          imported_at?: string
-          last_updated_at?: string
           like_count?: number | null
-          original_url: string
+          original_url?: string | null
           platform: string
           platform_post_id: string
-          posted_at: string
+          posted_at?: string | null
           share_count?: number | null
-          tag_mentions?: string[] | null
           thumbnail_url?: string | null
           title?: string | null
+          updated_at?: string
           video_url?: string | null
           view_count?: number | null
         }
         Update: {
-          author_platform_id?: string | null
           author_username?: string
           comment_count?: number | null
+          created_at?: string
           credits_earned?: number | null
           crowlix_user_id?: string | null
           description?: string | null
           engagement_score?: number | null
-          hashtags?: string[] | null
           id?: string
-          imported_at?: string
-          last_updated_at?: string
           like_count?: number | null
-          original_url?: string
+          original_url?: string | null
           platform?: string
           platform_post_id?: string
-          posted_at?: string
+          posted_at?: string | null
           share_count?: number | null
-          tag_mentions?: string[] | null
           thumbnail_url?: string | null
           title?: string | null
+          updated_at?: string
           video_url?: string | null
           view_count?: number | null
         }
@@ -464,42 +503,9 @@ export type Database = {
           },
         ]
       }
-      referrals: {
-        Row: {
-          id: string
-          referrer_user_id: string
-          referral_code: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          referrer_user_id: string
-          referral_code: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          referrer_user_id?: string
-          referral_code?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referrals_referrer_user_id_fkey"
-            columns: ["referrer_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_credits: {
         Row: {
           current_balance: number | null
-          earned_from_referrals: number | null
           id: string
           total_earned: number | null
           total_spent: number | null
@@ -508,7 +514,6 @@ export type Database = {
         }
         Insert: {
           current_balance?: number | null
-          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null
@@ -517,7 +522,6 @@ export type Database = {
         }
         Update: {
           current_balance?: number | null
-          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null
@@ -598,40 +602,28 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string
+          email_notifications: boolean | null
           id: string
-          notifications_credits: boolean | null
-          notifications_email: boolean | null
-          notifications_push: boolean | null
-          notifications_social_mentions: boolean | null
-          privacy_analytics_visible: boolean | null
-          privacy_posts_visible: boolean | null
-          privacy_profile_visible: boolean | null
+          privacy_level: string | null
+          push_notifications: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          email_notifications?: boolean | null
           id?: string
-          notifications_credits?: boolean | null
-          notifications_email?: boolean | null
-          notifications_push?: boolean | null
-          notifications_social_mentions?: boolean | null
-          privacy_analytics_visible?: boolean | null
-          privacy_posts_visible?: boolean | null
-          privacy_profile_visible?: boolean | null
+          privacy_level?: string | null
+          push_notifications?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          email_notifications?: boolean | null
           id?: string
-          notifications_credits?: boolean | null
-          notifications_email?: boolean | null
-          notifications_push?: boolean | null
-          notifications_social_mentions?: boolean | null
-          privacy_analytics_visible?: boolean | null
-          privacy_posts_visible?: boolean | null
-          privacy_profile_visible?: boolean | null
+          privacy_level?: string | null
+          push_notifications?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -642,10 +634,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

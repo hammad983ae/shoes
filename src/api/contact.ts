@@ -20,11 +20,11 @@ export const submitContactRequest = async (contactData: ContactRequest) => {
     }
 
     // Send email notification using Supabase Edge Function
-    const emailResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/send-contact-email`, {
+    const emailResponse = await fetch('https://uvczawicaqqiyutcqoyg.supabase.co/functions/v1/send-contact-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.supabaseKey}`,
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2Y3phd2ljYXFxaXl1dGNxb3lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNjczNDAsImV4cCI6MjA2ODY0MzM0MH0.m3NCcH46Dfce34aVgEYbF08Bh_6rkMIDB6UF6z6xLLY',
       },
       body: JSON.stringify({
         name: contactData.name,
