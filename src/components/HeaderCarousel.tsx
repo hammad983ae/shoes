@@ -144,21 +144,30 @@ const HeaderCarousel = () => {
         </button>
 
         {/* Dots */}
-        <div className="flex space-x-1">
+        <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === currentSlide
-                  ? 'bg-white'
-                  : 'bg-white/50 hover:bg-white/75'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
+           <button
+  key={index}
+  onClick={() => goToSlide(index)}
+  className={`rounded-full transition-colors duration-200 ${
+  index === currentSlide
+    ? 'bg-white'
+    : 'bg-white/50 hover:bg-white/75'
+}`}
+style={{
+  width: '12px',
+  height: '12px',
+  minWidth: '12px',
+  minHeight: '12px',
+  maxWidth: '12px',
+  maxHeight: '12px',
+}}
+  aria-label={`Go to slide ${index + 1}`}
+/>
+
+
           ))}
         </div>
-
 
         {/* Right Arrow */}
         <button
