@@ -153,7 +153,7 @@ const HeaderCarousel = () => {
                 index === currentSlide
                   ? 'bg-white scale-125'
                   : 'bg-white/50 hover:bg-white/75'
-              } w-1 h-1 md:w-3 md:h-3`}
+              } w-0.5 h-0.5 md:w-3 md:h-3`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
