@@ -147,15 +147,15 @@ const HeaderCarousel = () => {
         <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
             <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`transition-all duration-200 rounded-full ${
-                index === currentSlide
-                  ? 'bg-white scale-125'
-                  : 'bg-white/50 hover:bg-white/75'
-              } w-0.5 h-0.5 md:w-3 md:h-3`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
+  key={index}
+  onClick={() => goToSlide(index)}
+  className={`transition-all duration-200 rounded-full ${
+    index === currentSlide
+      ? 'bg-white scale-110'
+      : 'bg-white/50 hover:bg-white/75'
+  } w-2 h-2 md:w-3 md:h-3`}
+  aria-label={`Go to slide ${index + 1}`}
+/>
           ))}
         </div>
 
