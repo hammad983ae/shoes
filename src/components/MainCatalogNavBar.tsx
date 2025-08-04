@@ -86,9 +86,9 @@ const MainCatalogNavBar = ({
       )}
       
       <div className="sticky top-0 z-50 w-full ml-0 md:-ml-16 px-6 md:px-8 py-2 md:py-4">
-        <div className="flex justify-center">
+        <div className="flex justify-center md:justify-center">
           {/* Search Container - elevated above dim overlay */}
-          <div ref={searchRef} className="relative max-w-[280px] sm:max-w-md w-full z-50">
+          <div ref={searchRef} className="relative max-w-[240px] sm:max-w-md w-full z-50 ml-14 md:ml-0">
             {/* Floating Search Bar */}
             <div className="relative backdrop-blur-md bg-background/60 rounded-lg border border-border/50 shadow-lg">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
