@@ -6,7 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 interface ReferralData {
   referralCode: string | null;
   referralsCount: number;
-  creditsEarned: number;
+  creditsEarnedFromReferrals: number;
+  totalCreditsEarned: number;
 }
 
 export const useReferral = () => {
@@ -15,7 +16,8 @@ export const useReferral = () => {
   const [referralData, setReferralData] = useState<ReferralData>({
     referralCode: null,
     referralsCount: 0,
-    creditsEarned: 0
+    creditsEarnedFromReferrals: 0,
+    totalCreditsEarned: 0
   });
 
   useEffect(() => {
@@ -29,12 +31,21 @@ export const useReferral = () => {
     if (!user) return;
 
     try {
+      // Get profile data with referral info
       const { data: profile } = await supabase
         .from('profiles')
         .select('referral_code, referrals_count')
         .eq('user_id', user.id)
         .single();
 
+      // Get user credits including earned_from_referrals
+      const { data: credits } = await supabase
+        .from('user_credits')
+        .select('earned_from_referrals, total_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      // Get post analytics for total credits earned
       const { data: analytics } = await supabase
         .from('post_analytics')
         .select('credits_earned')
@@ -46,7 +57,8 @@ export const useReferral = () => {
         setReferralData({
           referralCode: profile.referral_code,
           referralsCount: profile.referrals_count || 0,
-          creditsEarned: totalCreditsEarned
+          creditsEarnedFromReferrals: credits?.earned_from_referrals || 0,
+          totalCreditsEarned: totalCreditsEarned
         });
       }
     } catch (error) {
@@ -79,6 +91,26 @@ export const useReferral = () => {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_credits',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          // Check if earned_from_referrals increased
+          if (payload.new.earned_from_referrals > referralData.creditsEarnedFromReferrals) {
+            const creditsEarned = payload.new.earned_from_referrals - referralData.creditsEarnedFromReferrals;
+            toast({
+              title: "Referral Credits Earned! 💰",
+              description: `You earned ${creditsEarned} credits from a referral purchase!`,
+            });
+            fetchReferralData();
+          }
+        }
+      )
       .subscribe();
 
     return () => {
@@ -88,51 +120,47 @@ export const useReferral = () => {
 
   const getReferralLink = () => {
     if (!referralData.referralCode) return '';
-    return `${window.location.origin}/?ref=${referralData.referralCode}`;
+    return `https://cralluxsells.com/ref/${referralData.referralCode}`;
   };
 
-  const handleReferralPurchase = async (purchaseAmount: number, referrerCode: string) => {
-    try {
-      // Calculate credits (10% of purchase, converted to credits)
-      const creditsEarned = Math.floor(purchaseAmount * 0.1 * 100);
-
-      // Find referrer
-      const { data: referrer } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('referral_code', referrerCode)
-        .single();
-
-      if (referrer) {
-        // Add credits to referrer
-        const { data: currentCredits } = await supabase
-          .from('user_credits')
-          .select('current_balance, total_earned')
-          .eq('user_id', referrer.user_id)
-          .single();
-
-        await supabase
-          .from('user_credits')
-          .upsert({
-            user_id: referrer.user_id,
-            current_balance: (currentCredits?.current_balance || 0) + creditsEarned,
-            total_earned: (currentCredits?.total_earned || 0) + creditsEarned
-          });
-
-        // Show celebration popup to referrer
-        // This would typically be handled by real-time notifications
-        return creditsEarned;
+  const copyReferralLink = async () => {
+    const link = getReferralLink();
+    if (link) {
+      try {
+        await navigator.clipboard.writeText(link);
+        toast({
+          title: "Link Copied! 📋",
+          description: "Your referral link has been copied to clipboard.",
+        });
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
       }
-    } catch (error) {
-      console.error('Error handling referral purchase:', error);
     }
-    return 0;
+  };
+
+  const shareReferralLink = async () => {
+    const link = getReferralLink();
+    if (link && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join Crallux and get 10% off!',
+          text: 'Get 10% off your first sneaker purchase at Crallux!',
+          url: link,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        copyReferralLink();
+      }
+    } else {
+      copyReferralLink();
+    }
   };
 
   return {
     referralData,
     getReferralLink,
-    handleReferralPurchase,
+    copyReferralLink,
+    shareReferralLink,
     fetchReferralData
   };
 };

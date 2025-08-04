@@ -3,10 +3,13 @@ import Sidebar from '@/components/Sidebar';
 import ProductCard from '@/components/ProductCard';
 import FilterPanel from '@/components/FilterPanel';
 import ViewProductModal from '@/components/ViewProductModal';
+import SignupIncentiveModal from '@/components/SignupIncentiveModal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Heart } from 'lucide-react';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 import maison1 from '@/assets/Product Images/Mason Margiela Gum Sole Sneakers/Maison Margiela Gum Sole Product IMG 1.png';
@@ -191,11 +194,34 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   const [sortBy, setSortBy] = useState('name-asc'); // Default to alphabetical order
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Sneaker | null>(null);
+  const [showIncentiveModal, setShowIncentiveModal] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState<Sneaker | null>(null);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const { getFavoriteProducts } = useFavorites();
+  const { user } = useAuth();
+
+  const handleViewProduct = (sneaker: Sneaker) => {
+    console.log('handleViewProduct called for:', sneaker.name);
+    // Check if this is the first product view by an unsigned user
+    if (isFirstProductView(!!user)) {
+      console.log('Showing incentive modal for unsigned user');
+      setPendingProduct(sneaker);
+      setShowIncentiveModal(true);
+    } else {
+      console.log('Setting selected product:', sneaker.name);
+      setSelectedProduct(sneaker);
+    }
+  };
+
+  const handleContinueToProduct = () => {
+    if (pendingProduct) {
+      setSelectedProduct(pendingProduct);
+      setPendingProduct(null);
+    }
+  };
 
   const filteredAndSortedSneakers = (() => {
     // Filter sneakers
@@ -303,7 +329,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
                 key={sneaker.id} 
                 sneaker={sneaker} 
                 index={index}
-                onViewProduct={(sneaker) => setSelectedProduct(sneaker)}
+                onViewProduct={handleViewProduct}
               />
             ))}
           </div>
@@ -326,6 +352,13 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
           sneaker={selectedProduct}
         />
       )}
+
+      {/* Signup Incentive Modal */}
+      <SignupIncentiveModal
+        isOpen={showIncentiveModal}
+        onClose={() => setShowIncentiveModal(false)}
+        onContinue={handleContinueToProduct}
+      />
     </div>
   );
 };

@@ -21,13 +21,14 @@ const Layout = ({ children }: LayoutProps) => {
     return <>{children}</>;
   }
 
-  if (!isAuthenticated(user)) {
-    return (
-      <>
-        <AuthModal open={true} onOpenChange={setShowAuthModal} />
-      </>
-    );
-  }
+  // Remove forced authentication - allow browsing without sign-in
+  // if (!isAuthenticated(user)) {
+  //   return (
+  //     <>
+  //       <AuthModal open={true} onOpenChange={setShowAuthModal} />
+  //     </>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-background">

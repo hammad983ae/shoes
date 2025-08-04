@@ -1,0 +1,102 @@
+import { useState, useEffect, useRef } from 'react';
+import ProductCard from '@/components/ProductCard';
+import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { sneakerCatalog } from './SneakerCatalog';
+
+interface Sneaker {
+  id: number;
+  images: string[];
+  price: string;
+  name: string;
+  brand: string;
+  category: string;
+  sizing?: string;
+  description?: string;
+  productDescription?: string;
+  productFeatures?: string[];
+  productIncludes?: string[];
+  keywords?: string[];
+  colors?: string[];
+  type?: string;
+  availability?: string;
+  shipping?: string;
+  materials?: string;
+  care?: string;
+  authenticity?: string;
+  quality?: string;
+}
+
+interface SneakerCarouselProps {
+  onViewProduct?: (sneaker: Sneaker) => void;
+}
+
+const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (isHovered || !scrollRef.current) return;
+
+    const scrollContainer = scrollRef.current;
+    const scrollWidth = scrollContainer.scrollWidth;
+    const clientWidth = scrollContainer.clientWidth;
+    const maxScroll = scrollWidth - clientWidth;
+
+    if (maxScroll <= 0) return;
+
+    const interval = setInterval(() => {
+      if (scrollContainer.scrollLeft >= maxScroll) {
+        scrollContainer.scrollLeft = 0;
+      } else {
+        scrollContainer.scrollLeft += 1;
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [isHovered]);
+
+  const handleViewProduct = (sneaker: Sneaker) => {
+    onViewProduct?.(sneaker);
+  };
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-[1.4rem] font-bold text-foreground">Sneaker Collection</h2>
+        <Button
+          onClick={() => navigate('/full-catalog')}
+          className="flex items-center gap-2 btn-hover-glow"
+        >
+          Shop All Sneakers
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          scrollBehavior: isHovered ? 'smooth' : 'auto',
+        }}
+      >
+        {sneakerCatalog.map((sneaker, index) => (
+          <div key={sneaker.id} className="flex-shrink-0 w-64">
+            <ProductCard
+              sneaker={sneaker}
+              index={index}
+              onViewProduct={handleViewProduct}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default SneakerCarousel; 

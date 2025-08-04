@@ -42,7 +42,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
   const links = [
     { label: 'Home', href: '/', icon: Home },
-    { label: 'Shop All Sneakers', href: '/catalog', icon: ShoppingBag },
+    { label: 'Catalog', href: '/catalog', icon: ShoppingBag },
     { label: 'Top Posts', href: '/feed', icon: TrendingUp },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
     { label: 'Socials', href: '/contact-us', icon: Smartphone },

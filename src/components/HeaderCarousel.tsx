@@ -1,0 +1,154 @@
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface Slide {
+  id: number;
+  title: string;
+  subtitle?: string;
+  backgroundImage: string;
+  link: string;
+}
+
+const HeaderCarousel = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const navigate = useNavigate();
+
+  const slides: Slide[] = [
+    {
+      id: 1,
+      title: "Website Launched – 20% Off All Sneakers Until August 19th",
+      subtitle: "Limited time offer on all premium sneakers",
+      backgroundImage: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      link: "/signup"
+    },
+    {
+      id: 2,
+      title: "Join Our Telegram for Exclusive Bulk Purchase Deals",
+      subtitle: "Get access to wholesale prices and early releases",
+      backgroundImage: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      link: "/socials"
+    }
+  ];
+
+  // Auto-advance slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        goToNext();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isTransitioning, currentSlide]);
+
+  const goToNext = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }, 300);
+  };
+
+  const goToPrevious = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }, 300);
+  };
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning || index === currentSlide) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSlide(index);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }, 300);
+  };
+
+  const handleSlideClick = () => {
+    navigate(slides[currentSlide].link);
+  };
+
+  return (
+    <div className="relative w-full h-96 overflow-hidden -ml-16 -mr-4">
+      {/* Slides */}
+      <div className="relative w-full h-full">
+        {slides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+              index === currentSlide
+                ? 'opacity-100 translate-x-0'
+                : index < currentSlide
+                ? 'opacity-0 -translate-x-full'
+                : 'opacity-0 translate-x-full'
+            }`}
+            style={{
+              background: slide.backgroundImage,
+            }}
+          >
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                {slide.title}
+              </h2>
+              {slide.subtitle && (
+                <p className="text-lg md:text-xl opacity-90 mb-6">
+                  {slide.subtitle}
+                </p>
+              )}
+              <button
+                onClick={handleSlideClick}
+                className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                Learn More
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={goToPrevious}
+        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-200 z-20"
+        disabled={isTransitioning}
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+
+      <button
+        onClick={goToNext}
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-200 z-20"
+        disabled={isTransitioning}
+        aria-label="Next slide"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+
+      {/* Dots */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              index === currentSlide
+                ? 'bg-white scale-125'
+                : 'bg-white/50 hover:bg-white/75'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default HeaderCarousel; 

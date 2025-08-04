@@ -48,6 +48,7 @@ interface UserCredits {
   current_balance: number | null;
   total_earned: number | null;
   total_spent: number | null;
+  earned_from_referrals: number | null;
 }
 
 
@@ -229,7 +230,7 @@ const Profile = () => {
       // Fetch credits
       const { data: creditsData } = await supabase
         .from('user_credits')
-        .select('current_balance, total_earned, total_spent')
+        .select('current_balance, total_earned, total_spent, earned_from_referrals')
         .eq('user_id', user.id)
         .single();
 
@@ -460,6 +461,8 @@ const Profile = () => {
                   <div className="text-[10px] sm:text-xs text-gray-400">Credits Earned</div>
                 </div>
               </div>
+
+
 
               {/* Quick Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 mb-4 w-full">

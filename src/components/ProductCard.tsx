@@ -33,6 +33,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
   };
+
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
@@ -50,29 +51,42 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
     >
       <CardContent className="p-0">
         <div className="relative overflow-hidden" style={{ aspectRatio: '2/3' }}>
-          <img 
-            src={sneaker.images[currentIndex]} 
-            alt={sneaker.name}
-            className="product-image"
-          />
+          {/* Carousel Container */}
+          <div className="carousel-container">
+            <div 
+              className="carousel-track"
+              style={{
+                transform: `translateX(-${currentIndex * 100}%)`
+              }}
+            >
+              {sneaker.images.map((image, index) => (
+                <img 
+                  key={index}
+                  src={image} 
+                  alt={sneaker.name}
+                  className="carousel-image"
+                />
+              ))}
+            </div>
+          </div>
           {/* Carousel Controls */}
           {totalImages > 1 && (
             <>
               <button
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
                 onClick={handlePrev}
                 aria-label="Previous image"
               >
                 &#8592;
               </button>
               <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
                 onClick={handleNext}
                 aria-label="Next image"
               >
                 &#8594;
               </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                 {sneaker.images.map((_, i) => (
                   <span
                     key={i}
@@ -83,7 +97,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
             </>
           )}
           {/* Overlay */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
           {/* Heart Icon */}
           <Button
             variant="ghost"
@@ -97,10 +111,11 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
             <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </Button>
           {/* View Product Button */}
-          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 z-30">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('View Product clicked for:', sneaker.name);
                 handleViewProduct();
               }}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow"

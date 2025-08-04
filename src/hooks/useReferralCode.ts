@@ -1,35 +1,44 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 export const useReferralCode = () => {
   const [referralCode, setReferralCode] = useState<string | null>(null);
-  const location = useLocation();
 
   useEffect(() => {
-    // Check URL params for referral code
-    const urlParams = new URLSearchParams(location.search);
-    const refCode = urlParams.get('ref');
+    // Check URL for referral code
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
     
-    if (refCode) {
-      // Store in localStorage so it persists during signup flow
-      localStorage.setItem('pendingReferralCode', refCode);
-      setReferralCode(refCode);
+    if (refParam) {
+      // Store referral code in localStorage
+      localStorage.setItem('referral_code', refParam);
+      setReferralCode(refParam);
     } else {
-      // Check if we have a stored referral code
-      const storedCode = localStorage.getItem('pendingReferralCode');
+      // Check localStorage for existing referral code
+      const storedCode = localStorage.getItem('referral_code');
       if (storedCode) {
         setReferralCode(storedCode);
       }
     }
-  }, [location]);
+  }, []);
 
-  const clearReferralCode = () => {
-    localStorage.removeItem('pendingReferralCode');
+  const getReferralCode = (): string | null => {
+    return localStorage.getItem('referral_code');
+  };
+
+  const clearReferralCode = (): void => {
+    localStorage.removeItem('referral_code');
     setReferralCode(null);
+  };
+
+  const setReferralCodeFromUrl = (code: string): void => {
+    localStorage.setItem('referral_code', code);
+    setReferralCode(code);
   };
 
   return {
     referralCode,
-    clearReferralCode
+    getReferralCode,
+    clearReferralCode,
+    setReferralCodeFromUrl
   };
 };

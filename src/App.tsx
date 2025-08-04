@@ -18,10 +18,12 @@ import EditCredentials from "./pages/EditCredentials";
 import Feed from "./pages/Feed";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import SneakerCatalog from "./components/SneakerCatalog";
+import Catalog from "./pages/Catalog";
+import FullCatalog from "./pages/FullCatalog";
 import { ReferralDiscountNotification } from "./components/ReferralDiscountNotification";
 import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
+import ReferralRedirect from "./components/ReferralRedirect";
 import ChatBotWidget from "./components/ChatBotWidget";
 import CheckoutInstructions from "./pages/CheckoutInstructions";
 
@@ -36,7 +38,8 @@ const App = () => (
             <Layout>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/catalog" element={<SneakerCatalog />} />
+                <Route path="/catalog" element={<Catalog />} />
+                <Route path="/full-catalog" element={<FullCatalog />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/edit-credentials" element={<EditCredentials />} />
@@ -51,6 +54,7 @@ const App = () => (
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/return-policy" element={<ReturnPolicy />} />
                 <Route path="/opt-in-policy" element={<OptInPolicy />} />
+                <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -4,54 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useReferral } from '@/hooks/useReferral';
+import { useToast } from '@/hooks/use-toast';
+import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
 const GetFreeCredits = () => {
   const { user } = useAuth();
+  const { referralData, copyReferralLink, shareReferralLink } = useReferral();
+  const { toast } = useToast();
   const [dollarAmount, setDollarAmount] = useState(1);
-  const [referralCode, setReferralCode] = useState('your-unique-code');
   const credits = dollarAmount * 100;
-
-  useEffect(() => {
-    if (user) {
-      fetchReferralCode();
-    }
-  }, [user]);
-
-  const fetchReferralCode = async () => {
-    if (!user) return;
-    
-    const { data } = await supabase
-      .from('profiles')
-      .select('referral_code')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (data?.referral_code) {
-      setReferralCode(data.referral_code);
-    }
-  };
-
-  const copyReferralLink = () => {
-    const link = `https://crallux.com/ref/${referralCode}`;
-    navigator.clipboard.writeText(link).then(() => {
-      // Could add a toast here
-      console.log('Copied to clipboard');
-    });
-  };
-
-  const shareReferralLink = () => {
-    const link = `https://crallux.com/ref/${referralCode}`;
-    if (navigator.share) {
-      navigator.share({
-        title: 'Join Crallux and get 10% off!',
-        text: 'Get 10% off your first sneaker purchase at Crallux!',
-        url: link,
-      });
-    } else {
-      copyReferralLink();
-    }
-  };
 
   return (
     <div className="min-h-screen page-gradient relative">
@@ -80,7 +42,7 @@ const GetFreeCredits = () => {
                   <div className="p-2 sm:p-4 bg-primary/10 rounded-lg overflow-x-auto mb-2">
                     <p className="font-semibold text-primary text-xs sm:text-base">Your Referral Link:</p>
                     <p className="text-xs sm:text-sm text-muted-foreground font-mono bg-background p-2 rounded mt-2 break-all">
-                      https://crallux.com/ref/{referralCode}
+                      {referralData.referralCode ? `https://cralluxsells.com/ref/${referralData.referralCode}` : 'Loading...'}
                     </p>
                   </div>
                   <div className="flex flex-row flex-wrap gap-2 justify-center w-full">
@@ -91,7 +53,14 @@ const GetFreeCredits = () => {
               </Card>
             </div>
 
-            {/* Exchange Rate Calculator - directly below StartEarningCreditsToday */}
+            {/* Top Referral Leaderboard */}
+            <div className="w-full flex justify-center mb-6">
+              <div className="max-w-2xl w-full">
+                <ReferralLeaderboard />
+              </div>
+            </div>
+
+            {/* Exchange Rate Calculator */}
             <div className="w-full flex justify-center mb-6">
               <div className="max-w-2xl w-full">
                 <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">

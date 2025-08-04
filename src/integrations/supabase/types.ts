@@ -464,9 +464,42 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          id: string
+          referrer_user_id: string
+          referral_code: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_user_id: string
+          referral_code: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_user_id?: string
+          referral_code?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_user_id_fkey"
+            columns: ["referrer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_credits: {
         Row: {
           current_balance: number | null
+          earned_from_referrals: number | null
           id: string
           total_earned: number | null
           total_spent: number | null
@@ -475,6 +508,7 @@ export type Database = {
         }
         Insert: {
           current_balance?: number | null
+          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null
@@ -483,6 +517,7 @@ export type Database = {
         }
         Update: {
           current_balance?: number | null
+          earned_from_referrals?: number | null
           id?: string
           total_earned?: number | null
           total_spent?: number | null

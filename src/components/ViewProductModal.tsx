@@ -96,6 +96,14 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
   const sizes = getSizes();
   const quantities = ['1','2','3','4','5'];
 
+  const handlePrevImage = () => {
+    setCurrentIndex((prev) => (prev === 0 ? sneaker.images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentIndex((prev) => (prev === sneaker.images.length - 1 ? 0 : prev + 1));
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadReviews();
@@ -198,32 +206,42 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
     
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full w-full">
               {/* LEFT IMAGE */}
-              <div className="relative bg-black aspect-[2/3] h-full w-full overflow-hidden border-r border-white/10 p-0 m-0 flex items-center justify-center">
-                {/* Carousel for product images */}
+              <div className="relative bg-black aspect-[2/3] h-full w-full overflow-hidden border-r border-white/10 p-0 m-0">
+                                {/* Carousel for product images */}
                 {sneaker.images && sneaker.images.length > 0 && (
-                  <>
-                    <img
-                      src={sneaker.images[currentIndex]}
-                      alt={sneaker.name}
-                      className="product-image"
-                    />
+                  <div className="carousel-container">
+                    <div 
+                      className="carousel-track"
+                      style={{
+                        transform: `translateX(-${currentIndex * 100}%)`
+                      }}
+                    >
+                      {sneaker.images.map((image, index) => (
+                        <img 
+                          key={index}
+                          src={image} 
+                          alt={sneaker.name}
+                          className="carousel-image"
+                        />
+                      ))}
+                    </div>
                     {sneaker.images.length > 1 && (
                       <>
                         <button
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
-                          onClick={() => setCurrentIndex((prev) => (prev === 0 ? sneaker.images.length - 1 : prev - 1))}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
+                          onClick={handlePrevImage}
                           aria-label="Previous image"
                         >
                           &#8592;
                         </button>
                         <button
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1 z-10"
-                          onClick={() => setCurrentIndex((prev) => (prev === sneaker.images.length - 1 ? 0 : prev + 1))}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
+                          onClick={handleNextImage}
                           aria-label="Next image"
                         >
                           &#8594;
                         </button>
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                           {sneaker.images.map((_, i) => (
                             <span
                               key={i}
@@ -233,7 +251,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                         </div>
                       </>
                     )}
-                  </>
+                  </div>
                 )}
                 <Button
                   variant="ghost"

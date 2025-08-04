@@ -52,18 +52,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName?: string, referralCode?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
             display_name: displayName || email.split('@')[0],
-            referral_code: referralCode || null
+            referral_code: referralCode || null,
+            accepted_terms: acceptedTerms || false
           }
         }
       });
@@ -75,6 +76,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
+        // Create profile for the new user
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: data.user.id,
+              display_name: displayName || email.split('@')[0],
+              referral_code: referralCode || null,
+              accepted_terms: acceptedTerms || false
+            });
+
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+          }
+        }
+
         if (referralCode) {
           // Show referral discount notification for referred users
           toast({

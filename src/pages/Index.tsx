@@ -7,6 +7,7 @@ import ParticleExplosion from '@/components/ParticleExplosion';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import AuthModal from '@/components/AuthModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useReferralCode } from '@/hooks/useReferralCode';
 
 type AppState = 'initial' | 'floating' | 'cta' | 'explosion' | 'catalog';
 
@@ -16,6 +17,7 @@ const Index = () => {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
+  const { referralCode } = useReferralCode();
   
 
   useEffect(() => {
@@ -29,18 +31,25 @@ const Index = () => {
     };
   }, []);
 
+  // Check for referral code in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    if (refParam) {
+      // The referral code will be handled by the useReferralCode hook
+      console.log('Referral code detected:', refParam);
+    }
+  }, []);
+
   // Remove auto-showing AuthModal on catalog state, now handled by Shop Now logic
 
   const handleShopNow = () => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
+    // Always go to catalog, regardless of login status
     setShowParticles(true);
     setAppState('explosion');
     setTimeout(() => {
       navigate('/catalog');
-    }, 1000);
+    }, 1200); // Match the explosion animation duration
   };
 
   const handleBackToHome = () => {
@@ -62,6 +71,7 @@ const Index = () => {
       <AuthModal open={showAuthModal} onOpenChange={(open) => {
         setShowAuthModal(open);
       }} />
+      
       {/* Interactive Particles */}
       <InteractiveParticles isActive={appState === 'floating' || appState === 'cta'} />
 
@@ -85,7 +95,7 @@ const Index = () => {
 
       {/* Sneaker Catalog */}
       {appState === 'catalog' && (
-        <SneakerCatalog onBackToHome={handleBackToHome} />
+        <SneakerCatalog />
       )}
     </div>
   );

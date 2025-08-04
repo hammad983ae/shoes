@@ -3,8 +3,67 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { useState } from 'react';
+import { submitContactRequest } from '@/api/contact';
+import { useToast } from '@/hooks/use-toast';
 
 const Socials = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.message) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      await submitContactRequest(formData);
+      
+      toast({
+        title: "Message Sent!",
+        description: "We've received your message and will get back to you soon.",
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        message: ''
+      });
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
@@ -29,7 +88,7 @@ const Socials = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <a 
-                href="https://www.instagram.com/cralluxsells/"
+                href="https://www.instagram.com/cralluxsells2"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
@@ -37,12 +96,12 @@ const Socials = () => {
                 <Instagram className="w-6 h-6 text-pink-500" />
                 <div>
                   <p className="font-semibold">Instagram</p>
-                  <p className="text-sm text-muted-foreground">@cralluxsells</p>
+                  <p className="text-sm text-muted-foreground">@cralluxsells2</p>
                 </div>
               </a>
 
               <a 
-                href="https://tiktok.com"
+                href="https://www.tiktok.com/@cralluxxx"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
@@ -50,35 +109,30 @@ const Socials = () => {
                 <Music className="w-6 h-6 text-black" />
                 <div>
                   <p className="font-semibold">TikTok</p>
-                  <p className="text-sm text-muted-foreground">@crallux_sneakers</p>
+                  <p className="text-sm text-muted-foreground">@cralluxxx</p>
                 </div>
               </a>
 
               <a 
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+                href="#"
+                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border cursor-not-allowed opacity-60"
               >
                 <Youtube className="w-6 h-6 text-red-500" />
                 <div>
                   <p className="font-semibold">YouTube</p>
-                  <p className="text-sm text-muted-foreground">@crallux_sneakers</p>
+                  <p className="text-sm text-muted-foreground">Coming Soon</p>
                 </div>
               </a>
 
-              <a 
-                href="https://discord.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+              <div 
+                className="flex items-center gap-3 p-4 rounded-lg border border-border cursor-not-allowed opacity-60"
               >
                 <MessageCircle className="w-6 h-6 text-indigo-500" />
                 <div>
-                  <p className="font-semibold">Discord</p>
-                  <p className="text-sm text-muted-foreground">Join our community</p>
+                  <p className="font-semibold">Discord Community</p>
+                  <p className="text-sm text-muted-foreground">Coming Soon</p>
                 </div>
-              </a>
+              </div>
             </CardContent>
           </Card>
 
@@ -94,7 +148,7 @@ const Socials = () => {
                   <Mail className="w-6 h-6 text-primary" />
                   <div>
                     <p className="font-semibold">Email:</p>
-                    <p className="text-sm text-muted-foreground">doppelsells@gmail.com</p>
+                    <p className="text-sm text-muted-foreground">cralluxmaster@protonmail.com</p>
                   </div>
                 </div>
               </CardContent>
@@ -106,31 +160,28 @@ const Socials = () => {
                 <CardTitle>Our Stores</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <a 
-                  href="https://www.instagram.com/cralluxsells/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
-                >
-                  <Instagram className="w-6 h-6 text-pink-500" />
-                  <div>
-                    <p className="font-semibold">Instagram Store</p>
-                    <p className="text-sm text-muted-foreground">Shop our latest drops</p>
-                  </div>
-                </a>
+                                 <a 
+                   href="https://www.depop.com/cralluxsells"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+                 >
+                   <Users className="w-6 h-6 text-red-500" />
+                   <div>
+                     <p className="font-semibold">Depop</p>
+                     <p className="text-sm text-muted-foreground">@cralluxsells</p>
+                   </div>
+                 </a>
 
-                <a 
-                  href="https://tiktok.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
+                <div 
+                  className="flex items-center gap-3 p-4 rounded-lg border border-border cursor-not-allowed opacity-60"
                 >
-                  <Music className="w-6 h-6 text-black" />
+                  <Send className="w-6 h-6 text-blue-500" />
                   <div>
-                    <p className="font-semibold">TikTok Shop</p>
-                    <p className="text-sm text-muted-foreground">Exclusive TikTok deals</p>
+                    <p className="font-semibold">Telegram</p>
+                    <p className="text-sm text-muted-foreground">Coming Soon</p>
                   </div>
-                </a>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -151,7 +202,7 @@ const Socials = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-primary" />
-                    <span className="text-sm">doppelsells@gmail.com</span>
+                    <span className="text-sm">cralluxmaster@protonmail.com</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-primary" />
@@ -160,36 +211,52 @@ const Socials = () => {
                 </div>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <input 
-                    type="text" 
-                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input 
-                    type="email" 
-                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
-                    placeholder="your@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <textarea 
-                    className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none resize-none"
-                    rows={4}
-                    placeholder="How can we help you?"
-                  />
-                </div>
-                <Button className="w-full btn-hover-glow">
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Message
-                </Button>
-              </div>
+                             <form onSubmit={handleSubmit} className="space-y-4">
+                 <div>
+                   <label className="block text-sm font-medium mb-2">Name</label>
+                   <input 
+                     type="text" 
+                     name="name"
+                     value={formData.name}
+                     onChange={handleInputChange}
+                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
+                     placeholder="Your name"
+                     required
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium mb-2">Email</label>
+                   <input 
+                     type="email" 
+                     name="email"
+                     value={formData.email}
+                     onChange={handleInputChange}
+                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
+                     placeholder="your@email.com"
+                     required
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium mb-2">Message</label>
+                   <textarea 
+                     name="message"
+                     value={formData.message}
+                     onChange={handleInputChange}
+                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none resize-none"
+                     rows={4}
+                     placeholder="How can we help you?"
+                     required
+                   />
+                 </div>
+                 <Button 
+                   type="submit" 
+                   className="w-full btn-hover-glow"
+                   disabled={isSubmitting}
+                 >
+                   <Send className="w-4 h-4 mr-2" />
+                   {isSubmitting ? 'Sending...' : 'Send Message'}
+                 </Button>
+               </form>
             </div>
           </CardContent>
         </Card>

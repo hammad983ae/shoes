@@ -57,22 +57,8 @@ const Cart = () => {
     handleCheckout();
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen page-gradient flex items-center justify-center px-4">
-        <Card className="max-w-md w-full mx-auto text-center p-8">
-          <CardContent>
-            <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">You must be signed in or create an account to continue with your purchase.</h2>
-            <div className="flex flex-col gap-3 mt-6">
-              <Button className="w-full" onClick={() => navigate('/signin')}>Sign In</Button>
-              <Button className="w-full" variant="outline" onClick={() => navigate('/signin?mode=signup')}>Create Account</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Show sign-up incentive banner for unsigned users
+  const showSignupIncentive = !user;
   if (items.length === 0) {
     return (
       <div className="min-h-screen page-gradient relative">
@@ -107,6 +93,29 @@ const Cart = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>
+        
+        {/* Sign-up Incentive Banner for unsigned users */}
+        {showSignupIncentive && (
+          <Card className="mt-4 bg-gradient-to-r from-primary/10 to-yellow-400/10 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">🎉</div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Get 10% off your order when you sign up!</h3>
+                    <p className="text-sm text-muted-foreground">Create an account to unlock exclusive discounts and track your orders.</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => navigate('/signup')}
+                  className="bg-primary hover:bg-primary/90 btn-hover-glow"
+                >
+                  Sign Up Now
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
