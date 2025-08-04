@@ -8,23 +8,7 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import CartAnimation from './CartAnimation';
-
-interface Sneaker {
-  id: number;
-  images: string[];
-  price: string;
-  name: string;
-  brand: string;
-  category: string;
-  sizing?: string;
-  description?: string;
-  productDescription?: string;
-  productFeatures?: string[];
-  productIncludes?: string[];
-  keywords?: string[];
-  colors?: string[];
-  type?: string;
-}
+import { Sneaker } from '@/types/global';
 
 interface ViewProductModalProps {
   isOpen: boolean;
@@ -170,7 +154,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
         name: sneaker.name,
         price: sneaker.price,
         image: sneaker.images[currentIndex],
-        size: sneaker.sizing === 'EU' ? selectedSize : parseFloat(selectedSize)
+        size: sneaker.sizing === 'EU' ? selectedSize : selectedSize
       });
     }
     setIsAnimating(true);
@@ -329,18 +313,18 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                     </label>
                     <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 w-full">
                       {sizes.map((sizeOption) => {
-                        const isSelected = sneaker.sizing === 'EU' 
-                          ? selectedSize === sizeOption.eu 
-                          : selectedSize === sizeOption;
+                        const isEuSize = sneaker.sizing === 'EU' && typeof sizeOption === 'object';
+                        const sizeValue = isEuSize ? (sizeOption as any).eu : sizeOption;
+                        const isSelected = selectedSize === sizeValue;
                         
                         return (
                           <Button
-                            key={sneaker.sizing === 'EU' ? sizeOption.eu : sizeOption}
+                            key={isEuSize ? (sizeOption as any).eu : sizeOption}
                             variant={isSelected ? 'default' : 'outline'}
-                            onClick={() => setSelectedSize(sneaker.sizing === 'EU' ? sizeOption.eu : sizeOption)}
+                            onClick={() => setSelectedSize(sizeValue)}
                             className="h-12 text-sm"
                           >
-                            {sneaker.sizing === 'EU' ? `${sizeOption.eu} (${sizeOption.us})` : sizeOption}
+                            {isEuSize ? `${(sizeOption as any).eu} (${(sizeOption as any).us})` : String(sizeOption)}
                           </Button>
                         );
                       })}

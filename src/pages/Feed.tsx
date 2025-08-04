@@ -321,16 +321,16 @@ const TopPosts = () => {
     navigate('/profile', { state: { viewUserId: userId } });
   };
 
-  const getPlatformIcon = (platform: string) => {
-    const icons = {
-      tiktok: '🎵',
-      instagram: '📷',
-      youtube: '📹',
-      x: '🐦',
-      reddit: '🔴'
-    };
-    return icons[platform as keyof typeof icons] || '📱';
-  };
+  // const getPlatformIcon = (platform: string) => {
+  //   const icons = {
+  //     tiktok: '🎵',
+  //     instagram: '📷',
+  //     youtube: '📹',
+  //     x: '🐦',
+  //     reddit: '🔴'
+  //   };
+  //   return icons[platform as keyof typeof icons] || '📱';
+  // };
 
   return (
     <div className="min-h-screen page-gradient relative">

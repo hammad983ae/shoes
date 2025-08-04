@@ -4,7 +4,7 @@ export interface Sneaker {
   name: string;
   price: string;
   originalPrice?: string;
-  image: string;
+  image?: string; // Made optional since we use images array
   images: string[];
   brand: string;
   size?: string | { eu: string; us: string; };
@@ -24,6 +24,10 @@ export interface Sneaker {
   productDescription?: string;
   productFeatures?: string[];
   productIncludes?: string[];
+  keywords?: string[];
+  colors?: string[];
+  type?: string;
+  availability?: string;
 }
 
 export interface SocialConnection {

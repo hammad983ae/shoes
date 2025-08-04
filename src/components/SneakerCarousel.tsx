@@ -4,29 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from './SneakerCatalog';
-
-interface Sneaker {
-  id: number;
-  images: string[];
-  price: string;
-  name: string;
-  brand: string;
-  category: string;
-  sizing?: string;
-  description?: string;
-  productDescription?: string;
-  productFeatures?: string[];
-  productIncludes?: string[];
-  keywords?: string[];
-  colors?: string[];
-  type?: string;
-  availability?: string;
-  shipping?: string;
-  materials?: string;
-  care?: string;
-  authenticity?: string;
-  quality?: string;
-}
+import { Sneaker } from '@/types/global';
 
 interface SneakerCarouselProps {
   onViewProduct?: (sneaker: Sneaker) => void;

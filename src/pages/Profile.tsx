@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
+// import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import ReactCrop, { Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -27,8 +27,8 @@ import {
   Instagram,
   Youtube,
   Check,
-  ArrowLeft,
-  Upload,
+  // ArrowLeft,
+  // Upload,
   Video
 } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
@@ -142,15 +142,15 @@ const Profile = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Form states
-  const [editForm, setEditForm] = useState({
-    display_name: '',
-    bio: ''
-  });
+  // const [editForm, setEditForm] = useState({
+  //   display_name: '',
+  //   bio: ''
+  // });
 
   // Image cropping states
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string>('');
-  const [previewAvatar, setPreviewAvatar] = useState<string>('');
+  // const [previewAvatar, setPreviewAvatar] = useState<string>('');
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     width: 80,
@@ -191,11 +191,11 @@ const Profile = () => {
           referral_code: profileData.referral_code,
           bio: profileData.bio
         });
-        setEditForm({
-          display_name: profileData.display_name || '',
-          bio: profileData.bio || ''
-        });
-        setPreviewAvatar(profileData.avatar_url || '');
+        // setEditForm({
+        //   display_name: profileData.display_name || '',
+        //   bio: profileData.bio || ''
+        // });
+        // setPreviewAvatar(profileData.avatar_url || '');
       }
 
       // Fetch social connections
@@ -205,7 +205,13 @@ const Profile = () => {
         .eq('user_id', user.id)
         .eq('is_active', true);
 
-      if (socialData) setSocialConnections(socialData);
+      if (socialData) {
+        setSocialConnections(socialData.map(connection => ({
+          ...connection,
+          is_active: connection.is_verified || false,
+          connected_at: connection.created_at
+        })) as SocialConnection[]);
+      }
 
       // Fetch post analytics
       const { data: analyticsData } = await supabase
@@ -269,18 +275,18 @@ const Profile = () => {
     }
   };
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageSrc(reader.result as string);
-        setIsAvatarCropOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     setAvatarFile(file);
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setImageSrc(reader.result as string);
+  //       setIsAvatarCropOpen(true);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<Blob> => {
     const canvas = document.createElement('canvas');
@@ -341,9 +347,9 @@ const Profile = () => {
 
     try {
       const croppedBlob = await getCroppedImg(imageRef.current, crop);
-      const avatarUrl = await uploadAvatar(croppedBlob);
+      await uploadAvatar(croppedBlob);
       
-      setPreviewAvatar(avatarUrl);
+      // setPreviewAvatar(avatarUrl);
       setIsAvatarCropOpen(false);
       setImageSrc('');
       setAvatarFile(null);
@@ -355,32 +361,32 @@ const Profile = () => {
     }
   };
 
-  const updateProfile = async () => {
-    if (!user) return;
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          display_name: editForm.display_name, 
-          avatar_url: previewAvatar,
-          bio: editForm.bio
-        })
-        .eq('user_id', user.id);
+  // const updateProfile = async () => {
+  //   if (!user) return;
+  //   try {
+  //     const { error } = await supabase
+  //       .from('profiles')
+  //       .update({ 
+  //         display_name: editForm.display_name, 
+  //         avatar_url: previewAvatar,
+  //         bio: editForm.bio
+  //       })
+  //       .eq('user_id', user.id);
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      setProfile(prev => ({ 
-        ...prev,
-        display_name: editForm.display_name, 
-        avatar_url: previewAvatar,
-        bio: editForm.bio
-      }));
-      toast({ title: 'Profile updated successfully' });
-    } catch (error: any) {
-      console.error('Profile update error:', error);
-      toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
-    }
-  };
+  //     setProfile(prev => ({ 
+  //       ...prev,
+  //       display_name: editForm.display_name, 
+  //       avatar_url: previewAvatar,
+  //       bio: editForm.bio
+  //     }));
+  //     toast({ title: 'Profile updated successfully' });
+  //   } catch (error: any) {
+  //     console.error('Profile update error:', error);
+  //     toast({ title: 'Error updating profile', description: error.message, variant: 'destructive' });
+  //   }
+  // };
 
   const updateSettings = async () => {
     try {

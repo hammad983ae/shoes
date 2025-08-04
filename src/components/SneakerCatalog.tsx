@@ -11,6 +11,7 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { Sneaker } from '@/types/global';
 
 import maison1 from '@/assets/Product Images/Mason Margiela Gum Sole Sneakers/Maison Margiela Gum Sole Product IMG 1.png';
 import maison2 from '@/assets/Product Images/Mason Margiela Gum Sole Sneakers/Maison Margiela Gum Sole Product IMG 2.png';
@@ -38,6 +39,7 @@ const sneakerCatalog = [
     id: 1,
     name: 'DRKSHDW Rick Owens Vans',
     price: '$195',
+    image: rick1,
     images: [rick1, rick2, rick3, rick4],
     brand: 'Rick Owens',
     category: 'Rick Owens',
@@ -69,6 +71,7 @@ const sneakerCatalog = [
     id: 2,
     name: 'Maison Margiela Gum Sole Sneakers',
     price: '$170',
+    image: maison1,
     images: [maison1, maison2, maison3, maison4],
     brand: 'Maison Margiela',
     category: 'Maison Margiela',
@@ -100,6 +103,7 @@ const sneakerCatalog = [
     id: 3,
     name: 'Rick Owens Geobaskets',
     price: '$200',
+    image: geobasket1,
     images: [geobasket1, geobasket2, geobasket3, geobasket4, geobasket5],
     brand: 'Rick Owens',
     category: 'Rick Owens',
@@ -131,6 +135,7 @@ const sneakerCatalog = [
     id: 4,
     name: 'Travis Scott x Jordan 1 Low OG "Reverse Mocha"',
     price: '$165',
+    image: travis1,
     images: [travis1, travis2, travis3, travis4, travis5, travis6, travis7],
     brand: 'Nike',
     category: 'Nike',
@@ -161,28 +166,7 @@ const sneakerCatalog = [
 ];
 export { sneakerCatalog };
 
-interface Sneaker {
-  id: number;
-  images: string[];
-  price: string;
-  name: string;
-  brand: string;
-  category: string;
-  sizing?: string;
-  description?: string;
-  productDescription?: string;
-  productFeatures?: string[];
-  productIncludes?: string[];
-  keywords?: string[];
-  colors?: string[];
-  type?: string;
-  availability?: string;
-  shipping?: string;
-  materials?: string;
-  care?: string;
-  authenticity?: string;
-  quality?: string;
-}
+// Remove duplicate Sneaker interface - using global type
 
 interface SneakerCatalogProps {
   onBackToHome?: () => void;
@@ -242,7 +226,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered as any);
+      filtered = getFavoriteProducts(filtered);
     }
 
     // Sort sneakers

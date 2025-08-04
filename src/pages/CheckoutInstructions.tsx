@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 // Dynamically load Chiron script if not present
 function useChironScript() {
   useEffect(() => {
-    if (!window.ChironPayment) {
+    if (!(window as any).ChironPayment) {
       const script = document.createElement('script');
       script.src = 'https://payment.chironapp.io/chiron-checkout.js';
       script.async = true;
@@ -29,7 +29,7 @@ export default function CheckoutInstructions() {
     notes: '',
   });
   const [submitting, setSubmitting] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
+  // const [confirmed, setConfirmed] = useState(false);
   const navigate = useNavigate();
 
   useChironScript();
@@ -76,7 +76,7 @@ export default function CheckoutInstructions() {
       const zip = get('zip');
 
       // 3. Call ChironPayment.pay
-      window.ChironPayment.pay(
+      (window as any).ChironPayment.pay(
         {
           ssl_amount: tokenData.amount.toString(),
           ssl_transaction_type: 'ccsale',
@@ -102,7 +102,7 @@ export default function CheckoutInstructions() {
             setPaymentError(error.errorMessage || 'Payment was declined.');
             setSubmitting(false);
           },
-          onApproval: async (response: any) => {
+          onApproval: async () => {
             setPaymentSuccess('Payment succeeded.');
             setSubmitting(false);
             setStep(3);
@@ -116,50 +116,50 @@ export default function CheckoutInstructions() {
     }
   };
 
-  const handleConfirmPaid = async () => {
+  // const handleConfirmPaid = async () => {
     setSubmitting(true);
     // TODO: Update order in Supabase to 'paid_pending_review', trigger email
     setTimeout(() => {
       setSubmitting(false);
       setStep(3);
-      setConfirmed(true);
+      // setConfirmed(true);
       // TODO: Wipe cart here
     }, 800);
-  };
+  // };
 
   // Payment instructions by method
-  const paymentInstructions = {
-    cashapp: (
-      <div className="space-y-2">
-        <div>Send payment to <span className="font-bold">$YourCashAppHandle</span> on Cash App.</div>
-        <div>Include your name in the note.</div>
-      </div>
-    ),
-    zelle: (
-      <div className="space-y-2">
-        <div>Send payment to <span className="font-bold">your@email.com</span> via Zelle.</div>
-        <div>Include your name in the memo.</div>
-      </div>
-    ),
-    coinbase: (
-      <div className="space-y-2">
-        <div>Pay via <a href="https://commerce.coinbase.com/checkout/your-link" target="_blank" rel="noopener noreferrer" className="text-primary underline">Coinbase Commerce</a>.</div>
-        <div>Follow the instructions on the Coinbase page.</div>
-      </div>
-    ),
-    crypto: (
-      <div className="space-y-2">
-        <div>Send crypto to wallet address:</div>
-        <div className="font-mono bg-gray-900 p-2 rounded">0xYourWalletAddressHere</div>
-        <div>Include your name in the transaction memo if possible.</div>
-      </div>
-    ),
-    invoice: (
-      <div className="space-y-2">
-        <div>We will email you a custom invoice shortly with payment instructions.</div>
-      </div>
-    ),
-  };
+  // const paymentInstructions = {
+  //   cashapp: (
+  //     <div className="space-y-2">
+  //       <div>Send payment to <span className="font-bold">$YourCashAppHandle</span> on Cash App.</div>
+  //       <div>Include your name in the note.</div>
+  //     </div>
+  //   ),
+  //   zelle: (
+  //     <div className="space-y-2">
+  //       <div>Send payment to <span className="font-bold">your@email.com</span> via Zelle.</div>
+  //       <div>Include your name in the memo.</div>
+  //     </div>
+  //   ),
+  //   coinbase: (
+  //     <div className="space-y-2">
+  //       <div>Pay via <a href="https://commerce.coinbase.com/checkout/your-link" target="_blank" rel="noopener noreferrer" className="text-primary underline">Coinbase Commerce</a>.</div>
+  //       <div>Follow the instructions on the Coinbase page.</div>
+  //     </div>
+  //   ),
+  //   crypto: (
+  //     <div className="space-y-2">
+  //       <div>Send crypto to wallet address:</div>
+  //       <div className="font-mono bg-gray-900 p-2 rounded">0xYourWalletAddressHere</div>
+  //       <div>Include your name in the transaction memo if possible.</div>
+  //     </div>
+  //   ),
+  //   invoice: (
+  //     <div className="space-y-2">
+  //       <div>We will email you a custom invoice shortly with payment instructions.</div>
+  //     </div>
+  //   ),
+  // };
 
   return (
     <div className="min-h-screen page-gradient flex flex-col items-center justify-center px-2 py-8">

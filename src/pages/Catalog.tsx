@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
-import ProductCard from '@/components/ProductCard';
-import FilterPanel from '@/components/FilterPanel';
 import ViewProductModal from '@/components/ViewProductModal';
 import SignupIncentiveModal from '@/components/SignupIncentiveModal';
 import StickyNavBar from '@/components/StickyNavBar';
@@ -14,32 +12,10 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
-
-interface Sneaker {
-  id: number;
-  images: string[];
-  price: string;
-  name: string;
-  brand: string;
-  category: string;
-  sizing?: string;
-  description?: string;
-  productDescription?: string;
-  productFeatures?: string[];
-  productIncludes?: string[];
-  keywords?: string[];
-  colors?: string[];
-  type?: string;
-  availability?: string;
-  shipping?: string;
-  materials?: string;
-  care?: string;
-  authenticity?: string;
-  quality?: string;
-}
+import { Sneaker } from '@/types/global';
 
 const Catalog = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name-asc');
@@ -101,7 +77,7 @@ const Catalog = () => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered as any);
+      filtered = getFavoriteProducts(filtered);
     }
 
     // Sort sneakers

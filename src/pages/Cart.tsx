@@ -9,14 +9,14 @@ import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, clearCart } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [coupon, setCoupon] = useState('');
   const [redeemState, setRedeemState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [showAuthBlock, setShowAuthBlock] = useState(!user);
+  // const [showAuthBlock, setShowAuthBlock] = useState(!user);
   const [showPostPurchase, setShowPostPurchase] = useState(false);
-  const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
+  const [purchasedItems] = useState<any[]>([]);
   
   // For size editing - handle both EU and US sizes
   const getSizesForItem = (item: any) => {
@@ -40,7 +40,7 @@ const Cart = () => {
   function handleSizeChange(item: any, newSize: string) {
     // Remove old item, add new with same quantity
     removeItem(item.id, item.size);
-    updateQuantity(item.id, newSize, item.quantity);
+    updateQuantity(item.id, newSize, Number(newQuantity));
   }
 
   // Estimated tax (e.g., 8%)
@@ -52,10 +52,10 @@ const Cart = () => {
     navigate('/checkout-instructions');
   };
 
-  const handleContinueAnyways = () => {
+  // const handleContinueAnyways = () => {
     // Allow non-signed-in users to proceed to checkout
     handleCheckout();
-  };
+  // };
 
   // Show sign-up incentive banner for unsigned users
   const showSignupIncentive = !user;
