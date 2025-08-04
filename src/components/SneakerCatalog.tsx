@@ -209,12 +209,12 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
   const filteredAndSortedSneakers = (() => {
     // Filter sneakers
-    let filtered = (sneakerCatalog as Sneaker[]).filter((sneaker) => {
+    let filtered = (sneakerCatalog as any[]).filter((sneaker: any) => {
       const matchesSearch = sneaker.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || sneaker.category === selectedCategory;
       const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(sneaker.brand);
       const matchesColor = selectedColors.length === 0 || 
-        sneaker.colors?.some(color => selectedColors.includes(color));
+        sneaker.colors?.some((color: string) => selectedColors.includes(color));
       const matchesType = selectedTypes.length === 0 || 
         (sneaker.type && selectedTypes.includes(sneaker.type));
       const matchesPrice = sneaker.price && 
@@ -226,7 +226,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered as any);
+      filtered = getFavoriteProducts(filtered) as any[];
     }
 
     // Sort sneakers

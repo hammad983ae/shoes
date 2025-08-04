@@ -154,7 +154,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
         name: sneaker.name,
         price: sneaker.price,
         image: sneaker.images[currentIndex],
-        size: selectedSize
+        size: parseFloat(selectedSize) || 0
       });
     }
     setIsAnimating(true);

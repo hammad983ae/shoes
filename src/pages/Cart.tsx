@@ -46,7 +46,7 @@ const Cart = () => {
         name: item.name,
         price: item.price,
         image: item.image,
-        size: newSize
+        size: parseFloat(newSize) || 0
       });
     }
   }
