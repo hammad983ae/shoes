@@ -56,10 +56,10 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     <>
       {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300"
+        className="md:hidden fixed top-2 left-4 z-50 h-10 w-10 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300 flex items-center justify-center"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-4 h-4" />
       </button>
 
       {/* Mobile Sidebar Overlay */}
