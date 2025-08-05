@@ -66,21 +66,45 @@ const TopPosts = () => {
   const [viewingPost, setViewingPost] = useState<Post | null>(null);
 
   const fetchPosts = useCallback(async () => {
-    
-    const { data, error } = await supabase
+    // First get posts
+    const { data: postsData, error: postsError } = await supabase
       .from('posts')
-      .select(`
-        *,
-        profiles(display_name, avatar_url)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
-    
-    if (data && !error) {
-      setPosts(data as unknown as Post[]);
-    } else if (error) {
-      console.error('Error fetching posts:', error);
+    if (postsError) {
+      console.error('Error fetching posts:', postsError);
+      return;
     }
+
+    if (!postsData || postsData.length === 0) {
+      setPosts([]);
+      return;
+    }
+
+    // Get unique user IDs
+    const userIds = [...new Set(postsData.map(post => post.user_id))];
+    
+    // Fetch profiles for these users
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      // Still show posts without profile data
+      setPosts(postsData as Post[]);
+      return;
+    }
+
+    // Combine posts with profile data
+    const postsWithProfiles = postsData.map(post => ({
+      ...post,
+      profiles: profilesData?.find(profile => profile.user_id === post.user_id) || null
+    }));
+
+    setPosts(postsWithProfiles as Post[]);
   }, []);
 
   const fetchPurchasedProducts = useCallback(async () => {
@@ -122,12 +146,14 @@ const TopPosts = () => {
   }, [userSearch]);
 
   useEffect(() => {
-    const productFilter = searchParams.get('product');
-    if (productFilter) {
-      // Optional: Add filtering logic here
-      
+    const userFilter = searchParams.get('user');
+    if (userFilter && posts.length > 0) {
+      const userPosts = posts.filter(post => post.user_id === userFilter);
+      if (userPosts.length > 0) {
+        setPosts(userPosts);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, posts]);
 
   useEffect(() => {
     if (userSearch.trim()) {
@@ -274,10 +300,34 @@ const TopPosts = () => {
       
       if (insertError) throw insertError;
 
+      // Fetch profile data for the new post
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .eq('user_id', userId)
+        .single();
+
+      // Create the new post object with profile data
+      const newPost = {
+        ...postData,
+        id: 'temp-' + Date.now(), // Temporary ID for immediate display
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        engagement_score: 0,
+        profiles: profileData || null
+      };
+
+      // Add new post to the beginning of the posts array for immediate display
+      setPosts(prevPosts => [newPost as Post, ...prevPosts]);
+
       toast({ title: 'Post created successfully!' });
       setShowCreateModal(false);
-      fetchPosts();
       resetCreateForm();
+      
+      // Refresh posts from server to get the real ID
+      setTimeout(() => {
+        fetchPosts();
+      }, 1000);
     } catch (error: unknown) {
       console.error('Error creating post:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -301,7 +351,16 @@ const TopPosts = () => {
   };
 
   const handleViewUserProfile = (userId: string) => {
-    navigate('/profile', { state: { viewUserId: userId } });
+    // Filter posts by this user and stay on feed page
+    setUserSearch('');
+    setSearchResults([]);
+    
+    // Filter posts to show only this user's posts
+    const userPosts = posts.filter(post => post.user_id === userId);
+    setPosts(userPosts);
+    
+    // Update URL to reflect the filter
+    window.history.pushState({}, '', `/feed?user=${userId}`);
   };
 
   // const getPlatformIcon = (platform: string) => {
@@ -457,6 +516,56 @@ const TopPosts = () => {
             </Card>
           )}
         </div>
+
+        {/* Post View Modal */}
+        {viewingPost && (
+          <Dialog open={!!viewingPost} onOpenChange={() => setViewingPost(null)}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogTitle className="sr-only">View Post</DialogTitle>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
+                    <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold">
+                      {viewingPost.profiles?.display_name || 'Unknown User'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(viewingPost.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                
+                {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
+                {viewingPost.content && <p className="text-muted-foreground">{viewingPost.content}</p>}
+                
+                {viewingPost.media_url && (
+                  <div className="relative rounded-lg overflow-hidden">
+                    {viewingPost.post_type === 'video' ? (
+                      <video src={viewingPost.media_url} controls className="w-full max-h-96 object-cover" />
+                    ) : (
+                      <img
+                        src={viewingPost.media_url}
+                        alt={viewingPost.title || 'Post media'}
+                        className="w-full max-h-96 object-cover"
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {viewingPost.engagement_score && (
+                  <div className="flex items-center justify-between pt-4 border-t border-border">
+                    <div className="flex gap-6 text-sm text-muted-foreground">
+                      <span>📊 Engagement Score: {viewingPost.engagement_score}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Create Post Modal */}
