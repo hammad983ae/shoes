@@ -71,7 +71,7 @@ const BrandCards = () => {
       
       {/* Horizontal Scrollable Container */}
       <div className="relative">
-        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80">
           {brands.map((brand, index) => (
             <div
               key={brand.id}

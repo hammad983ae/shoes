@@ -56,11 +56,11 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
 
       <div
         ref={scrollRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory touch-pan-x"
+        className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
-          scrollBehavior: isHovered ? 'smooth' : 'auto',
+          scrollBehavior: 'smooth',
         }}
       >
         {sneakerCatalog.map((sneaker, index) => (
