@@ -744,7 +744,7 @@ const TopPosts = () => {
                   
                 </div>
                 
-                {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
+                {viewingPost.title && viewingPost.title !== 'Untitled Post' && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
                 {viewingPost.caption && <p className="text-muted-foreground">{viewingPost.caption}</p>}
                 
                 {viewingPost.media_url && (
