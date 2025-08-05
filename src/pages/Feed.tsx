@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
@@ -276,8 +276,8 @@ const TopPosts = () => {
     setIsSubmitting(true);
     try {
       
-      let mediaUrl = '';
-      let postTitle = '';
+       let mediaUrl = '';
+       let titleForPost = '';
       let postType = 'link';
       
        if (!uploadedFile) {
@@ -316,7 +316,7 @@ const TopPosts = () => {
          .getPublicUrl(filePath);
        
        mediaUrl = publicUrl;
-       postTitle = postTitle || 'Untitled Post';
+       titleForPost = postTitle || 'Untitled Post';
        postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
 
       const { data: userData } = await supabase.auth.getUser();
@@ -326,7 +326,7 @@ const TopPosts = () => {
 
       const postData = {
         user_id: userId,
-        title: postTitle || 'Untitled Post',
+        title: titleForPost,
         caption: postCaption,
         content: postCaption,
         media_url: mediaUrl,
@@ -403,7 +403,7 @@ const TopPosts = () => {
   const handleViewPost = async (post: Post) => {
     setViewingPost(post);
     
-    // Track view if user hasn't viewed this post before
+    // Track view if user hasn't viewed this post before and user is logged in
     if (user && !viewedPosts.has(post.id)) {
       setViewedPosts(prev => new Set([...prev, post.id]));
       
@@ -422,11 +422,20 @@ const TopPosts = () => {
         view_count: (prev.view_count || 0) + 1 
       } : null);
       
-      // Insert view record
-      await supabase.from('post_views').insert({
-        post_id: post.id,
-        user_id: user.id
-      });
+      // Insert view record only if this user hasn't viewed this post before
+      const { data: existingView } = await supabase
+        .from('post_views')
+        .select('id')
+        .eq('post_id', post.id)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!existingView) {
+        await supabase.from('post_views').insert({
+          post_id: post.id,
+          user_id: user.id
+        });
+      }
     }
   };
 
@@ -641,10 +650,10 @@ const TopPosts = () => {
                 {post.media_url && (
                   <div className="relative rounded-lg overflow-hidden aspect-square">
                     {post.post_type === 'video' ? (
-                      <div className="relative group">
+                      <div className="relative group w-full h-full">
                         <video 
                           src={post.media_url} 
-                          className="w-full h-full object-contain cursor-pointer" 
+                          className="w-full h-full object-contain" 
                           onClick={(e) => {
                             e.stopPropagation();
                             const video = e.currentTarget;
@@ -654,12 +663,17 @@ const TopPosts = () => {
                               video.pause();
                             }
                           }}
-                          onDoubleClick={() => handleViewPost(post)}
                         />
                         <div 
-                          className="absolute inset-0 cursor-pointer group-hover:bg-black/10 transition-colors"
+                          className="absolute inset-0 cursor-pointer flex items-center justify-center group-hover:bg-black/10 transition-colors"
                           onClick={() => handleViewPost(post)}
-                        />
+                        >
+                          <div className="bg-black/50 rounded-full p-2 opacity-80 hover:opacity-100 transition-opacity">
+                            <svg className="w-8 h-8 text-white fill-current" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <img
@@ -678,22 +692,17 @@ const TopPosts = () => {
                       <Eye className="w-3 h-3" />
                       <span>{post.view_count || 0}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-3 h-3" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLikePost(post.id);
+                      }}
+                      className={`flex items-center gap-1 hover:scale-110 transition-transform ${likedPosts.has(post.id) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                    >
+                      <Heart className={`w-3 h-3 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
                       <span>{post.like_count || 0}</span>
-                    </div>
+                    </button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLikePost(post.id);
-                    }}
-                    className={`p-1 h-auto ${likedPosts.has(post.id) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
-                  >
-                    <Heart className={`w-4 h-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -714,6 +723,9 @@ const TopPosts = () => {
           <Dialog open={!!viewingPost} onOpenChange={() => setViewingPost(null)}>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogTitle className="sr-only">View Post</DialogTitle>
+              <DialogDescription className="sr-only">
+                Viewing post by {viewingPost.profiles?.display_name || 'Unknown User'}
+              </DialogDescription>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
