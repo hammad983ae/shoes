@@ -92,7 +92,7 @@ const BrandCards = () => {
                     backgroundPosition: 'center',
                   }}
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-black/10" />
                 
                 {/* Fixed Text Container - Left Side */}
                 <div className="absolute left-0 top-0 w-48 sm:w-56 md:w-64 h-full flex flex-col justify-between p-3 sm:p-4 z-30">
