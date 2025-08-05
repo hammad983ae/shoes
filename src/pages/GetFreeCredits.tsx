@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferral } from '@/hooks/useReferral';
+import { Check, Share } from 'lucide-react';
 
 import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
@@ -12,7 +13,18 @@ const GetFreeCredits = () => {
   const { user } = useAuth();
   const { referralData, copyReferralLink, shareReferralLink } = useReferral();
   const [dollarAmount, setDollarAmount] = useState(1);
+  const [isCopied, setIsCopied] = useState(false);
   const credits = dollarAmount * 100;
+
+  const handleCopyLink = async () => {
+    await copyReferralLink();
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleShareLink = async () => {
+    await shareReferralLink();
+  };
 
   return (
     <div className="min-h-screen page-gradient relative">
@@ -41,12 +53,31 @@ const GetFreeCredits = () => {
                   <div className="p-2 sm:p-4 bg-primary/10 rounded-lg overflow-x-auto mb-2">
                     <p className="font-semibold text-primary text-xs sm:text-base">Your Referral Link:</p>
                     <p className="text-xs sm:text-sm text-muted-foreground font-mono bg-background p-2 rounded mt-2 break-all">
-                      {referralData.referralCode ? `https://cralluxsells.com/ref/${referralData.referralCode}` : 'Loading...'}
+                      {referralData.referralCode ? `cralluxsells.com/ref/${referralData.referralCode}` : 'Loading...'}
                     </p>
                   </div>
                   <div className="flex flex-row flex-wrap gap-2 justify-center w-full">
-                    <Button onClick={shareReferralLink} className="btn-hover-glow text-xs sm:text-base">Share Link</Button>
-                    <Button variant="outline" onClick={copyReferralLink} className="btn-hover-glow text-xs sm:text-base">Copy Link</Button>
+                    <Button 
+                      onClick={handleShareLink} 
+                      className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
+                    >
+                      <Share className="w-4 h-4" />
+                      Share Link
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleCopyLink} 
+                      className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-500" />
+                          Copied!
+                        </>
+                      ) : (
+                        'Copy Link'
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -100,7 +131,7 @@ const GetFreeCredits = () => {
               <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
                 <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
                   <p className="text-xs sm:text-lg font-medium text-foreground text-center">
-                    You get <span className="text-primary font-bold">10% back in credits</span> when someone buys using your link.
+                    You get <span className="text-primary font-bold">20% back in credits</span> when someone buys using your link.
                   </p>
                 </CardContent>
               </Card>

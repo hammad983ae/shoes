@@ -36,14 +36,14 @@ export const useReferral = () => {
         .from('profiles')
         .select('referral_code, referrals_count')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Get user credits including earned_from_referrals
       const { data: credits } = await supabase
         .from('user_credits')
         .select('earned_from_referrals, total_earned')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Get post analytics for total credits earned
       const { data: analytics } = await supabase

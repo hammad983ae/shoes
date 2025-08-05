@@ -63,12 +63,14 @@ export const useLeaderboard = () => {
         earned_from_referrals: creditsMap.get(user.user_id) || 0
       }));
 
-      // Sort by referrals_count first, then earned_from_referrals
+      // Sort by referrals_count descending (most referrals first)
       mergedUsers.sort((a, b) => {
-        if (b.referrals_count === a.referrals_count) {
-          return b.earned_from_referrals - a.earned_from_referrals;
+        // Primary sort: referrals_count (descending)
+        if (b.referrals_count !== a.referrals_count) {
+          return b.referrals_count - a.referrals_count;
         }
-        return b.referrals_count - a.referrals_count;
+        // Secondary sort: earned_from_referrals (descending)
+        return b.earned_from_referrals - a.earned_from_referrals;
       });
 
       // Top 10

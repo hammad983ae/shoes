@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           emailRedirectTo: redirectUrl,
           data: {
             display_name: displayName || email.split('@')[0],
-            referral_code: referralCode || null,
+            referral_code: referralCode || localStorage.getItem('referral_code') || null,
             accepted_terms: acceptedTerms || false
           }
         }
