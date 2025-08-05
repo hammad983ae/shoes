@@ -138,57 +138,130 @@ export type Database = {
           },
         ]
       }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_views: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          post_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          post_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          post_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           brand_tags: string[] | null
+          caption: string | null
           category_tags: string[] | null
           content: string | null
           created_at: string
           engagement_score: number | null
           id: string
           image_url: string | null
+          like_count: number | null
           media_url: string | null
           post_type: string | null
+          product_id: string | null
           show_socials: boolean | null
           show_username: boolean | null
           sneaker_tags: string[] | null
           title: string
           updated_at: string
           user_id: string
+          view_count: number | null
         }
         Insert: {
           brand_tags?: string[] | null
+          caption?: string | null
           category_tags?: string[] | null
           content?: string | null
           created_at?: string
           engagement_score?: number | null
           id?: string
           image_url?: string | null
+          like_count?: number | null
           media_url?: string | null
           post_type?: string | null
+          product_id?: string | null
           show_socials?: boolean | null
           show_username?: boolean | null
           sneaker_tags?: string[] | null
           title: string
           updated_at?: string
           user_id: string
+          view_count?: number | null
         }
         Update: {
           brand_tags?: string[] | null
+          caption?: string | null
           category_tags?: string[] | null
           content?: string | null
           created_at?: string
           engagement_score?: number | null
           id?: string
           image_url?: string | null
+          like_count?: number | null
           media_url?: string | null
           post_type?: string | null
+          product_id?: string | null
           show_socials?: boolean | null
           show_username?: boolean | null
           sneaker_tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
+          view_count?: number | null
         }
         Relationships: []
       }

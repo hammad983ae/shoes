@@ -1,28 +1,34 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Search, TrendingUp, Plus, Link } from 'lucide-react';
+import { Search, TrendingUp, Plus, Link, Eye, Heart, Trash2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import ViewProductModal from '@/components/ViewProductModal';
 
 interface Post {
   id: string;
   user_id: string;
   title: string | null;
   content: string | null;
+  caption: string | null;
   sneaker_tags: string[] | null;
   brand_tags: string[] | null;
   category_tags: string[] | null;
   image_url: string | null;
   media_url: string | null;
   engagement_score: number;
+  view_count: number;
+  like_count: number;
+  product_id: string | null;
   created_at: string;
   updated_at: string;
   show_socials: boolean;
@@ -45,6 +51,13 @@ interface PurchasedProduct {
   product_name: string;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  price: string;
+  images: string[];
+}
+
 const TopPosts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -58,19 +71,38 @@ const TopPosts = () => {
   const [createStep, setCreateStep] = useState<'upload' | 'settings'>('upload');
   
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [postTitle, setPostTitle] = useState('');
+  const [postCaption, setPostCaption] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [showSocials, setShowSocials] = useState(true);
   const [showUsername, setShowUsername] = useState(true);
   const [purchasedProducts, setPurchasedProducts] = useState<PurchasedProduct[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewingPost, setViewingPost] = useState<Post | null>(null);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [viewedPosts, setViewedPosts] = useState<Set<string>>(new Set());
+  const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
 
   const fetchPosts = useCallback(async () => {
-    // First get posts
-    const { data: postsData, error: postsError } = await supabase
+    const userFilter = searchParams.get('user');
+    
+    // Build query based on sort type and user filter
+    let query = supabase
       .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
+    
+    if (userFilter) {
+      query = query.eq('user_id', userFilter);
+    }
+    
+    // Apply sorting
+    if (sortBy === 'trending') {
+      query = query.order('like_count', { ascending: false });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    const { data: postsData, error: postsError } = await query;
 
     if (postsError) {
       console.error('Error fetching posts:', postsError);
@@ -105,7 +137,7 @@ const TopPosts = () => {
     }));
 
     setPosts(postsWithProfiles as Post[]);
-  }, []);
+  }, [sortBy, searchParams]);
 
   const fetchPurchasedProducts = useCallback(async () => {
     if (!user) return;
@@ -130,8 +162,22 @@ const TopPosts = () => {
     fetchPosts();
     if (user) {
       fetchPurchasedProducts();
+      fetchUserLikes();
     }
   }, [fetchPosts, fetchPurchasedProducts, user]);
+
+  const fetchUserLikes = useCallback(async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', user.id);
+    
+    if (data) {
+      setLikedPosts(new Set(data.map(like => like.post_id)));
+    }
+  }, [user]);
 
   const searchUsers = useCallback(async () => {
     const { data, error } = await supabase
@@ -145,15 +191,7 @@ const TopPosts = () => {
     }
   }, [userSearch]);
 
-  useEffect(() => {
-    const userFilter = searchParams.get('user');
-    if (userFilter && posts.length > 0) {
-      const userPosts = posts.filter(post => post.user_id === userFilter);
-      if (userPosts.length > 0) {
-        setPosts(userPosts);
-      }
-    }
-  }, [searchParams, posts]);
+  // Remove this useEffect since filtering is now handled in fetchPosts
 
   useEffect(() => {
     if (userSearch.trim()) {
@@ -226,6 +264,8 @@ const TopPosts = () => {
   const resetCreateForm = () => {
     setCreateStep('upload');
     setUploadedFile(null);
+    setPostTitle('');
+    setPostCaption('');
     setSelectedProduct('');
     setShowSocials(true);
     setShowUsername(true);
@@ -286,12 +326,16 @@ const TopPosts = () => {
 
       const postData = {
         user_id: userId,
-        title: postTitle,
-        content: 'Shared from file upload',
+        title: postTitle || uploadedFile.name,
+        caption: postCaption,
+        content: postCaption,
         media_url: mediaUrl,
         post_type: postType,
+        product_id: selectedProduct && selectedProduct !== 'no-product' ? selectedProduct : null,
         show_socials: showSocials,
-        show_username: showUsername
+        show_username: showUsername,
+        view_count: 0,
+        like_count: 0
       };
       console.log('Inserting post data:', postData);
 
@@ -351,16 +395,98 @@ const TopPosts = () => {
   };
 
   const handleViewUserProfile = (userId: string) => {
-    // Filter posts by this user and stay on feed page
     setUserSearch('');
     setSearchResults([]);
+    navigate(`/feed?user=${userId}`);
+  };
+
+  const handleViewPost = async (post: Post) => {
+    setViewingPost(post);
     
-    // Filter posts to show only this user's posts
-    const userPosts = posts.filter(post => post.user_id === userId);
-    setPosts(userPosts);
+    // Track view if user hasn't viewed this post before
+    if (user && !viewedPosts.has(post.id)) {
+      setViewedPosts(prev => new Set([...prev, post.id]));
+      
+      // Insert view record
+      await supabase.from('post_views').insert({
+        post_id: post.id,
+        user_id: user.id
+      });
+    }
+  };
+
+  const handleLikePost = async (postId: string) => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to like posts',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const isLiked = likedPosts.has(postId);
     
-    // Update URL to reflect the filter
-    window.history.pushState({}, '', `/feed?user=${userId}`);
+    if (isLiked) {
+      // Unlike
+      await supabase
+        .from('post_likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', user.id);
+      
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    } else {
+      // Like
+      await supabase
+        .from('post_likes')
+        .insert({
+          post_id: postId,
+          user_id: user.id
+        });
+      
+      setLikedPosts(prev => new Set([...prev, postId]));
+    }
+    
+    // Refresh posts to get updated counts
+    setTimeout(fetchPosts, 500);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId)
+      .eq('user_id', user.id);
+    
+    if (!error) {
+      toast({ title: 'Post deleted successfully' });
+      setViewingPost(null);
+      fetchPosts();
+    } else {
+      toast({
+        title: 'Error deleting post',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleViewProduct = (productId: string) => {
+    // This is a simplified product view - you'd need to fetch actual product data
+    const mockProduct: Product = {
+      id: parseInt(productId),
+      name: 'Product Name',
+      price: '$199',
+      images: ['/placeholder-product.jpg']
+    };
+    setSelectedProductForView(mockProduct);
   };
 
   // const getPlatformIcon = (platform: string) => {
@@ -459,55 +585,59 @@ const TopPosts = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {posts.map((post) => (
-            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg cursor-pointer" onClick={() => setViewingPost(post)}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={post.profiles?.avatar_url || ''} />
-                      <AvatarFallback>{post.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold flex items-center gap-2">
-                        {post.profiles?.display_name || 'Unknown User'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
+            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg cursor-pointer" onClick={() => handleViewPost(post)}>
+              <CardContent className="p-3 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={post.profiles?.avatar_url || ''} />
+                    <AvatarFallback>{post.profiles?.display_name?.[0] || '?'}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">
+                      {post.profiles?.display_name || 'Unknown User'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {post.title && <h2 className="text-xl font-bold">{post.title}</h2>}
-                {post.content && <p className="text-muted-foreground">{post.content}</p>}
+                
+                {post.title && <h2 className="text-sm font-bold line-clamp-2">{post.title}</h2>}
+                {post.caption && <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>}
+                
                 {post.media_url && (
-                  <div className="relative rounded-lg overflow-hidden">
+                  <div className="relative rounded-lg overflow-hidden aspect-square">
                     {post.post_type === 'video' ? (
-                      <video src={post.media_url} controls className="w-full max-h-96 object-cover" />
+                      <video src={post.media_url} className="w-full h-full object-contain" />
                     ) : (
                       <img
                         src={post.media_url}
                         alt={post.title || 'Post media'}
-                        className="w-full max-h-96 object-cover"
+                        className="w-full h-full object-contain"
                       />
                     )}
                   </div>
                 )}
-                {post.engagement_score && (
-                  <div className="flex items-center justify-between pt-4 border-t border-border">
-                    <div className="flex gap-6 text-sm text-muted-foreground">
-                      <span>📊 Engagement Score: {post.engagement_score}</span>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      <span>{post.view_count || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3" />
+                      <span>{post.like_count || 0}</span>
                     </div>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}
           {posts.length === 0 && (
-            <Card className="bg-[#0a0a0a] border-[#FFD700]">
+            <Card className="bg-[#0a0a0a] border-[#FFD700] col-span-full">
               <CardContent className="text-center py-12">
                 <p className="text-muted-foreground">
                   No posts yet. Be the first to create one!
@@ -520,48 +650,97 @@ const TopPosts = () => {
         {/* Post View Modal */}
         {viewingPost && (
           <Dialog open={!!viewingPost} onOpenChange={() => setViewingPost(null)}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogTitle className="sr-only">View Post</DialogTitle>
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
-                    <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold">
-                      {viewingPost.profiles?.display_name || 'Unknown User'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(viewingPost.created_at).toLocaleDateString()}
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
+                      <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold">
+                        {viewingPost.profiles?.display_name || 'Unknown User'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(viewingPost.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
+                  
+                  {/* Delete button for post owner */}
+                  {user && user.id === viewingPost.user_id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeletePost(viewingPost.id)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
                 
                 {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
-                {viewingPost.content && <p className="text-muted-foreground">{viewingPost.content}</p>}
+                {viewingPost.caption && <p className="text-muted-foreground">{viewingPost.caption}</p>}
                 
                 {viewingPost.media_url && (
                   <div className="relative rounded-lg overflow-hidden">
                     {viewingPost.post_type === 'video' ? (
-                      <video src={viewingPost.media_url} controls className="w-full max-h-96 object-cover" />
+                      <video src={viewingPost.media_url} controls className="w-full max-h-96 object-contain" />
                     ) : (
                       <img
                         src={viewingPost.media_url}
                         alt={viewingPost.title || 'Post media'}
-                        className="w-full max-h-96 object-cover"
+                        className="w-full max-h-96 object-contain"
                       />
                     )}
                   </div>
                 )}
                 
-                {viewingPost.engagement_score && (
-                  <div className="flex items-center justify-between pt-4 border-t border-border">
-                    <div className="flex gap-6 text-sm text-muted-foreground">
-                      <span>📊 Engagement Score: {viewingPost.engagement_score}</span>
+                {/* Product section */}
+                {viewingPost.product_id && (
+                  <div className="border border-border rounded-lg p-4">
+                    <h3 className="font-semibold mb-2">Featured Product</h3>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src="/placeholder-product.jpg" 
+                        alt="Product" 
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">Product Name</p>
+                        <p className="text-[#FFD600] font-bold">$199</p>
+                      </div>
+                      <Button 
+                        onClick={() => handleViewProduct(viewingPost.product_id!)}
+                        className="bg-[#FFD600] text-black hover:bg-[#E6C200]"
+                      >
+                        View Product
+                      </Button>
                     </div>
                   </div>
                 )}
+                
+                {/* Interactions */}
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">{viewingPost.view_count || 0} views</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleLikePost(viewingPost.id)}
+                      className={`flex items-center gap-2 ${likedPosts.has(viewingPost.id) ? 'text-red-500' : 'text-muted-foreground'}`}
+                    >
+                      <Heart className={`w-4 h-4 ${likedPosts.has(viewingPost.id) ? 'fill-current' : ''}`} />
+                      <span className="text-sm">{viewingPost.like_count || 0}</span>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -628,6 +807,25 @@ const TopPosts = () => {
           {createStep === 'settings' && (
             <div className="space-y-4">
               <div className="space-y-2">
+                <label className="text-sm font-medium">Post Title</label>
+                <Input
+                  value={postTitle}
+                  onChange={(e) => setPostTitle(e.target.value)}
+                  placeholder="Enter a title for your post"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Caption</label>
+                <Textarea
+                  value={postCaption}
+                  onChange={(e) => setPostCaption(e.target.value)}
+                  placeholder="Write a caption for your post..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Select Product (Optional)</label>
                 <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                   <SelectTrigger>
@@ -647,18 +845,6 @@ const TopPosts = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Display Settings</label>
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="showSocials"
-                      checked={showSocials}
-                      onChange={(e) => setShowSocials(e.target.checked)}
-                      className="rounded"
-                    />
-                    <label htmlFor="showSocials" className="text-sm">
-                      Show social media links
-                    </label>
-                  </div>
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -695,56 +881,14 @@ const TopPosts = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Post View Modal */}
-      <Dialog open={!!viewingPost} onOpenChange={() => setViewingPost(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogTitle>Post Details</DialogTitle>
-          
-          {viewingPost && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
-                  <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold">
-                    {viewingPost.profiles?.display_name || 'Unknown User'}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(viewingPost.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
-              {viewingPost.content && <p className="text-muted-foreground">{viewingPost.content}</p>}
-              
-              {viewingPost.media_url && (
-                <div className="relative rounded-lg overflow-hidden">
-                  {viewingPost.post_type === 'video' ? (
-                    <video src={viewingPost.media_url} controls className="w-full max-h-96 object-cover" />
-                  ) : (
-                    <img
-                      src={viewingPost.media_url}
-                      alt={viewingPost.title || 'Post media'}
-                      className="w-full max-h-96 object-cover"
-                    />
-                  )}
-                </div>
-              )}
-
-              {viewingPost.engagement_score && (
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex gap-6 text-sm text-muted-foreground">
-                    <span>📊 Engagement Score: {viewingPost.engagement_score}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Product View Modal */}
+      {selectedProductForView && (
+        <ViewProductModal
+          isOpen={!!selectedProductForView}
+          onClose={() => setSelectedProductForView(null)}
+          sneaker={selectedProductForView as any}
+        />
+      )}
     </div>
   );
 };
