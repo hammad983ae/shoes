@@ -79,6 +79,7 @@ const TopPosts = () => {
   const [purchasedProducts, setPurchasedProducts] = useState<PurchasedProduct[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewingPost, setViewingPost] = useState<Post | null>(null);
+  const [autoPlayVideo, setAutoPlayVideo] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [viewedPosts, setViewedPosts] = useState<Set<string>>(new Set());
   const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
@@ -400,8 +401,9 @@ const TopPosts = () => {
     navigate(`/feed?user=${userId}`);
   };
 
-  const handleViewPost = async (post: Post) => {
+  const handleViewPost = async (post: Post, shouldAutoPlay = false) => {
     setViewingPost(post);
+    setAutoPlayVideo(shouldAutoPlay);
     
     // Track view if user hasn't viewed this post before and user is logged in
     if (user && !viewedPosts.has(post.id)) {
@@ -654,25 +656,22 @@ const TopPosts = () => {
                         <video 
                           src={post.media_url} 
                           className="w-full h-full object-contain" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const video = e.currentTarget;
-                            if (video.paused) {
-                              video.play();
-                            } else {
-                              video.pause();
-                            }
-                          }}
                         />
                         <div 
                           className="absolute inset-0 cursor-pointer flex items-center justify-center group-hover:bg-black/10 transition-colors"
                           onClick={() => handleViewPost(post)}
                         >
-                          <div className="bg-black/50 rounded-full p-2 opacity-80 hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewPost(post, true);
+                            }}
+                            className="bg-black/50 rounded-full p-3 opacity-80 hover:opacity-100 transition-opacity"
+                          >
                             <svg className="w-8 h-8 text-white fill-current" viewBox="0 0 24 24">
                               <path d="M8 5v14l11-7z"/>
                             </svg>
-                          </div>
+                          </button>
                         </div>
                       </div>
                     ) : (
@@ -689,7 +688,7 @@ const TopPosts = () => {
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-4 h-4" />
                       <span>{post.view_count || 0}</span>
                     </div>
                     <button
@@ -697,9 +696,9 @@ const TopPosts = () => {
                         e.stopPropagation();
                         handleLikePost(post.id);
                       }}
-                      className={`flex items-center gap-1 hover:scale-110 transition-transform ${likedPosts.has(post.id) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                      className={`flex items-center gap-1 hover:scale-110 transition-transform p-1 ${likedPosts.has(post.id) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
                     >
-                      <Heart className={`w-3 h-3 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
+                      <Heart className={`w-4 h-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
                       <span>{post.like_count || 0}</span>
                     </button>
                   </div>
@@ -751,7 +750,12 @@ const TopPosts = () => {
                 {viewingPost.media_url && (
                   <div className="relative rounded-lg overflow-hidden">
                     {viewingPost.post_type === 'video' ? (
-                      <video src={viewingPost.media_url} controls className="w-full max-h-96 object-contain" />
+                      <video 
+                        src={viewingPost.media_url} 
+                        controls 
+                        autoPlay={autoPlayVideo}
+                        className="w-full max-h-96 object-contain" 
+                      />
                     ) : (
                       <img
                         src={viewingPost.media_url}
