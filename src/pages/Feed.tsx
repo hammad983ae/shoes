@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Search, TrendingUp, Plus, Upload, Link } from 'lucide-react';
+import { Search, TrendingUp, Plus, Link } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -56,14 +56,14 @@ const TopPosts = () => {
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createStep, setCreateStep] = useState<'upload' | 'settings'>('upload');
-  const [uploadMethod, setUploadMethod] = useState<'file' | 'link'>('file');
+  
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [socialLink, setSocialLink] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [showSocials, setShowSocials] = useState(true);
   const [showUsername, setShowUsername] = useState(true);
   const [purchasedProducts, setPurchasedProducts] = useState<PurchasedProduct[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewingPost, setViewingPost] = useState<Post | null>(null);
 
   const fetchPosts = useCallback(async () => {
     
@@ -164,7 +164,7 @@ const TopPosts = () => {
 
   const handleNextStep = () => {
     if (createStep === 'upload') {
-      if (uploadMethod === 'file' && !uploadedFile) {
+      if (!uploadedFile) {
         toast({
           title: 'File required',
           description: 'Please upload a file to continue',
@@ -172,32 +172,23 @@ const TopPosts = () => {
         });
         return;
       }
-      if (uploadMethod === 'file' && uploadedFile) {
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg'];
-        if (!allowedTypes.includes(uploadedFile.type)) {
-          toast({
-            title: 'Invalid file type',
-            description: 'Please upload an image (JPEG, PNG, GIF, WebP) or video (MP4, WebM, OGG)',
-            variant: 'destructive'
-          });
-          return;
-        }
-        // Validate file size (10MB limit)
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        if (uploadedFile.size > maxSize) {
-          toast({
-            title: 'File too large',
-            description: 'Please upload a file smaller than 10MB',
-            variant: 'destructive'
-          });
-          return;
-        }
-      }
-      if (uploadMethod === 'link' && !socialLink.trim()) {
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg'];
+      if (!allowedTypes.includes(uploadedFile.type)) {
         toast({
-          title: 'Link required',
-          description: 'Please enter a social media link to continue',
+          title: 'Invalid file type',
+          description: 'Please upload an image (JPEG, PNG, GIF, WebP) or video (MP4, WebM, OGG)',
+          variant: 'destructive'
+        });
+        return;
+      }
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (uploadedFile.size > maxSize) {
+        toast({
+          title: 'File too large',
+          description: 'Please upload a file smaller than 10MB',
           variant: 'destructive'
         });
         return;
@@ -208,12 +199,11 @@ const TopPosts = () => {
 
   const resetCreateForm = () => {
     setCreateStep('upload');
-    setUploadMethod('file');
     setUploadedFile(null);
-    setSocialLink('');
     setSelectedProduct('');
     setShowSocials(true);
     setShowUsername(true);
+    setViewingPost(null);
   };
 
   const handleSubmitPost = async () => {
@@ -224,51 +214,44 @@ const TopPosts = () => {
       let postTitle = '';
       let postType = 'link';
       
-             if (uploadMethod === 'file' && uploadedFile) {
+       if (!uploadedFile) {
+         throw new Error('No file selected');
+       }
+       
+       // Generate unique filename
+       const fileExt = uploadedFile.name.split('.').pop();
+       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+       const filePath = `user-posts/${fileName}`;
+       
+       // Upload file to Supabase storage
+       const { error: uploadError } = await supabase.storage
+         .from('user-posts')
+         .upload(filePath, uploadedFile);
+       
+       if (uploadError) {
+         console.error('Upload error:', uploadError);
          
-         
-         // Generate unique filename
-         const fileExt = uploadedFile.name.split('.').pop();
-         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-         const filePath = `user-posts/${fileName}`;
-         
-         // Upload file to Supabase storage
-         const { error: uploadError } = await supabase.storage
-           .from('user-posts')
-           .upload(filePath, uploadedFile);
-         
-         if (uploadError) {
-           console.error('Upload error:', uploadError);
-           
-           // Check if it's a bucket not found error
-           if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
-             throw new Error('Storage bucket "user-posts" not found. Please create the bucket in Supabase dashboard.');
-           }
-           
-           // Check if it's a permissions error
-           if (uploadError.message.includes('permission') || uploadError.message.includes('unauthorized')) {
-             throw new Error('Upload permission denied. Please check storage bucket permissions.');
-           }
-           
-           throw new Error(`Failed to upload file: ${uploadError.message}`);
+         // Check if it's a bucket not found error
+         if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
+           throw new Error('Storage bucket "user-posts" not found. Please create the bucket in Supabase dashboard.');
          }
+         
+         // Check if it's a permissions error
+         if (uploadError.message.includes('permission') || uploadError.message.includes('unauthorized')) {
+           throw new Error('Upload permission denied. Please check storage bucket permissions.');
+         }
+         
+         throw new Error(`Failed to upload file: ${uploadError.message}`);
+       }
 
-         // Get public URL
-         const { data: { publicUrl } } = supabase.storage
-           .from('user-posts')
-           .getPublicUrl(filePath);
-         
-         mediaUrl = publicUrl;
-         postTitle = uploadedFile.name;
-         postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
-         
-         
-       } else if (uploadMethod === 'link') {
-        mediaUrl = socialLink;
-        postTitle = 'Social Media Post';
-        postType = 'link';
-        
-      }
+       // Get public URL
+       const { data: { publicUrl } } = supabase.storage
+         .from('user-posts')
+         .getPublicUrl(filePath);
+       
+       mediaUrl = publicUrl;
+       postTitle = uploadedFile.name;
+       postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
 
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData?.user?.id;
@@ -278,7 +261,7 @@ const TopPosts = () => {
       const postData = {
         user_id: userId,
         title: postTitle,
-        content: `Shared from ${uploadMethod === 'link' ? 'social media' : 'file upload'}`,
+        content: 'Shared from file upload',
         media_url: mediaUrl,
         post_type: postType,
         show_socials: showSocials,
@@ -419,7 +402,7 @@ const TopPosts = () => {
 
         <div className="space-y-6">
           {posts.map((post) => (
-            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg">
+            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg cursor-pointer" onClick={() => setViewingPost(post)}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -483,67 +466,37 @@ const TopPosts = () => {
           
           {createStep === 'upload' && (
             <div className="space-y-4">
-                             <div className="flex gap-2">
-                 <Button 
-                   onClick={() => setUploadMethod('file')} 
-                   variant={uploadMethod === 'file' ? 'default' : 'outline'}
-                   className="flex-1"
-                 >
-                   <Upload className="w-4 h-4 mr-2" />
-                   Upload File
-                 </Button>
-                 <Button 
-                   onClick={() => setUploadMethod('link')} 
-                   variant={uploadMethod === 'link' ? 'default' : 'outline'}
-                   className="flex-1"
-                 >
-                   <Link className="w-4 h-4 mr-2" />
-                   Social Link
-                 </Button>
-               </div>
-
-                             {uploadMethod === 'file' ? (
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium">Upload Media</label>
-                   <Input
-                     type="file"
-                     accept="image/*,video/*"
-                     onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
-                     className="cursor-pointer"
-                   />
-                   {uploadedFile && (
-                     <div className="space-y-2">
-                       <p className="text-sm text-muted-foreground">
-                         Selected: {uploadedFile.name} ({(uploadedFile.size / 1024 / 1024).toFixed(2)}MB)
-                       </p>
-                       <div className="relative rounded-lg overflow-hidden border border-border">
-                         {uploadedFile.type.startsWith('video/') ? (
-                           <video 
-                             src={URL.createObjectURL(uploadedFile)} 
-                             controls 
-                             className="w-full max-h-48 object-cover"
-                           />
-                         ) : (
-                           <img
-                             src={URL.createObjectURL(uploadedFile)}
-                             alt="Preview"
-                             className="w-full max-h-48 object-cover"
-                           />
-                         )}
-                       </div>
-                     </div>
-                   )}
-                 </div>
-               ) : (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Social Media Link</label>
-                  <Input
-                    placeholder="Paste your social media link here..."
-                    value={socialLink}
-                    onChange={(e) => setSocialLink(e.target.value)}
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Upload Media</label>
+                <Input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
+                  className="cursor-pointer"
+                />
+                {uploadedFile && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Selected: {uploadedFile.name} ({(uploadedFile.size / 1024 / 1024).toFixed(2)}MB)
+                    </p>
+                    <div className="relative rounded-lg overflow-hidden border border-border">
+                      {uploadedFile.type.startsWith('video/') ? (
+                        <video 
+                          src={URL.createObjectURL(uploadedFile)} 
+                          controls 
+                          className="w-full max-h-48 object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(uploadedFile)}
+                          alt="Preview"
+                          className="w-full max-h-48 object-cover"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-2 pt-4">
                 <Button 
@@ -571,7 +524,7 @@ const TopPosts = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a product to tag" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border border-border z-50">
                     <SelectItem value="no-product">No Product</SelectItem>
                     {purchasedProducts.map((product) => (
                       <SelectItem key={product.product_id} value={product.product_id}>
@@ -628,6 +581,57 @@ const TopPosts = () => {
                   {isSubmitting ? 'Creating...' : 'Create Post'}
                 </Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Post View Modal */}
+      <Dialog open={!!viewingPost} onOpenChange={() => setViewingPost(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle>Post Details</DialogTitle>
+          
+          {viewingPost && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
+                  <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold">
+                    {viewingPost.profiles?.display_name || 'Unknown User'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(viewingPost.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
+              {viewingPost.content && <p className="text-muted-foreground">{viewingPost.content}</p>}
+              
+              {viewingPost.media_url && (
+                <div className="relative rounded-lg overflow-hidden">
+                  {viewingPost.post_type === 'video' ? (
+                    <video src={viewingPost.media_url} controls className="w-full max-h-96 object-cover" />
+                  ) : (
+                    <img
+                      src={viewingPost.media_url}
+                      alt={viewingPost.title || 'Post media'}
+                      className="w-full max-h-96 object-cover"
+                    />
+                  )}
+                </div>
+              )}
+
+              {viewingPost.engagement_score && (
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex gap-6 text-sm text-muted-foreground">
+                    <span>📊 Engagement Score: {viewingPost.engagement_score}</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
