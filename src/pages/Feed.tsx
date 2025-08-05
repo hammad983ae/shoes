@@ -316,7 +316,7 @@ const TopPosts = () => {
          .getPublicUrl(filePath);
        
        mediaUrl = publicUrl;
-       postTitle = uploadedFile.name;
+       postTitle = postTitle || 'Untitled Post';
        postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
 
       const { data: userData } = await supabase.auth.getUser();
@@ -326,7 +326,7 @@ const TopPosts = () => {
 
       const postData = {
         user_id: userId,
-        title: postTitle || uploadedFile.name,
+        title: postTitle || 'Untitled Post',
         caption: postCaption,
         content: postCaption,
         media_url: mediaUrl,
@@ -407,6 +407,21 @@ const TopPosts = () => {
     if (user && !viewedPosts.has(post.id)) {
       setViewedPosts(prev => new Set([...prev, post.id]));
       
+      // Update view count immediately in local state
+      setPosts(prevPosts => 
+        prevPosts.map(p => 
+          p.id === post.id 
+            ? { ...p, view_count: (p.view_count || 0) + 1 }
+            : p
+        )
+      );
+      
+      // Update viewing post state
+      setViewingPost(prev => prev ? { 
+        ...prev, 
+        view_count: (prev.view_count || 0) + 1 
+      } : null);
+      
       // Insert view record
       await supabase.from('post_views').insert({
         post_id: post.id,
@@ -452,8 +467,22 @@ const TopPosts = () => {
       setLikedPosts(prev => new Set([...prev, postId]));
     }
     
-    // Refresh posts to get updated counts
-    setTimeout(fetchPosts, 500);
+    // Update the post in local state immediately
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId 
+          ? { ...post, like_count: (post.like_count || 0) + (isLiked ? -1 : 1) }
+          : post
+      )
+    );
+    
+    // Also update viewing post if it's open
+    if (viewingPost && viewingPost.id === postId) {
+      setViewingPost(prev => prev ? { 
+        ...prev, 
+        like_count: (prev.like_count || 0) + (isLiked ? -1 : 1) 
+      } : null);
+    }
   };
 
   const handleDeletePost = async (postId: string) => {
@@ -587,7 +616,7 @@ const TopPosts = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {posts.map((post) => (
-            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg cursor-pointer" onClick={() => handleViewPost(post)}>
+            <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg">
               <CardContent className="p-3 space-y-3">
                 <div className="flex items-center gap-2">
                   <Avatar className="w-8 h-8">
@@ -604,18 +633,40 @@ const TopPosts = () => {
                   </div>
                 </div>
                 
-                {post.title && <h2 className="text-sm font-bold line-clamp-2">{post.title}</h2>}
-                {post.caption && <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>}
+                <div className="cursor-pointer" onClick={() => handleViewPost(post)}>
+                  {post.title && <h2 className="text-sm font-bold line-clamp-2">{post.title}</h2>}
+                  {post.caption && <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>}
+                </div>
                 
                 {post.media_url && (
                   <div className="relative rounded-lg overflow-hidden aspect-square">
                     {post.post_type === 'video' ? (
-                      <video src={post.media_url} className="w-full h-full object-contain" />
+                      <div className="relative group">
+                        <video 
+                          src={post.media_url} 
+                          className="w-full h-full object-contain cursor-pointer" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const video = e.currentTarget;
+                            if (video.paused) {
+                              video.play();
+                            } else {
+                              video.pause();
+                            }
+                          }}
+                          onDoubleClick={() => handleViewPost(post)}
+                        />
+                        <div 
+                          className="absolute inset-0 cursor-pointer group-hover:bg-black/10 transition-colors"
+                          onClick={() => handleViewPost(post)}
+                        />
+                      </div>
                     ) : (
                       <img
                         src={post.media_url}
                         alt={post.title || 'Post media'}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain cursor-pointer"
+                        onClick={() => handleViewPost(post)}
                       />
                     )}
                   </div>
@@ -632,6 +683,17 @@ const TopPosts = () => {
                       <span>{post.like_count || 0}</span>
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLikePost(post.id);
+                    }}
+                    className={`p-1 h-auto ${likedPosts.has(post.id) ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                  >
+                    <Heart className={`w-4 h-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -669,17 +731,6 @@ const TopPosts = () => {
                     </div>
                   </div>
                   
-                  {/* Delete button for post owner */}
-                  {user && user.id === viewingPost.user_id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeletePost(viewingPost.id)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
                 </div>
                 
                 {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
@@ -740,6 +791,18 @@ const TopPosts = () => {
                       <span className="text-sm">{viewingPost.like_count || 0}</span>
                     </Button>
                   </div>
+                  
+                  {/* Delete button for post owner */}
+                  {user && user.id === viewingPost.user_id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeletePost(viewingPost.id)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </DialogContent>
