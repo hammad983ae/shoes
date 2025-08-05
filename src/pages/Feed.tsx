@@ -278,8 +278,7 @@ const TopPosts = () => {
     try {
       
        let mediaUrl = '';
-       let titleForPost = '';
-      let postType = 'link';
+       let postType = 'link';
       
        if (!uploadedFile) {
          throw new Error('No file selected');
@@ -317,7 +316,7 @@ const TopPosts = () => {
          .getPublicUrl(filePath);
        
        mediaUrl = publicUrl;
-       titleForPost = postTitle || "Untitled Post";
+       
        postType = uploadedFile.type.startsWith('video/') ? 'video' : 'image';
 
       const { data: userData } = await supabase.auth.getUser();
@@ -327,7 +326,7 @@ const TopPosts = () => {
 
       const postData = {
         user_id: userId,
-        title: titleForPost,
+        title: postTitle.trim() || "Untitled Post", // Only use user-provided title, never filename
         caption: postCaption,
         content: postCaption,
         media_url: mediaUrl,
@@ -744,7 +743,7 @@ const TopPosts = () => {
                   
                 </div>
                 
-                {viewingPost.title && viewingPost.title !== "Untitled Post" && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
+                {viewingPost.title && <h2 className="text-xl font-bold">{viewingPost.title}</h2>}
                 {viewingPost.caption && <p className="text-muted-foreground">{viewingPost.caption}</p>}
                 
                 {viewingPost.media_url && (
