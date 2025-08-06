@@ -62,21 +62,21 @@ const AnnouncementBar = () => {
       {/* Left Arrow */}
       <button
         onClick={goToPrevious}
-        className="absolute md:left-20 left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/20 hover:bg-black/30 text-white transition-all duration-200 z-20 flex items-center justify-center"
+        className="absolute md:left-20 left-3 top-1/2 -translate-y-1/2 p-1 md:p-1.5 rounded-full bg-black/20 hover:bg-black/30 text-white transition-all duration-200 z-20 flex items-center justify-center"
         disabled={isTransitioning}
         aria-label="Previous announcement"
       >
-        <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
+        <ChevronLeft className="w-2.5 h-2.5 md:w-4 md:h-4" />
       </button>
       
       {/* Right Arrow */}
       <button
         onClick={goToNext}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/20 hover:bg-black/30 text-white transition-all duration-200 z-20 flex items-center justify-center"
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 md:p-1.5 rounded-full bg-black/20 hover:bg-black/30 text-white transition-all duration-200 z-20 flex items-center justify-center"
         disabled={isTransitioning}
         aria-label="Next announcement"
       >
-        <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
+        <ChevronRight className="w-2.5 h-2.5 md:w-4 md:h-4" />
       </button>
 
       {/* Current Announcement */}
