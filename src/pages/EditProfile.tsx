@@ -154,11 +154,13 @@ export default function EditProfile() {
     <div className="min-h-screen page-gradient flex flex-col items-center justify-center px-2 py-8">
       <div className="w-full max-w-md bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-4 sm:p-6 shadow-2xl border border-yellow-500/50 relative">
         {/* Top Bar */}
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+        <div className="flex items-center mb-6 relative">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="absolute left-0">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <span className="flex-1 text-center font-bold text-lg text-white">Edit Profile</span>
+          <div className="w-full flex justify-center">
+            <span className="font-bold text-lg text-white">Edit Profile</span>
+          </div>
         </div>
         {/* Avatar Section */}
         <div className="flex flex-col items-center mb-6">
