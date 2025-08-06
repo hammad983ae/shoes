@@ -179,25 +179,6 @@ export default function CheckoutInstructions() {
   return (
     <div className="min-h-screen page-gradient flex flex-col items-center justify-center px-2 py-8">
       <div className="w-full max-w-lg bg-background/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-primary/30">
-        {!user && step === 1 && (
-          <div className="space-y-4 mb-6">
-            <h2 className="text-xl font-bold text-center">Get Started</h2>
-            <Button 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => navigate('/signin')}
-            >
-              Create Account for 20% Off
-            </Button>
-            <div className="text-center text-sm text-muted-foreground">OR</div>
-            <Button 
-              variant="outline"
-              className="w-full"
-              onClick={() => setStep(1)}
-            >
-              Continue with Guest Checkout
-            </Button>
-          </div>
-        )}
         
         {/* Order Summary */}
         <div className="mb-6 p-4 bg-muted/50 rounded-lg">
@@ -235,7 +216,7 @@ export default function CheckoutInstructions() {
           )}
         </div>
         
-        {(user || step > 1) && step === 1 && (
+        {step === 1 && (
           <form className="space-y-4" onSubmit={handleSubmit}>
             <h2 className="text-2xl font-bold mb-2 text-center">Shipping & Payment Info</h2>
             <Input

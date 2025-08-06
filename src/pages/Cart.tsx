@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -21,12 +22,30 @@ const Cart = () => {
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [creditsToUse, setCreditsToUse] = useState('');
   const [creditDiscount, setCreditDiscount] = useState(0);
+  const [currentBalance, setCurrentBalance] = useState(0);
   
-  const currentBalance = 1000; // TODO: Get from user credits table
   const subtotal = getTotalPrice();
   const estimatedTax = subtotal * 0.08;
-  
   const total = subtotal + estimatedTax - creditDiscount;
+
+  // Fetch user credits from database
+  useEffect(() => {
+    const fetchUserCredits = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('user_credits')
+          .select('current_balance')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data && !error) {
+          setCurrentBalance(data.current_balance || 0);
+        }
+      }
+    };
+
+    fetchUserCredits();
+  }, [user]);
   
   // For size editing - handle both EU and US sizes
   const getSizesForItem = (item: any) => {
@@ -61,7 +80,7 @@ const Cart = () => {
     }
   }
 
-  const handleCreditsSubmit = () => {
+  const handleCreditsSubmit = async () => {
     const credits = parseInt(creditsToUse) || 0;
     if (credits > currentBalance) {
       alert('Insufficient credits');
@@ -72,6 +91,22 @@ const Cart = () => {
       return;
     }
     setCreditDiscount(credits / 100); // Convert credits to dollars
+    
+    // Update the current balance in the database
+    if (user) {
+      const { error } = await supabase
+        .from('user_credits')
+        .update({ 
+          current_balance: currentBalance - credits,
+          total_spent: (currentBalance - credits)
+        })
+        .eq('user_id', user.id);
+      
+      if (!error) {
+        setCurrentBalance(currentBalance - credits);
+      }
+    }
+    
     setShowCreditsModal(false);
   };
 
@@ -222,6 +257,24 @@ const Cart = () => {
                 </Button>
               )}
 
+              {/* Coupon code input */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={coupon}
+                  onChange={e => setCoupon(e.target.value)}
+                  placeholder="Redeem coupon code"
+                  className="flex-1 border rounded px-3 py-2 text-sm bg-background"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => setRedeemState('success')} // Placeholder handler
+                  disabled={redeemState === 'loading'}
+                >
+                  {redeemState === 'loading' ? '...' : 'Redeem'}
+                </Button>
+              </div>
+
               {/* Guest Checkout Options */}
               {!user && (
                 <div className="space-y-3 border-t pt-4">
@@ -241,24 +294,6 @@ const Cart = () => {
                   </Button>
                 </div>
               )}
-
-              {/* Coupon code input */}
-              <div className="flex items-center gap-2 mt-4">
-                <input
-                  type="text"
-                  value={coupon}
-                  onChange={e => setCoupon(e.target.value)}
-                  placeholder="Redeem coupon code"
-                  className="flex-1 border rounded px-3 py-2 text-sm bg-background"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => setRedeemState('success')} // Placeholder handler
-                  disabled={redeemState === 'loading'}
-                >
-                  {redeemState === 'loading' ? '...' : 'Redeem'}
-                </Button>
-              </div>
 
               {/* Checkout button for signed-in users */}
               {user && (
