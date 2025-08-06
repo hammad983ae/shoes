@@ -9,10 +9,23 @@ interface CTAButtonsProps {
 
 const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [browsingCount, setBrowsingCount] = useState(37);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 200);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Update browsing count every 30 minutes (1800000 ms)
+    const updateBrowsingCount = () => {
+      const randomCount = Math.floor(Math.random() * (49 - 15 + 1)) + 15;
+      setBrowsingCount(randomCount);
+    };
+
+    const interval = setInterval(updateBrowsingCount, 1800000); // 30 minutes
+    
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -37,12 +50,6 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
           <h1 className="text-6xl font-bold text-center bg-gradient-to-r from-primary to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
             CRALLUX SELLS
           </h1>
-          
-          {/* Live social proof */}
-          <div className="text-sm text-white/75 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-            <span className="animate-pulse inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-            37 people are browsing now
-          </div>
         </div>
 
         {/* CTA Buttons */}
@@ -65,6 +72,12 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
             <Instagram className="w-5 h-5" />
             View Instagram
           </Button>
+        </div>
+        
+        {/* Live social proof - moved below shop now button */}
+        <div className="text-sm text-white/75 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+          <span className="animate-pulse inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+          {browsingCount} people are browsing now
         </div>
         
         {/* Referral line */}
