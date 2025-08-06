@@ -198,14 +198,14 @@ const Profile = () => {
 
       if (analyticsData) setPostAnalytics(analyticsData as any);
 
-      // Fetch credits
+      // Fetch credits from profiles table (same as wallet)
       const { data: creditsData } = await supabase
-        .from('user_credits')
-        .select('current_balance, total_earned, total_spent, earned_from_referrals')
+        .from('profiles')
+        .select('credits')
         .eq('user_id', user.id)
         .single();
 
-      if (creditsData) setCredits(creditsData);
+      if (creditsData) setCredits({ current_balance: creditsData.credits, total_earned: 0, total_spent: 0, earned_from_referrals: 0 });
 
       // Fetch transactions
       const { data: transactionsData } = await supabase

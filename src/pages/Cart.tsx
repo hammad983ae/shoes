@@ -33,13 +33,13 @@ const Cart = () => {
     const fetchUserCredits = async () => {
       if (user) {
         const { data, error } = await supabase
-          .from('user_credits')
-          .select('current_balance')
+          .from('profiles')
+          .select('credits')
           .eq('user_id', user.id)
           .single();
         
         if (data && !error) {
-          setCurrentBalance(data.current_balance || 0);
+          setCurrentBalance(data.credits || 0);
         }
       }
     };
@@ -94,16 +94,16 @@ const Cart = () => {
     
     // Update the current balance in the database
     if (user) {
+      const newBalance = currentBalance - credits;
       const { error } = await supabase
-        .from('user_credits')
+        .from('profiles')
         .update({ 
-          current_balance: currentBalance - credits,
-          total_spent: (currentBalance - credits)
+          credits: newBalance
         })
         .eq('user_id', user.id);
       
       if (!error) {
-        setCurrentBalance(currentBalance - credits);
+        setCurrentBalance(newBalance);
       }
     }
     
