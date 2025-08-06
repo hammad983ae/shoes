@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from './SneakerCatalog';
 import { Sneaker } from '@/types/global';
+import FilterBar from '@/components/FilterBar';
 
 interface SneakerCarouselProps {
   onViewProduct?: (sneaker: Sneaker) => void;
@@ -14,6 +15,12 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  
+  // Filter states
+  const [sortBy, setSortBy] = useState('newest');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 999999]);
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -42,7 +49,22 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6">
+      {/* Filter Bar - Desktop */}
+      <div className="hidden md:block">
+        <FilterBar
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          selectedBrands={selectedBrands}
+          setSelectedBrands={setSelectedBrands}
+          selectedColors={selectedColors}
+          setSelectedColors={setSelectedColors}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          className="mb-6"
+        />
+      </div>
+      
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 text-center sm:text-left">
         <h2 className="text-xl sm:text-[1.4rem] font-bold text-foreground">Sneaker Collection</h2>
         <Button

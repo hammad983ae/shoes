@@ -33,16 +33,17 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
 
   return (
     <Card 
-      className="product-card group cursor-pointer border-0 overflow-hidden"
+      className="product-card group cursor-pointer border-0 overflow-hidden hover:shadow-xl transition-all duration-300"
       style={{
         animationDelay: `${index * 0.1}s`,
         animationName: 'fadeInUp',
         animationDuration: '0.6s',
-        animationFillMode: 'both'
+        animationFillMode: 'both',
+        maxHeight: '450px'
       }}
     >
       <CardContent className="p-0">
-        <div className="relative overflow-hidden" style={{ aspectRatio: '2/3' }}>
+        <div className="relative overflow-hidden h-64" style={{ maxHeight: '280px' }}>
           {/* Carousel Container */}
           <div className="carousel-container">
             <div 
@@ -51,14 +52,14 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
                 transform: `translateX(-${currentIndex * 100}%)`
               }}
             >
-              {(sneaker.images || [sneaker.image]).map((image, index) => (
-                <img 
-                  key={index}
-                  src={image} 
-                  alt={sneaker.name}
-                  className="carousel-image"
-                />
-              ))}
+               {(sneaker.images || [sneaker.image]).map((image, index) => (
+                 <img 
+                   key={index}
+                   src={image} 
+                   alt={sneaker.name}
+                   className="carousel-image object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                 />
+               ))}
             </div>
           </div>
           {/* Carousel Controls */}
@@ -102,31 +103,38 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           >
             <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </Button>
-          {/* View Product Button */}
+          {/* Quick View Button */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 z-30">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
               handleViewProduct();
               }}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow font-semibold"
             >
               <Eye className="w-4 h-4 mr-2" />
-              View Product
+              Quick View
             </Button>
           </div>
+          
+          {/* Sale/Limited Badges */}
+          {(sneaker.price.includes('$') && parseInt(sneaker.price.replace('$', '')) < 200) && (
+            <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold z-20">
+              LIMITED
+            </div>
+          )}
         </div>
         {/* Product Info */}
         <div className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
-            <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2 max-h-[2.5em] truncate">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2">
               {sneaker.name}
             </h3>
-            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full self-start">
+            <span className="text-xs text-muted-foreground font-medium">
               {sneaker.brand || 'Premium'}
             </span>
           </div>
-          <p className="text-base sm:text-lg font-bold text-primary mb-2">
+          <p className="text-base sm:text-lg font-bold text-primary mb-2 group-hover:font-extrabold transition-all">
             {sneaker.price}
           </p>
         </div>

@@ -81,7 +81,7 @@ const BrandCards = () => {
                 '--hover-delay': `${index * 50}ms`
               } as React.CSSProperties}
             >
-              <div className="relative h-64 sm:h-72 md:h-80 w-48 sm:w-56 md:w-64 md:group-hover:w-96 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+              <div className="relative h-64 sm:h-72 md:h-80 w-48 sm:w-56 md:w-64 md:group-hover:w-96 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl group-hover:scale-105 transition-all duration-300 ease-in-out">
                 {/* Brand Background - Always Full Width */}
                 <div 
                   className="absolute inset-0 w-full h-full bg-white"
@@ -108,9 +108,16 @@ const BrandCards = () => {
                     <h3 className="text-sm sm:text-base md:text-lg font-bold text-white">
                       {brand.name}
                     </h3>
-                    <p className="text-xs sm:text-sm opacity-75 text-white">
-                      {getBrandFilteredSneakers(brand.name)} sneakers
-                    </p>
+                    {getBrandFilteredSneakers(brand.name) > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-xs sm:text-sm opacity-75 text-white">
+                          {getBrandFilteredSneakers(brand.name)} sneakers
+                        </p>
+                        <p className="text-xs text-white/80">
+                          from $165
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

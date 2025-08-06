@@ -27,8 +27,8 @@ const HeaderCarousel = () => {
     },
     {
       id: 2,
-      title: "Join Our Telegram for Exclusive Bulk Purchase Deals",
-      subtitle: "Get access to wholesale prices and early releases",
+      title: "Join Our Exclusive Telegram – Unlock Wholesale Deals and Early Drops",
+      subtitle: "Access member-only pricing and get notified before anyone else",
       backgroundImage: "linear-gradient(135deg, hsl(var(--brand-charcoal)) 0%, hsl(var(--brand-black)) 100%)",
       link: "/contact-us"
     }
@@ -122,10 +122,17 @@ const HeaderCarousel = () => {
               )}
               <button
                 onClick={handleSlideClick}
-                className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
               >
-                Learn More
+                {slide.id === 2 ? "Join Before Prices Go Up" : "Learn More"}
               </button>
+              
+              {/* Trust badge for telegram slide */}
+              {slide.id === 2 && (
+                <div className="text-white/80 text-sm">
+                  Trusted by 1,000+ resellers
+                </div>
+              )}
             </div>
           </div>
         ))}
