@@ -404,50 +404,48 @@ const Profile = () => {
           {/* Main Profile Card - Always Rendered */}
           <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
               {/* Profile Header */}
-              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
-                <Avatar className="w-12 sm:w-16 h-12 sm:h-16 border-2 border-yellow-500 shadow-lg">
-                  <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-yellow-500 text-black font-bold text-lg sm:text-xl">
-                    {profile.display_name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="text-center sm:text-left">
-                      <h2 className="text-lg sm:text-xl font-bold text-white">
-                        {profile.display_name || 'Anonymous User'}
-                      </h2>
-                      {profile.bio && (
-                        <p className="text-gray-300 text-xs sm:text-sm mt-1">{profile.bio}</p>
-                      )}
-                      <p className="text-gray-400 text-xs sm:text-sm mt-1">{user.email}</p>
-                      <p className="text-gray-500 text-[10px] sm:text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
-                    </div>
-                    {/* Top Right Icons */}
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate('/wallet')}
-                        className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
-                      >
-                        <Wallet className="w-4 sm:w-5 h-4 sm:h-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsNotificationsOpen(true)}
-                        className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
-                      >
-                        <Bell className="w-4 sm:w-5 h-4 sm:h-5" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </Button>
-                    </div>
+              <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <Avatar className="w-12 sm:w-16 h-12 sm:h-16 border-2 border-yellow-500 shadow-lg">
+                    <AvatarImage src={profile.avatar_url || undefined} />
+                    <AvatarFallback className="bg-yellow-500 text-black font-bold text-lg sm:text-xl">
+                      {profile.display_name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-left">
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      {profile.display_name || 'Anonymous User'}
+                    </h2>
+                    {profile.bio && (
+                      <p className="text-gray-300 text-xs sm:text-sm mt-1">{profile.bio}</p>
+                    )}
+                    <p className="text-gray-400 text-xs sm:text-sm mt-1">{user.email}</p>
+                    <p className="text-gray-500 text-[10px] sm:text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
                   </div>
+                </div>
+                {/* Top Right Icons */}
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate('/wallet')}
+                    className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
+                  >
+                    <Wallet className="w-4 sm:w-5 h-4 sm:h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsNotificationsOpen(true)}
+                    className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
+                  >
+                    <Bell className="w-4 sm:w-5 h-4 sm:h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Button>
                 </div>
               </div>
 
