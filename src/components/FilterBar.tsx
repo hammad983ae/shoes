@@ -53,14 +53,14 @@ const FilterBar = ({
             <span className="text-sm font-medium text-foreground">Filter by:</span>
             
             {/* Brand Filter */}
-            <Select value={selectedBrands[0] || ""} onValueChange={(value) => 
-              value ? setSelectedBrands([value]) : setSelectedBrands([])
+            <Select value={selectedBrands[0] || "all"} onValueChange={(value) => 
+              value === "all" ? setSelectedBrands([]) : setSelectedBrands([value])
             }>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Brand" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Brands</SelectItem>
+                <SelectItem value="all">All Brands</SelectItem>
                 {brands.map(brand => (
                   <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                 ))}
@@ -68,14 +68,14 @@ const FilterBar = ({
             </Select>
 
             {/* Color Filter */}
-            <Select value={selectedColors[0] || ""} onValueChange={(value) => 
-              value ? setSelectedColors([value]) : setSelectedColors([])
+            <Select value={selectedColors[0] || "all"} onValueChange={(value) => 
+              value === "all" ? setSelectedColors([]) : setSelectedColors([value])
             }>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Color" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Colors</SelectItem>
+                <SelectItem value="all">All Colors</SelectItem>
                 {colors.map(color => (
                   <SelectItem key={color} value={color}>{color}</SelectItem>
                 ))}
