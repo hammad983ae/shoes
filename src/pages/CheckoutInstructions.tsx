@@ -141,16 +141,6 @@ export default function CheckoutInstructions() {
     }
   };
 
-  // const handleConfirmPaid = async () => {
-    setSubmitting(true);
-    // TODO: Update order in Supabase to 'paid_pending_review', trigger email
-    setTimeout(() => {
-      setSubmitting(false);
-      setStep(3);
-      // setConfirmed(true);
-      // TODO: Wipe cart here
-    }, 800);
-  // };
 
   // Payment instructions by method
   // const paymentInstructions = {
