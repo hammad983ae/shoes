@@ -14,7 +14,6 @@ import Cart from "./pages/Cart";
 import SignIn from "./pages/SignIn";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
-import EditCredentials from "./pages/EditCredentials";
 import Settings from "./pages/Settings";
 import Wallet from "./pages/Wallet";
 import Feed from "./pages/Feed";
@@ -44,7 +43,6 @@ const App = () => (
                 <Route path="/full-catalog" element={<FullCatalog />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
-                <Route path="/edit-credentials" element={<EditCredentials />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/feed" element={<Feed />} />

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Download, Trash2, Mail, Eye, Settings as SettingsIcon, User, Bell } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Download, Trash2, Mail, Eye, Settings as SettingsIcon, User, Bell, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,6 +56,19 @@ const Settings = () => {
   const [emailReferral, setEmailReferral] = useState(true);
   const [emailLikes, setEmailLikes] = useState(true);
   const [emailCredits, setEmailCredits] = useState(true);
+  
+  // Modal states
+  const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  
+  // Form states
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -220,6 +235,87 @@ const Settings = () => {
     }
   };
 
+  const handleChangeEmail = async () => {
+    if (!user || !newEmail || !currentPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail,
+        password: currentPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Email Update Initiated",
+        description: "Please check your new email for confirmation.",
+      });
+      
+      setIsChangeEmailOpen(false);
+      setNewEmail('');
+      setCurrentPassword('');
+    } catch (error: any) {
+      console.error('Error updating email:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update email.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!user || !currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been changed successfully.",
+      });
+      
+      setIsChangePasswordOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update password.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -282,12 +378,12 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
-              <Button variant="outline" className="justify-start" onClick={() => navigate('/edit-credentials')}>
+              <Button variant="outline" className="justify-start" onClick={() => setIsChangeEmailOpen(true)}>
                 <Mail className="h-4 w-4 mr-2" />
                 Change Email
               </Button>
               
-              <Button variant="outline" className="justify-start" onClick={() => navigate('/edit-credentials')}>
+              <Button variant="outline" className="justify-start" onClick={() => setIsChangePasswordOpen(true)}>
                 <SettingsIcon className="h-4 w-4 mr-2" />
                 Change Password
               </Button>
@@ -447,6 +543,175 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Change Email Modal */}
+      <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Email</DialogTitle>
+            <DialogDescription>
+              Enter your new email address and current password to confirm the change.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-email">New Email Address</Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder="Enter new email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="current-password-email">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="current-password-email"
+                  type={showCurrentPassword ? "text" : "password"}
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsChangeEmailOpen(false);
+                  setNewEmail('');
+                  setCurrentPassword('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleChangeEmail}>
+                Update Email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Modal */}
+      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new one.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password-change">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="current-password-change"
+                  type={showCurrentPassword ? "text" : "password"}
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsChangePasswordOpen(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleChangePassword}>
+                Update Password
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
