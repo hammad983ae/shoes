@@ -56,13 +56,9 @@ const BrandCards = () => {
   };
 
   const getBrandFilteredSneakers = (brandName: string) => {
-    // This would be replaced with actual sneaker data filtering
-    // For now, return a placeholder count
-    return brandName === 'Rick Owens' ? 4 : 
-           brandName === 'Nike' ? 2 : 
-           brandName === 'Maison Margiela' ? 1 : 
-           brandName === 'Jordan' ? 3 : 
-           brandName === 'Louis Vuitton' ? 0 : 0;
+    // Import sneaker catalog to get actual counts
+    const { sneakerCatalog } = require('./SneakerCatalog');
+    return sneakerCatalog.filter((sneaker: any) => sneaker.brand === brandName).length;
   };
 
   return (
