@@ -23,10 +23,12 @@ const Cart = () => {
   const [creditsToUse, setCreditsToUse] = useState('');
   const [creditDiscount, setCreditDiscount] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [creditsApplied, setCreditsApplied] = useState(false);
   
   const subtotal = getTotalPrice();
-  const estimatedTax = subtotal * 0.08;
-  const total = subtotal + estimatedTax - creditDiscount;
+  const discountedSubtotal = Math.max(0, subtotal - creditDiscount);
+  const estimatedTax = discountedSubtotal * 0.08;
+  const total = discountedSubtotal + estimatedTax;
 
   // Fetch user credits from database
   useEffect(() => {
@@ -80,7 +82,7 @@ const Cart = () => {
     }
   }
 
-  const handleCreditsSubmit = async () => {
+  const handleCreditsSubmit = () => {
     const credits = parseInt(creditsToUse) || 0;
     if (credits > currentBalance) {
       alert('Insufficient credits');
@@ -91,27 +93,18 @@ const Cart = () => {
       return;
     }
     setCreditDiscount(credits / 100); // Convert credits to dollars
-    
-    // Update the current balance in the database
-    if (user) {
-      const newBalance = currentBalance - credits;
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          credits: newBalance
-        })
-        .eq('user_id', user.id);
-      
-      if (!error) {
-        setCurrentBalance(newBalance);
-      }
-    }
-    
+    setCreditsApplied(true);
     setShowCreditsModal(false);
   };
 
+  const handleRemoveCredits = () => {
+    setCreditDiscount(0);
+    setCreditsApplied(false);
+    setCreditsToUse('');
+  };
+
   const handleCheckout = () => {
-    navigate('/checkout-instructions');
+    navigate('/checkout');
   };
   if (items.length === 0) {
     return (
@@ -223,16 +216,16 @@ const Cart = () => {
                 <span>Subtotal ({getTotalItems()} items)</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Estimated Tax (8%)</span>
-                <span>${estimatedTax.toFixed(2)}</span>
-              </div>
               {creditDiscount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Credit Discount:</span>
                   <span>-${creditDiscount.toFixed(2)}</span>
                 </div>
               )}
+              <div className="flex justify-between">
+                <span>Estimated Tax (8%)</span>
+                <span>${estimatedTax.toFixed(2)}</span>
+              </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="text-muted-foreground">FREE</span>
@@ -246,7 +239,7 @@ const Cart = () => {
 
 
               {/* Use Credits Option for Signed-in Users */}
-              {user && (
+              {user && !creditsApplied && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -255,6 +248,23 @@ const Cart = () => {
                 >
                   Use Credits (Balance: {currentBalance})
                 </Button>
+              )}
+              
+              {user && creditsApplied && (
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <span className="text-lg">✓</span>
+                    <span className="font-medium">Credits Applied</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveCredits}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    ✕
+                  </Button>
+                </div>
               )}
 
               {/* Coupon code input */}
@@ -320,10 +330,10 @@ const Cart = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              Current Balance: <span className="font-semibold">{currentBalance} credits</span>
+              Current Balance: <span className="font-semibold">{creditsToUse ? currentBalance - parseInt(creditsToUse) : currentBalance} credits</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              Order Total: <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              Order Total: <span className="font-semibold">${creditsToUse ? Math.max(0, subtotal - (parseInt(creditsToUse) / 100)).toFixed(2) : subtotal.toFixed(2)}</span>
             </div>
             <Input
               type="number"

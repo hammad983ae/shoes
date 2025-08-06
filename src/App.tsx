@@ -26,7 +26,7 @@ import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
 import ReferralRedirect from "./components/ReferralRedirect";
 
-import CheckoutInstructions from "./pages/CheckoutInstructions";
+import Checkout from "./pages/Checkout";
 
 const App = () => (
   <AuthProvider>
@@ -50,7 +50,7 @@ const App = () => (
                 <Route path="/credits" element={<GetFreeCredits />} />
                 <Route path="/contact-us" element={<Socials />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout-instructions" element={<CheckoutInstructions />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />

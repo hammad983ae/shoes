@@ -563,10 +563,6 @@ const TopPosts = () => {
                 <Plus className="w-4 h-4 mr-2" />
                 Create Post
               </Button>
-              <Button onClick={handleLinkSocials} variant="outline" className="transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg border-[#FFD600] text-[#FFD600] bg-transparent hover:bg-[#FFD600]/10 text-base font-semibold">
-                <Link className="w-4 h-4 mr-2" />
-                Link Socials
-              </Button>
             </div>
           </div>
 
