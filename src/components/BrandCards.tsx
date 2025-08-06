@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { sneakerCatalog } from './SneakerCatalog';
 
 interface Brand {
   id: number;
@@ -56,8 +57,6 @@ const BrandCards = () => {
   };
 
   const getBrandFilteredSneakers = (brandName: string) => {
-    // Import sneaker catalog to get actual counts
-    const { sneakerCatalog } = require('./SneakerCatalog');
     return sneakerCatalog.filter((sneaker: any) => sneaker.brand === brandName).length;
   };
 
