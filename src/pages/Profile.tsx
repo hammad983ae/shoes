@@ -23,13 +23,8 @@ import {
   Award,
   History,
   Coins,
-  MessageSquare,
-  Instagram,
-  Youtube,
-  Check,
   Bell,
-  Wallet,
-  Video
+  Wallet
 } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -70,13 +65,6 @@ interface ProfileData {
   bio: string | null;
 }
 
-interface SocialConnection {
-  id: string;
-  platform: string;
-  username: string;
-  is_active: boolean;
-  connected_at: string;
-}
 
 interface PostAnalytic {
   id: string;
@@ -102,11 +90,6 @@ interface Settings {
   notifications_push: boolean;
 }
 
-const socialPlatforms = [
-  { name: 'TikTok', icon: Video, platform: 'tiktok' },
-  { name: 'Instagram', icon: Instagram, platform: 'instagram' },
-  { name: 'YouTube', icon: Youtube, platform: 'youtube' },
-];
 
 const Profile = () => {
   const { user, loading } = useAuth();
@@ -131,7 +114,7 @@ const Profile = () => {
     notifications_email: true,
     notifications_push: true
   });
-  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  
   const [postAnalytics, setPostAnalytics] = useState<PostAnalytic[]>([]);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [userReviews, setUserReviews] = useState<any[]>([]);
@@ -139,7 +122,7 @@ const Profile = () => {
   // Modal states - back to original design
   const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-  const [isSocialsOpen, setIsSocialsOpen] = useState(false);
+  
   const [isTransactionHistoryOpen, setIsTransactionHistoryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -167,13 +150,6 @@ const Profile = () => {
     if (user) fetchUserData();
   }, [user]);
 
-  // Handle navigation state for auto-opening socials modal
-  useEffect(() => {
-    const openSocialsModal = window.history.state?.usr?.openSocialsModal;
-    if (openSocialsModal) {
-      setIsSocialsOpen(true);
-    }
-  }, []);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -201,20 +177,6 @@ const Profile = () => {
         // setPreviewAvatar(profileData.avatar_url || '');
       }
 
-      // Fetch social connections
-      const { data: socialData } = await supabase
-        .from('social_connections')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
-
-      if (socialData) {
-        setSocialConnections(socialData.map(connection => ({
-          ...connection,
-          is_active: connection.is_verified || false,
-          connected_at: connection.created_at
-        })) as SocialConnection[]);
-      }
 
       // Fetch post analytics
       const { data: analyticsData } = await supabase
@@ -429,16 +391,6 @@ const Profile = () => {
     }
   };
 
-  const connectSocialPlatform = async (platform: string) => {
-    toast({ 
-      title: 'Coming Soon', 
-      description: `${platform} connection will be available soon!` 
-    });
-  };
-
-  const isPlatformConnected = (platform: string) => {
-    return socialConnections.some(conn => conn.platform === platform && conn.is_active);
-  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center page-gradient"><span className="text-lg text-gray-400">Loading...</span></div>;
   if (!user) return <div className="p-8 text-center">Please sign in to view your profile.</div>;
@@ -535,18 +487,10 @@ const Profile = () => {
                 <Button
                   onClick={() => setIsReviewsOpen(true)}
                   variant="outline"
-                  className="flex-1 border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
+                  className="w-full border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
                 >
                   <Star className="w-4 h-4 mb-1" />
                   <span className="text-xs">Reviews</span>
-                </Button>
-                <Button
-                  onClick={() => setIsSocialsOpen(true)}
-                  variant="outline"
-                  className="flex-1 border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
-                >
-                  <MessageSquare className="w-4 h-4 mb-1" />
-                  <span className="text-xs">Socials</span>
                 </Button>
               </div>
 
@@ -570,7 +514,7 @@ const Profile = () => {
                   Transaction History
                 </Button>
                 <Button
-                  onClick={() => setIsSettingsOpen(true)}
+                  onClick={() => navigate('/settings')}
                   variant="ghost"
                   className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200"
                 >
@@ -657,48 +601,6 @@ const Profile = () => {
             </DialogContent>
           </Dialog>
 
-          {/* Social Connections Modal */}
-          <Dialog open={isSocialsOpen} onOpenChange={setIsSocialsOpen}>
-            <DialogContent className="bg-gray-900 border-gray-700">
-              <DialogHeader>
-                <DialogTitle className="text-white">Social Connections</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                {socialPlatforms.map((platform) => {
-                  const isConnected = isPlatformConnected(platform.platform);
-                  const connection = socialConnections.find(conn => conn.platform === platform.platform);
-                  
-                  return (
-                    <div key={platform.platform} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
-                      <div className="flex items-center gap-3">
-                        <platform.icon className="w-6 h-6 text-yellow-500" />
-                        <div>
-                          <p className="text-white font-medium">{platform.name}</p>
-                          {isConnected && connection && (
-                            <p className="text-gray-400 text-sm">@{connection.username}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isConnected ? (
-                          <Check className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <Button
-                            onClick={() => connectSocialPlatform(platform.name)}
-                            size="sm"
-                            className="bg-yellow-500 hover:bg-yellow-600 text-black"
-                          >
-                            Connect
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-                
-              </div>
-            </DialogContent>
-          </Dialog>
 
           {/* Post Analytics Modal */}
           <Dialog open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
@@ -852,7 +754,6 @@ const Profile = () => {
               </DialogHeader>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-2xl font-bold text-white">Settings</h3>
                   <h4 className="text-lg font-semibold text-white">Privacy</h4>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="public-profile" className="text-gray-300">Public Profile</Label>
