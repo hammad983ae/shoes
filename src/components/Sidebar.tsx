@@ -48,6 +48,11 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     { label: 'Socials', href: '/contact-us', icon: Smartphone },
   ];
 
+  const currentPath = window.location.pathname;
+  const filteredLinks = currentPath === '/feed' 
+    ? links.filter(link => link.href !== '/contact-us')
+    : links;
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -56,7 +61,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     <>
       {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-2 left-4 z-50 h-10 w-10 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300 flex items-center justify-center"
+        className="md:hidden fixed top-16 left-4 z-50 h-10 w-10 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300 flex items-center justify-center"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         <Menu className="w-4 h-4" />
@@ -76,8 +81,8 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
               </button>
             </div>
             
-            <div className="space-y-4">
-              {links.map((link, idx) => (
+            <div className="space-y-2 md:space-y-4">
+              {filteredLinks.map((link, idx) => (
                 <Link
                   key={idx}
                   to={link.href}
@@ -89,49 +94,48 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
                     setIsMobileOpen(false);
                   }}
                 >
-                  <link.icon className="w-5 h-5" />
-                  <span className="font-medium">{link.label}</span>
+                  <link.icon className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-sm md:text-base font-medium">{link.label}</span>
                 </Link>
               ))}
-              
+            </div>
+
+            <div className="border-t border-border mt-6 pt-4 space-y-3">
               {user && (
                 <button
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300"
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300"
                   onClick={() => {
                     handleSignOut();
                     setIsMobileOpen(false);
                   }}
                 >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-medium">Logout</span>
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm font-medium">Logout</span>
                 </button>
               )}
-            </div>
-
-            <div className="border-t border-border mt-8 pt-6 space-y-4">
               <Link
                 to="/cart"
-                className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors"
                 onClick={() => setIsMobileOpen(false)}
               >
                 <div className="relative">
-                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  <ShoppingCart className="w-4 h-4 text-primary" />
                   {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-3 h-3 flex items-center justify-center">
                       {getTotalItems()}
                     </span>
                   )}
                 </div>
-                <span className="text-foreground">Cart ({getTotalItems()})</span>
+                <span className="text-sm text-foreground">Cart ({getTotalItems()})</span>
               </Link>
               
               <Link
                 to={user ? "/profile" : "/signin"}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
                 onClick={() => setIsMobileOpen(false)}
               >
-                <User className="w-5 h-5 text-primary" />
-                <span className="text-foreground">
+                <User className="w-4 h-4 text-primary" />
+                <span className="text-sm text-foreground">
                   {user ? 'Profile' : 'Sign In'}
                 </span>
               </Link>
@@ -156,7 +160,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
         <div className="flex flex-col w-full">
           {/* Main Navigation */}
           <div className="flex-1 pt-6 space-y-2">
-            {links.map((link, idx) => (
+            {filteredLinks.map((link, idx) => (
               <Link
                 key={idx}
                 to={link.href}

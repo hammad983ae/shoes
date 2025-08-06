@@ -143,11 +143,11 @@ const HeaderCarousel = () => {
         {/* Left Arrow */}
         <button
           onClick={goToPrevious}
-          className="text-white hover:text-white/75 transition-all duration-200"
+          className="text-white hover:text-white/75 transition-all duration-200 flex items-center justify-center"
           disabled={isTransitioning}
           aria-label="Previous slide"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
         </button>
 
         {/* Dots */}
@@ -179,11 +179,11 @@ style={{
         {/* Right Arrow */}
         <button
           onClick={goToNext}
-          className="text-white hover:text-white/75 transition-all duration-200"
+          className="text-white hover:text-white/75 transition-all duration-200 flex items-center justify-center"
           disabled={isTransitioning}
           aria-label="Next slide"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
         </button>
       </div>
     </div>

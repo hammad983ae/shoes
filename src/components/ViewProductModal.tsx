@@ -173,7 +173,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
       <>
         <Dialog open={isOpen} onOpenChange={onClose}>
           <DialogContent
-            className="max-w-xs sm:max-w-md md:max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden"
+            className="max-w-xs sm:max-w-md md:max-w-5xl w-[95vw] h-[90vh] p-0 border-2 border-white bg-gradient-to-br from-black/95 to-gray-900/95 backdrop-blur-sm overflow-hidden md:overflow-visible"
             hideClose
           >
             <DialogTitle className="sr-only">{sneaker.name}</DialogTitle>
@@ -188,9 +188,9 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
     
-            <div className="grid grid-cols-1 lg:grid-cols-2 h-full w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 h-full w-full overflow-auto md:overflow-visible">
               {/* LEFT IMAGE */}
-              <div className="relative bg-black aspect-[2/3] h-full w-full overflow-hidden border-r border-white/10 p-0 m-0">
+              <div className="relative bg-black aspect-[2/3] md:aspect-auto h-full w-full overflow-hidden md:border-r border-white/10 p-0 m-0">
                                 {/* Carousel for product images */}
                 {sneaker.images && sneaker.images.length > 0 && (
                   <div className="carousel-container">
@@ -211,20 +211,20 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                     </div>
                     {sneaker.images.length > 1 && (
                       <>
-                        <button
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
-                          onClick={handlePrevImage}
-                          aria-label="Previous image"
-                        >
-                          &#8592;
-                        </button>
-                        <button
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95"
-                          onClick={handleNextImage}
-                          aria-label="Next image"
-                        >
-                          &#8594;
-                        </button>
+                         <button
+                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 md:p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95 text-xs md:text-base"
+                           onClick={handlePrevImage}
+                           aria-label="Previous image"
+                         >
+                           &#8592;
+                         </button>
+                         <button
+                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 md:p-2 z-20 transition-transform duration-200 hover:scale-110 active:scale-95 text-xs md:text-base"
+                           onClick={handleNextImage}
+                           aria-label="Next image"
+                         >
+                           &#8594;
+                         </button>
                         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                           {sneaker.images.map((_, i) => (
                             <span

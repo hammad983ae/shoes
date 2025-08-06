@@ -66,7 +66,7 @@ const AnnouncementBar = () => {
         disabled={isTransitioning}
         aria-label="Previous announcement"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
       </button>
       
       {/* Right Arrow */}
@@ -76,7 +76,7 @@ const AnnouncementBar = () => {
         disabled={isTransitioning}
         aria-label="Next announcement"
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
       </button>
 
       {/* Current Announcement */}
