@@ -25,7 +25,7 @@ const Cart = () => {
   const currentBalance = 1000; // TODO: Get from user credits table
   const subtotal = getTotalPrice();
   const estimatedTax = subtotal * 0.08;
-  const creditsToEarn = Math.floor(subtotal * 20); // 20% back in credits (1 dollar = 100 credits)
+  
   const total = subtotal + estimatedTax - creditDiscount;
   
   // For size editing - handle both EU and US sizes
@@ -209,18 +209,6 @@ const Cart = () => {
                 </div>
               </div>
 
-              {/* Credits to Earn - Only for non-signed users */}
-              {!user && (
-                <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-green-800 dark:text-green-200">Credits to Earn</p>
-                      <p className="text-xs text-green-600 dark:text-green-400">Get 20% back in credits</p>
-                    </div>
-                    <span className="font-bold text-green-800 dark:text-green-200">{creditsToEarn} credits</span>
-                  </div>
-                </div>
-              )}
 
               {/* Use Credits Option for Signed-in Users */}
               {user && (
