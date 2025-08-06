@@ -397,51 +397,51 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen page-gradient flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-8 w-full">
-        <div className="w-full max-w-md mx-auto relative">
+      <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-4 sm:py-8 w-full">
+        <div className="w-full max-w-xs sm:max-w-md mx-auto relative">
           <InteractiveParticles isActive={true} />
           
           {/* Main Profile Card - Always Rendered */}
-          <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-3xl p-4 sm:p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
+          <div className="w-full bg-gradient-to-r from-[#111111] to-[#FFD700]/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-2xl border border-yellow-500/50 hover:shadow-yellow-500/20 transition-all duration-300 btn-hover-glow">
               {/* Profile Header */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 w-full">
-                <Avatar className="w-16 h-16 border-2 border-yellow-500 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
+                <Avatar className="w-12 sm:w-16 h-12 sm:h-16 border-2 border-yellow-500 shadow-lg">
                   <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-yellow-500 text-black font-bold text-xl">
+                  <AvatarFallback className="bg-yellow-500 text-black font-bold text-lg sm:text-xl">
                     {profile.display_name?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between w-full">
-                    <div>
-                      <h2 className="text-xl font-bold text-white">
+                    <div className="text-center sm:text-left">
+                      <h2 className="text-lg sm:text-xl font-bold text-white">
                         {profile.display_name || 'Anonymous User'}
                       </h2>
                       {profile.bio && (
-                        <p className="text-gray-300 text-sm mt-1">{profile.bio}</p>
+                        <p className="text-gray-300 text-xs sm:text-sm mt-1">{profile.bio}</p>
                       )}
-                      <p className="text-gray-400 text-sm mt-1">{user.email}</p>
-                      <p className="text-gray-500 text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">{user.email}</p>
+                      <p className="text-gray-500 text-[10px] sm:text-xs mt-1">Member since {new Date(user.created_at).toLocaleDateString()}</p>
                     </div>
                     {/* Top Right Icons */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate('/wallet')}
-                        className="relative text-gray-400 hover:text-yellow-500"
+                        className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
                       >
-                        <Wallet className="w-5 h-5" />
+                        <Wallet className="w-4 sm:w-5 h-4 sm:h-5" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsNotificationsOpen(true)}
-                        className="relative text-gray-400 hover:text-yellow-500"
+                        className="relative text-gray-400 hover:text-yellow-500 w-8 h-8 sm:w-10 sm:h-10"
                       >
-                        <Bell className="w-5 h-5" />
+                        <Bell className="w-4 sm:w-5 h-4 sm:h-5" />
                         {unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
                             {unreadCount}
                           </span>
                         )}
@@ -452,73 +452,71 @@ const Profile = () => {
               </div>
 
               {/* Credits Section */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <Coins className="w-5 h-5 text-yellow-500" />
-                  <span className="text-lg font-bold text-white">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                  <Coins className="w-4 sm:w-5 h-4 sm:h-5 text-yellow-500" />
+                  <span className="text-base sm:text-lg font-bold text-white">
                     {credits?.current_balance || 0} Credits
                   </span>
                 </div>
               </div>
 
               {/* Stats Grid - now always 3 columns, smaller on mobile */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 w-full">
-                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-                  <Users className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-base sm:text-lg font-bold text-white">{profile.referrals_count}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-400">People Referred</div>
+              <div className="grid grid-cols-3 gap-1 sm:gap-4 mb-4 sm:mb-6 w-full">
+                <div className="text-center p-1.5 sm:p-3 bg-gray-800/50 rounded-lg sm:rounded-xl border border-gray-700">
+                  <Users className="w-3 sm:w-5 h-3 sm:h-5 text-yellow-500 mx-auto mb-1" />
+                  <div className="text-sm sm:text-lg font-bold text-white">{profile.referrals_count}</div>
+                  <div className="text-[8px] sm:text-xs text-gray-400">Referred</div>
                 </div>
-                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-                  <Award className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-base sm:text-lg font-bold text-white">{posts.length}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-400">Posts</div>
+                <div className="text-center p-1.5 sm:p-3 bg-gray-800/50 rounded-lg sm:rounded-xl border border-gray-700">
+                  <Award className="w-3 sm:w-5 h-3 sm:h-5 text-yellow-500 mx-auto mb-1" />
+                  <div className="text-sm sm:text-lg font-bold text-white">{posts.length}</div>
+                  <div className="text-[8px] sm:text-xs text-gray-400">Posts</div>
                 </div>
-                <div className="text-center p-2 sm:p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-                  <BarChart3 className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
-                  <div className="text-base sm:text-lg font-bold text-white">{postAnalytics.reduce((sum, a) => sum + a.credits_earned, 0)}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-400">Credits Earned</div>
+                <div className="text-center p-1.5 sm:p-3 bg-gray-800/50 rounded-lg sm:rounded-xl border border-gray-700">
+                  <BarChart3 className="w-3 sm:w-5 h-3 sm:h-5 text-yellow-500 mx-auto mb-1" />
+                  <div className="text-sm sm:text-lg font-bold text-white">{postAnalytics.reduce((sum, a) => sum + a.credits_earned, 0)}</div>
+                  <div className="text-[8px] sm:text-xs text-gray-400">Earned</div>
                 </div>
               </div>
 
-
-
               {/* Quick Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 mb-4 w-full">
+              <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 mb-3 sm:mb-4 w-full">
                 <Button
                   onClick={() => setIsReviewsOpen(true)}
                   variant="outline"
-                  className="w-full border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-3 h-12 rounded-xl btn-hover-glow"
+                  className="w-full border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 flex flex-col py-2 sm:py-3 h-9 sm:h-12 rounded-lg sm:rounded-xl btn-hover-glow"
                 >
-                  <Star className="w-4 h-4 mb-1" />
-                  <span className="text-xs">Reviews</span>
+                  <Star className="w-3 sm:w-4 h-3 sm:h-4 mb-1" />
+                  <span className="text-[10px] sm:text-xs">Reviews</span>
                 </Button>
               </div>
 
               {/* Edit Profile Button */}
               <Button
                 onClick={() => navigate('/edit-profile')}
-                className="w-full mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-12 rounded-xl btn-hover-glow"
+                className="w-full mb-3 sm:mb-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold h-9 sm:h-12 rounded-lg sm:rounded-xl btn-hover-glow text-sm"
               >
-                <Edit2 className="w-4 h-4 mr-2" />
+                <Edit2 className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
                 Edit Profile
               </Button>
 
               {/* Bottom Bar */}
-              <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-700 w-full gap-2">
+              <div className="flex flex-col sm:flex-row justify-between items-center pt-3 sm:pt-4 border-t border-gray-700 w-full gap-1.5 sm:gap-2">
                 <Button
                   onClick={() => setIsTransactionHistoryOpen(true)}
                   variant="ghost"
-                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200"
+                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200 text-xs sm:text-sm h-8 sm:h-auto"
                 >
-                  <History className="w-4 h-4 mr-2" />
-                  Transaction History
+                  <History className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+                  History
                 </Button>
                 <Button
                   onClick={() => navigate('/settings')}
                   variant="ghost"
-                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200"
+                  className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200 text-xs sm:text-sm h-8 sm:h-auto"
                 >
-                  <Settings className="w-4 h-4 mr-2" />
+                  <Settings className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
                   Settings
                 </Button>
               </div>
