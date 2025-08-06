@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Dynamically load Chiron script if not present
 function useChironScript() {
@@ -29,15 +32,37 @@ export default function CheckoutInstructions() {
     notes: '',
   });
   const [submitting, setSubmitting] = useState(false);
-  // const [confirmed, setConfirmed] = useState(false);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [creditsToUse, setCreditsToUse] = useState('');
+  const [creditDiscount, setCreditDiscount] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { getTotalPrice } = useCart();
+  
+  const currentBalance = 1000; // TODO: Get from user credits table
+  const subtotal = getTotalPrice();
+  const taxes = subtotal * 0.08; // 8% tax
+  const finalTotal = subtotal + taxes - creditDiscount;
 
   useChironScript();
   const paymentFormRef = useRef<HTMLFormElement>(null);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
 
-  // Simulate Supabase insert and email
+  const handleCreditsSubmit = () => {
+    const credits = parseInt(creditsToUse) || 0;
+    if (credits > currentBalance) {
+      alert('Insufficient credits');
+      return;
+    }
+    if (credits > subtotal * 100) { // Assuming 1 dollar = 100 credits
+      alert('Credits exceed order total');
+      return;
+    }
+    setCreditDiscount(credits / 100); // Convert credits to dollars
+    setShowCreditsModal(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -164,7 +189,63 @@ export default function CheckoutInstructions() {
   return (
     <div className="min-h-screen page-gradient flex flex-col items-center justify-center px-2 py-8">
       <div className="w-full max-w-lg bg-background/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-primary/30">
-        {step === 1 && (
+        {!user && step === 1 && (
+          <div className="space-y-4 mb-6">
+            <h2 className="text-xl font-bold text-center">Get Started</h2>
+            <Button 
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => navigate('/signin')}
+            >
+              Create Account for 20% Off
+            </Button>
+            <div className="text-center text-sm text-muted-foreground">OR</div>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => setStep(1)}
+            >
+              Continue with Guest Checkout
+            </Button>
+          </div>
+        )}
+        
+        {/* Order Summary */}
+        <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+          <h3 className="font-semibold mb-2">Order Summary</h3>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax:</span>
+              <span>${taxes.toFixed(2)}</span>
+            </div>
+            {creditDiscount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Credit Discount:</span>
+                <span>-${creditDiscount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="border-t pt-1 flex justify-between font-semibold">
+              <span>Total:</span>
+              <span>${finalTotal.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          {user && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-3"
+              onClick={() => setShowCreditsModal(true)}
+            >
+              Use Credits (Balance: {currentBalance})
+            </Button>
+          )}
+        </div>
+        
+        {(user || step > 1) && step === 1 && (
           <form className="space-y-4" onSubmit={handleSubmit}>
             <h2 className="text-2xl font-bold mb-2 text-center">Shipping & Payment Info</h2>
             <Input
@@ -261,6 +342,36 @@ export default function CheckoutInstructions() {
           </div>
         )}
       </div>
+      
+      {/* Credits Modal */}
+      <Dialog open={showCreditsModal} onOpenChange={setShowCreditsModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Use Credits</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Current Balance: <span className="font-semibold">{currentBalance} credits</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Order Total: <span className="font-semibold">${subtotal.toFixed(2)}</span>
+            </div>
+            <Input
+              type="number"
+              placeholder="Credits to use"
+              value={creditsToUse}
+              onChange={(e) => setCreditsToUse(e.target.value)}
+              max={Math.min(currentBalance, subtotal * 100)}
+            />
+            <div className="text-xs text-muted-foreground">
+              100 credits = $1.00
+            </div>
+            <Button onClick={handleCreditsSubmit} className="w-full">
+              Apply Credits
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-} 
+}

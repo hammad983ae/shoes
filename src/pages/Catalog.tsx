@@ -8,8 +8,7 @@ import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import BrandCards from '@/components/BrandCards';
 import FloatingCart from '@/components/FloatingCart';
-// import { sneakerCatalog } from '@/components/SneakerCatalog';
-// import { useFavorites } from '@/contexts/FavoritesContext';
+import FilterBar from '@/components/FilterBar';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
@@ -23,6 +22,10 @@ const Catalog = () => {
   const [pendingProduct, setPendingProduct] = useState<Sneaker | null>(null);
   const [showFloatingCart, setShowFloatingCart] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
+  const [sortBy, setSortBy] = useState('newest');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 999999]);
   const { user } = useAuth();
 
   // Handle URL parameters - kept for potential future use
@@ -83,8 +86,27 @@ const Catalog = () => {
         {/* Header Carousel */}
         <HeaderCarousel />
 
+        {/* Filter Bar */}
+        <FilterBar
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          selectedBrands={selectedBrands}
+          setSelectedBrands={setSelectedBrands}
+          selectedColors={selectedColors}
+          setSelectedColors={setSelectedColors}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+        />
+
         <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
-          <SneakerCarousel onViewProduct={handleViewProduct} />
+          <SneakerCarousel 
+            onViewProduct={handleViewProduct}
+            searchTerm={searchTerm}
+            sortBy={sortBy}
+            selectedBrands={selectedBrands}
+            selectedColors={selectedColors}
+            priceRange={priceRange}
+          />
         </div>
 
         {/* Brand Cards Section */}

@@ -38,15 +38,10 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
             CRALLUX SELLS
           </h1>
           
-          {/* Conversion-focused subheadline */}
-          <p className="text-xl text-center text-white/90 font-medium max-w-3xl leading-relaxed">
-            Your private vault for replica sneakers – premium drops. referral rewards. real heat.
-          </p>
-          
           {/* Live social proof */}
           <div className="text-sm text-white/75 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
             <span className="animate-pulse inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-            14 people are browsing now
+            37 people are browsing now
           </div>
         </div>
 
@@ -74,15 +69,7 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
         
         {/* Referral line */}
         <div className="text-center text-white/80 text-sm max-w-2xl">
-          Refer friends. Get free credits. Earn 20% back when they buy.
-        </div>
-        
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="text-white/60 text-xs text-center mb-2">Scroll down</div>
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-bounce"></div>
-          </div>
+          20% Off All Sneakers Until August 19th
         </div>
       </div>
     </div>

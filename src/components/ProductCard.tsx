@@ -39,11 +39,11 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
         animationName: 'fadeInUp',
         animationDuration: '0.6s',
         animationFillMode: 'both',
-        maxHeight: '450px'
+        height: '400px'
       }}
     >
       <CardContent className="p-0">
-        <div className="relative overflow-hidden h-64" style={{ maxHeight: '280px' }}>
+        <div className="relative overflow-hidden" style={{ height: '260px' }}>
           {/* Carousel Container */}
           <div className="carousel-container">
             <div 
