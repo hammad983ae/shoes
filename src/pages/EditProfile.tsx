@@ -99,10 +99,10 @@ export default function EditProfile() {
 
     setUploading(true);
     try {
-      // Generate unique file name
+      // Generate unique file name with user folder structure for RLS
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = fileName;
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`; // This matches the RLS policy structure
 
       // Upload file to Supabase storage
       const { error: uploadError } = await supabase.storage
