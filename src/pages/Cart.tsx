@@ -5,6 +5,8 @@ import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -14,9 +16,17 @@ const Cart = () => {
   const navigate = useNavigate();
   const [coupon, setCoupon] = useState('');
   const [redeemState, setRedeemState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  // const [showAuthBlock, setShowAuthBlock] = useState(!user);
   const [showPostPurchase, setShowPostPurchase] = useState(false);
   const [purchasedItems] = useState<any[]>([]);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [creditsToUse, setCreditsToUse] = useState('');
+  const [creditDiscount, setCreditDiscount] = useState(0);
+  
+  const currentBalance = 1000; // TODO: Get from user credits table
+  const subtotal = getTotalPrice();
+  const estimatedTax = subtotal * 0.08;
+  const creditsToEarn = Math.floor(subtotal * 20); // 20% back in credits (1 dollar = 100 credits)
+  const total = subtotal + estimatedTax - creditDiscount;
   
   // For size editing - handle both EU and US sizes
   const getSizesForItem = (item: any) => {
@@ -51,22 +61,23 @@ const Cart = () => {
     }
   }
 
-  // Estimated tax (e.g., 8%)
-  const subtotal = getTotalPrice();
-  const estimatedTax = subtotal * 0.08;
-  const total = subtotal + estimatedTax;
+  const handleCreditsSubmit = () => {
+    const credits = parseInt(creditsToUse) || 0;
+    if (credits > currentBalance) {
+      alert('Insufficient credits');
+      return;
+    }
+    if (credits > subtotal * 100) { // Assuming 1 dollar = 100 credits
+      alert('Credits exceed order total');
+      return;
+    }
+    setCreditDiscount(credits / 100); // Convert credits to dollars
+    setShowCreditsModal(false);
+  };
 
   const handleCheckout = () => {
     navigate('/checkout-instructions');
   };
-
-  // const handleContinueAnyways = () => {
-    // Allow non-signed-in users to proceed to checkout
-    handleCheckout();
-  // };
-
-  // Show sign-up incentive banner for unsigned users
-  const showSignupIncentive = !user;
   if (items.length === 0) {
     return (
       <div className="min-h-screen page-gradient relative">
@@ -101,29 +112,6 @@ const Cart = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Your Cart</h1>
-        
-        {/* Sign-up Incentive Banner for unsigned users */}
-        {showSignupIncentive && (
-          <Card className="mt-4 bg-gradient-to-r from-primary/10 to-yellow-400/10 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">🎉</div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Get 10% off your order when you sign up!</h3>
-                    <p className="text-sm text-muted-foreground">Create an account to unlock exclusive discounts and track your orders.</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => navigate('/signup')}
-                  className="bg-primary hover:bg-primary/90 btn-hover-glow"
-                >
-                  Sign Up Now
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -204,6 +192,12 @@ const Cart = () => {
                 <span>Estimated Tax (8%)</span>
                 <span>${estimatedTax.toFixed(2)}</span>
               </div>
+              {creditDiscount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Credit Discount:</span>
+                  <span>-${creditDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="text-muted-foreground">FREE</span>
@@ -214,6 +208,49 @@ const Cart = () => {
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
+
+              {/* Credits to Earn */}
+              <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-800 dark:text-green-200">Credits to Earn</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Get 20% back in credits</p>
+                  </div>
+                  <span className="font-bold text-green-800 dark:text-green-200">{creditsToEarn} credits</span>
+                </div>
+              </div>
+
+              {/* Use Credits Option for Signed-in Users */}
+              {user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setShowCreditsModal(true)}
+                >
+                  Use Credits (Balance: {currentBalance})
+                </Button>
+              )}
+
+              {/* Guest Checkout Options */}
+              {!user && (
+                <div className="space-y-3 border-t pt-4">
+                  <Button 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => navigate('/signin')}
+                  >
+                    Create Account for 20% Off
+                  </Button>
+                  <div className="text-center text-sm text-muted-foreground">OR</div>
+                  <Button 
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleCheckout}
+                  >
+                    Continue with Guest Checkout
+                  </Button>
+                </div>
+              )}
 
               {/* Coupon code input */}
               <div className="flex items-center gap-2 mt-4">
@@ -232,10 +269,13 @@ const Cart = () => {
                   {redeemState === 'loading' ? '...' : 'Redeem'}
                 </Button>
               </div>
-              {/* Checkout button */}
-              <Button onClick={handleCheckout} className="w-full mt-4" size="lg">
-                Checkout
-              </Button>
+
+              {/* Checkout button for signed-in users */}
+              {user && (
+                <Button onClick={handleCheckout} className="w-full mt-4" size="lg">
+                  Checkout
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -246,6 +286,36 @@ const Cart = () => {
         onClose={() => setShowPostPurchase(false)}
         purchasedItems={purchasedItems}
       />
+      
+      {/* Credits Modal */}
+      <Dialog open={showCreditsModal} onOpenChange={setShowCreditsModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Use Credits</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Current Balance: <span className="font-semibold">{currentBalance} credits</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Order Total: <span className="font-semibold">${subtotal.toFixed(2)}</span>
+            </div>
+            <Input
+              type="number"
+              placeholder="Credits to use"
+              value={creditsToUse}
+              onChange={(e) => setCreditsToUse(e.target.value)}
+              max={Math.min(currentBalance, subtotal * 100)}
+            />
+            <div className="text-xs text-muted-foreground">
+              100 credits = $1.00
+            </div>
+            <Button onClick={handleCreditsSubmit} className="w-full">
+              Apply Credits
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
     </div>
   );
