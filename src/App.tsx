@@ -27,6 +27,7 @@ import OptInPolicy from "./pages/OptInPolicy";
 import ReferralRedirect from "./components/ReferralRedirect";
 
 import Checkout from "./pages/Checkout";
+import ProductDetail from "./pages/ProductDetail";
 
 const App = () => (
   <AuthProvider>

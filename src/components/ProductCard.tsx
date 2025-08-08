@@ -4,6 +4,7 @@ import { Eye, Heart } from 'lucide-react';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useState } from 'react';
 import { Sneaker } from '@/types/global';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   sneaker: Sneaker;
@@ -11,11 +12,12 @@ interface ProductCardProps {
   onViewProduct?: (sneaker: Sneaker) => void;
 }
 
-const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
+const ProductCard = ({ sneaker, index }: ProductCardProps) => {
   const { toggleFavorite, isFavorite } = useFavorites();
+  const navigate = useNavigate();
 
   const handleViewProduct = () => {
-    onViewProduct?.(sneaker);
+    navigate(`/product/${sneaker.id}`);
   };
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,7 +32,6 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
   };
-
   return (
     <Card 
       className="product-card group cursor-pointer border-0 overflow-hidden hover:shadow-xl transition-all duration-300"
@@ -103,17 +104,17 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           >
             <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
           </Button>
-          {/* Quick View Button */}
+          {/* View Product Button */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 z-30">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-              handleViewProduct();
+                handleViewProduct();
               }}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow font-semibold"
             >
               <Eye className="w-4 h-4 mr-2" />
-              Quick View
+              View Product
             </Button>
           </div>
           
