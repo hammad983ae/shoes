@@ -7,11 +7,8 @@ import { sneakerCatalog } from './SneakerCatalog';
 import { Sneaker } from '@/types/global';
 
 
-interface SneakerCarouselProps {
-  onViewProduct?: (sneaker: Sneaker) => void;
-}
 
-const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
+const SneakerCarousel = () => {
   const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -38,9 +35,6 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
     return () => clearInterval(interval);
   }, [isHovered]);
 
-  const handleViewProduct = (sneaker: Sneaker) => {
-    onViewProduct?.(sneaker);
-  };
 
   return (
     <div className="w-full space-y-6">
@@ -69,7 +63,6 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
             <ProductCard
               sneaker={sneaker}
               index={index}
-              onViewProduct={handleViewProduct}
             />
           </div>
         ))}
