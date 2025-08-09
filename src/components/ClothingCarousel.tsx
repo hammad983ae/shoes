@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import { useNavigate } from 'react-router-dom';
@@ -28,18 +28,9 @@ interface ClothingCarouselProps {
 
 const ClothingCarousel = ({ onViewProduct }: ClothingCarouselProps) => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
   
   // For now, just use the placeholder. Later this will fetch from API
   const clothingProducts = [placeholderTee];
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? clothingProducts.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === clothingProducts.length - 1 ? 0 : prev + 1));
-  };
 
   const handleShopAll = () => {
     const clothingCategories = [
@@ -72,56 +63,19 @@ const ClothingCarousel = ({ onViewProduct }: ClothingCarouselProps) => {
         </Button>
       </div>
 
-      {/* Carousel */}
+      {/* Horizontal Scrollable Container */}
       <div className="relative">
-        {/* Navigation Arrows */}
-        {clothingProducts.length > 1 && (
-          <>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
-              onClick={handlePrevious}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
-              onClick={handleNext}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </>
-        )}
-
-        {/* Products Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80">
           {clothingProducts.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              sneaker={product}
-              index={index}
-              onViewProduct={onViewProduct}
-            />
+            <div key={product.id} className="flex-shrink-0 snap-center w-48 sm:w-56 md:w-64">
+              <ProductCard
+                sneaker={product}
+                index={index}
+                onViewProduct={onViewProduct}
+              />
+            </div>
           ))}
         </div>
-
-        {/* Dots indicator for mobile */}
-        {clothingProducts.length > 1 && (
-          <div className="flex justify-center mt-4 space-x-2 sm:hidden">
-            {clothingProducts.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-primary' : 'bg-muted'
-                }`}
-                onClick={() => setCurrentIndex(index)}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import { useNavigate } from 'react-router-dom';
@@ -13,15 +13,6 @@ interface SneakerCarouselProps {
 
 const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? sneakerCatalog.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === sneakerCatalog.length - 1 ? 0 : prev + 1));
-  };
 
   const handleShopAll = () => {
     navigate('/full-catalog?category=Shoes');
@@ -49,48 +40,17 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
         </Button>
       </div>
 
-      {/* Carousel */}
+      {/* Horizontal Scrollable Container */}
       <div className="relative">
-        {/* Navigation Arrows */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
-          onClick={handlePrevious}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
-          onClick={handleNext}
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-
-        {/* Sneakers Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80">
           {sneakerCatalog.map((sneaker, index) => (
-            <ProductCard 
-              key={sneaker.id} 
-              sneaker={sneaker} 
-              index={index}
-              onViewProduct={onViewProduct}
-            />
-          ))}
-        </div>
-
-        {/* Dots indicator for mobile */}
-        <div className="flex justify-center mt-4 space-x-2 sm:hidden">
-          {Array.from({ length: Math.ceil(sneakerCatalog.length / 2) }).map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === Math.floor(currentIndex / 2) ? 'bg-primary' : 'bg-muted'
-              }`}
-              onClick={() => setCurrentIndex(index * 2)}
-            />
+            <div key={sneaker.id} className="flex-shrink-0 snap-center w-48 sm:w-56 md:w-64">
+              <ProductCard 
+                sneaker={sneaker} 
+                index={index}
+                onViewProduct={onViewProduct}
+              />
+            </div>
           ))}
         </div>
       </div>
