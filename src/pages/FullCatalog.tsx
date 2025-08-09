@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
@@ -101,7 +100,7 @@ const FullCatalog = () => {
 
     // Apply favorites filter if enabled
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered as any);
+      filtered = getFavoriteProducts(filtered);
     }
 
     return filtered;

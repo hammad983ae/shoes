@@ -10,17 +10,32 @@ const RequestNewItemsCard = () => {
   return (
     <>
       <Card 
-        className="group cursor-pointer hover:scale-105 transition-all duration-300 border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10"
+        className="group cursor-pointer hover:scale-105 transition-all duration-300 border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 overflow-hidden"
+        style={{ height: '400px' }}
         onClick={() => setIsModalOpen(true)}
       >
-        <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] p-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <Plus className="w-8 h-8 text-primary" />
+        <CardContent className="p-0 h-full">
+          {/* Image Area - matches ProductCard image height */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center" style={{ height: '260px' }}>
+            <div className="w-16 h-16 rounded-full bg-primary/30 flex items-center justify-center group-hover:bg-primary/40 transition-colors">
+              <Plus className="w-8 h-8 text-primary" />
+            </div>
           </div>
-          <h3 className="font-semibold text-lg mb-2">Can't find it?</h3>
-          <p className="text-muted-foreground text-sm">
-            Request new items and we'll do our best to source them for you.
-          </p>
+          
+          {/* Product Info Area - matches ProductCard info area */}
+          <div className="p-3 sm:p-4 flex flex-col justify-center h-[140px]">
+            <div className="flex flex-col gap-1 text-center">
+              <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
+                Can't find it?
+              </h3>
+              <span className="text-xs text-muted-foreground font-medium">
+                Request new items
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-2 line-clamp-2">
+              We'll do our best to source them for you.
+            </p>
+          </div>
         </CardContent>
       </Card>
       
