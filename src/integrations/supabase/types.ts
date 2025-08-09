@@ -44,6 +44,38 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          creator_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_codes_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       creator_credits_ledger: {
         Row: {
           amount_credits: number
@@ -1049,6 +1081,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_coupon_code: {
+        Args: { target_user_id: string; new_code: string }
+        Returns: Json
+      }
+      admin_set_creator_status: {
+        Args: {
+          target_user_id: string
+          is_creator_status: boolean
+          new_role?: string
+        }
+        Returns: Json
+      }
       calculate_creator_tier: {
         Args: { monthly_revenue: number }
         Returns: {
@@ -1075,6 +1119,10 @@ export type Database = {
         Returns: boolean
       }
       generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

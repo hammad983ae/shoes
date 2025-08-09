@@ -65,13 +65,14 @@ serve(async (req) => {
     }
 
     if (req.method === 'GET') {
-      // Get all profiles
+      // Get all profiles with robust LEFT JOINs - never filter out users
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
+        console.error('Profiles error:', profilesError);
         throw profilesError;
       }
 
@@ -79,25 +80,43 @@ serve(async (req) => {
       const { data: authData, error: authUsersError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (authUsersError) {
+        console.error('Auth users error:', authUsersError);
         throw authUsersError;
       }
 
-      // Create a map of user_id to email
+      // Get coupon codes with error handling
+      const { data: couponCodes, error: couponError } = await supabaseAdmin
+        .from('coupon_codes')
+        .select('creator_id, code');
+      
+      // Don't fail if coupon codes table has issues
+      if (couponError) {
+        console.warn('Coupon codes error (non-fatal):', couponError);
+      }
+
+      // Create maps for efficient lookup
       const emailMap = new Map();
       authData.users.forEach((authUser: any) => {
         emailMap.set(authUser.id, authUser.email);
       });
 
-      // Merge profile data with email data
+      const couponMap = new Map();
+      if (couponCodes) {
+        couponCodes.forEach((coupon: any) => {
+          couponMap.set(coupon.creator_id, coupon.code);
+        });
+      }
+
+      // Merge profile data with email and coupon data - ALWAYS include all profiles
       const enrichedUsers = profiles?.map((profile: any) => ({
         id: profile.user_id,
-        email: emailMap.get(profile.user_id) || 'No email found',
+        email: emailMap.get(profile.user_id) || 'Email not found',
         display_name: profile.display_name || 'No name',
         role: profile.role || 'user',
         is_creator: profile.is_creator || false,
         creator_tier: profile.creator_tier || 'tier1',
         commission_rate: profile.commission_rate || 0.10,
-        coupon_code: profile.coupon_code || null,
+        coupon_code: couponMap.get(profile.user_id) || profile.coupon_code || null,
         credits: profile.credits || 0,
         created_at: profile.created_at
       })) || [];

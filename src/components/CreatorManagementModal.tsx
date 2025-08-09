@@ -103,27 +103,42 @@ export const CreatorManagementModal = ({ user, isOpen, onClose, onUserUpdated }:
     
     setLoading(true);
     try {
-      // Update creator status and coupon code
-      const updates: any = {
-        is_creator: isCreator,
-      };
+      // Save creator status if changed
+      if (isCreator !== user.is_creator) {
+        const { data: statusResult, error: statusError } = await supabase
+          .rpc('admin_set_creator_status', {
+            target_user_id: user.id,
+            is_creator_status: isCreator,
+            new_role: isCreator ? 'creator' : 'user'
+          });
 
-      if (isCreator) {
-        updates.role = 'creator';
-        if (couponCode.trim()) {
-          updates.coupon_code = couponCode.trim().toUpperCase();
+        if (statusError) {
+          console.error('Status update error:', statusError);
+          throw new Error(statusError.message || 'Failed to update creator status');
         }
-      } else {
-        updates.role = 'user';
-        updates.coupon_code = null;
+
+        if (!(statusResult as any)?.success) {
+          throw new Error((statusResult as any)?.error || 'Failed to update creator status');
+        }
       }
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('user_id', user.id);
+      // Save coupon code if provided and user is creator
+      if (isCreator && couponCode.trim()) {
+        const { data: couponResult, error: couponError } = await supabase
+          .rpc('admin_set_coupon_code', {
+            target_user_id: user.id,
+            new_code: couponCode.trim()
+          });
 
-      if (updateError) throw updateError;
+        if (couponError) {
+          console.error('Coupon code error:', couponError);
+          throw new Error(couponError.message || 'Failed to save coupon code');
+        }
+
+        if (!(couponResult as any)?.success) {
+          throw new Error((couponResult as any)?.error || 'Failed to save coupon code');
+        }
+      }
 
       toast({
         title: 'Success',
@@ -132,6 +147,7 @@ export const CreatorManagementModal = ({ user, isOpen, onClose, onUserUpdated }:
 
       onUserUpdated();
     } catch (error: any) {
+      console.error('Save error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to update user',
