@@ -146,6 +146,78 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_monthly_metrics: {
+        Row: {
+          aov: number | null
+          created_at: string | null
+          creator_id: string
+          customers_acquired: number | null
+          id: string
+          month: string
+          total_commission: number | null
+          total_orders: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          video_credits_granted: number | null
+        }
+        Insert: {
+          aov?: number | null
+          created_at?: string | null
+          creator_id: string
+          customers_acquired?: number | null
+          id?: string
+          month: string
+          total_commission?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          video_credits_granted?: number | null
+        }
+        Update: {
+          aov?: number | null
+          created_at?: string | null
+          creator_id?: string
+          customers_acquired?: number | null
+          id?: string
+          month?: string
+          total_commission?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          video_credits_granted?: number | null
+        }
+        Relationships: []
+      }
+      credits_ledger: {
+        Row: {
+          admin_id: string | null
+          amount: number
+          created_at: string | null
+          id: string
+          notes: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          amount: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          amount?: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_acquisition: {
         Row: {
           created_at: string
@@ -232,6 +304,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          commission_amount_at_purchase: number | null
+          coupon_code: string | null
           created_at: string
           creator_id: string | null
           currency: string
@@ -242,6 +316,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          commission_amount_at_purchase?: number | null
+          coupon_code?: string | null
           created_at?: string
           creator_id?: string | null
           currency?: string
@@ -252,6 +328,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          commission_amount_at_purchase?: number | null
+          coupon_code?: string | null
           created_at?: string
           creator_id?: string | null
           currency?: string
@@ -520,6 +598,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           commission_rate: number | null
+          coupon_code: string | null
           created_at: string
           creator_tier: string | null
           credits: number | null
@@ -540,6 +619,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           commission_rate?: number | null
+          coupon_code?: string | null
           created_at?: string
           creator_tier?: string | null
           credits?: number | null
@@ -560,6 +640,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           commission_rate?: number | null
+          coupon_code?: string | null
           created_at?: string
           creator_tier?: string | null
           credits?: number | null
@@ -830,28 +911,37 @@ export type Database = {
           current_balance: number | null
           earned_from_referrals: number | null
           id: string
+          last_video_credit_reset: string | null
+          lifetime_video_credits: number | null
           total_earned: number | null
           total_spent: number | null
           updated_at: string
           user_id: string
+          video_credits_this_month: number | null
         }
         Insert: {
           current_balance?: number | null
           earned_from_referrals?: number | null
           id?: string
+          last_video_credit_reset?: string | null
+          lifetime_video_credits?: number | null
           total_earned?: number | null
           total_spent?: number | null
           updated_at?: string
           user_id: string
+          video_credits_this_month?: number | null
         }
         Update: {
           current_balance?: number | null
           earned_from_referrals?: number | null
           id?: string
+          last_video_credit_reset?: string | null
+          lifetime_video_credits?: number | null
           total_earned?: number | null
           total_spent?: number | null
           updated_at?: string
           user_id?: string
+          video_credits_this_month?: number | null
         }
         Relationships: []
       }
@@ -966,6 +1056,13 @@ export type Database = {
           commission_rate: number
         }[]
       }
+      calculate_creator_tier_by_commission: {
+        Args: { monthly_commission: number }
+        Returns: {
+          tier: string
+          commission_rate: number
+        }[]
+      }
       demote_from_creator: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -982,6 +1079,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string
       }
+      grant_user_credits: {
+        Args: {
+          target_user_id: string
+          credit_amount: number
+          credit_type?: string
+          notes_text?: string
+        }
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -995,6 +1101,10 @@ export type Database = {
         Returns: boolean
       }
       update_creator_metrics: {
+        Args: { creator_user_id: string }
+        Returns: undefined
+      }
+      update_creator_metrics_by_commission: {
         Args: { creator_user_id: string }
         Returns: undefined
       }
