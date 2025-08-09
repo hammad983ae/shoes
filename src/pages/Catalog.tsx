@@ -9,7 +9,6 @@ import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import BrandCards from '@/components/BrandCards';
 import FloatingCart from '@/components/FloatingCart';
-import RecommendedSneakersWheel from '@/components/RecommendedSneakersWheel';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
@@ -62,9 +61,6 @@ const Catalog = () => {
     }
   };
 
-  // Removed unused filteredAndSortedSneakers variable
-  // Component renders SneakerCarousel instead of filtering logic
-
   return (
     <div className="min-h-screen page-gradient relative">
       <InteractiveParticles isActive={true} />
@@ -82,11 +78,6 @@ const Catalog = () => {
 
         {/* Header Carousel */}
         <HeaderCarousel />
-
-        {/* Recommended Sneakers Wheel */}
-        <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
-          <RecommendedSneakersWheel />
-        </div>
 
         {/* Sneaker Collection */}
         <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
