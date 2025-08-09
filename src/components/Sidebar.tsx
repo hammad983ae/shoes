@@ -48,10 +48,24 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     { label: 'Socials', href: '/contact-us', icon: Smartphone },
   ];
 
+  // Add conditional dashboard links
+  const { userRole, isCreator } = useAuth();
+  const dashboardLinks = [];
+  
+  if (isCreator || userRole === 'admin') {
+    dashboardLinks.push({ label: 'Creator Dashboard', href: '/creator', icon: Star });
+  }
+  
+  if (userRole === 'admin') {
+    dashboardLinks.push({ label: 'Admin Dashboard', href: '/admin', icon: Smartphone });
+  }
+
+  const allLinks = [...links, ...dashboardLinks];
+
   const currentPath = window.location.pathname;
   const filteredLinks = currentPath === '/feed' 
-    ? links.filter(link => link.href !== '/contact-us')
-    : links;
+    ? allLinks.filter(link => link.href !== '/contact-us')
+    : allLinks;
 
   const handleSignOut = async () => {
     await signOut();

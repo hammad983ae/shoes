@@ -28,6 +28,9 @@ import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
 import ReferralRedirect from "./components/ReferralRedirect";
 import Checkout from "./pages/Checkout";
+import CreatorDashboard from "./pages/CreatorDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import RouteGuard from "./components/RouteGuard";
 
 const App = () => (
   <AuthProvider>
@@ -59,6 +62,16 @@ const App = () => (
                 <Route path="/return-policy" element={<ReturnPolicy />} />
                 <Route path="/opt-in-policy" element={<OptInPolicy />} />
                 <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
+                <Route path="/creator" element={
+                  <RouteGuard requireCreator>
+                    <CreatorDashboard />
+                  </RouteGuard>
+                } />
+                <Route path="/admin" element={
+                  <RouteGuard requireRole="admin">
+                    <AdminDashboard />
+                  </RouteGuard>
+                } />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
