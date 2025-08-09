@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useState } from 'react';
-import { submitContactRequest } from '@/api/contact';
+import { submitMessage } from '@/api/messages';
 import { useToast } from '@/hooks/use-toast';
 
 const Socials = () => {
@@ -11,7 +11,8 @@ const Socials = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    message: ''
+    message: '',
+    honeypot: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +39,12 @@ const Socials = () => {
     setIsSubmitting(true);
     
     try {
-      await submitContactRequest(formData);
+      await submitMessage({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        honeypot: formData.honeypot,
+      });
       
       toast({
         title: "Message Sent!",
@@ -49,7 +55,8 @@ const Socials = () => {
       setFormData({
         name: '',
         email: '',
-        message: ''
+        message: '',
+        honeypot: ''
       });
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
@@ -246,8 +253,9 @@ const Socials = () => {
                      placeholder="How can we help you?"
                      required
                    />
-                 </div>
-                 <Button 
+                  </div>
+                  <input type="text" name="honeypot" value={formData.honeypot} onChange={handleInputChange} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+                  <Button 
                    type="submit" 
                    className="w-full btn-hover-glow"
                    disabled={isSubmitting}

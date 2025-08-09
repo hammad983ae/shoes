@@ -7,6 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  userRole: 'user' | 'creator' | 'admin' | null;
+  isCreator: boolean;
   signUp: (email: string, password: string, displayName?: string, referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -30,6 +32,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<'user' | 'creator' | 'admin' | null>(null);
+  const [isCreator, setIsCreator] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -51,6 +55,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setUserRole(null);
+      setIsCreator(false);
+      return;
+    }
+    setTimeout(async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role, is_creator')
+          .eq('user_id', user.id)
+          .single();
+        setUserRole((data?.role as 'user' | 'creator' | 'admin') ?? null);
+        setIsCreator(Boolean(data?.is_creator));
+      } catch (e) {
+        console.error('Failed to load profile role', e);
+      }
+    }, 0);
+  }, [user]);
 
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
     try {
@@ -164,6 +189,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     session,
     loading,
+    userRole,
+    isCreator,
     signUp,
     signIn,
     signOut,

@@ -1,1 +1,7 @@
 project_id = "uvczawicaqqiyutcqoyg"
+
+[functions.submit-message]
+verify_jwt = false
+
+[functions.admin-users]
+verify_jwt = true
