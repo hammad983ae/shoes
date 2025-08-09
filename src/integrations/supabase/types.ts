@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          message: string
+          name: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          message: string
+          name: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          message?: string
+          name?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -328,9 +361,11 @@ export type Database = {
           credits: number | null
           display_name: string | null
           id: string
+          is_creator: boolean
           referral_code: string | null
           referrals_count: number | null
           referred_by: string | null
+          role: string
           updated_at: string
           user_id: string
         }
@@ -342,9 +377,11 @@ export type Database = {
           credits?: number | null
           display_name?: string | null
           id?: string
+          is_creator?: boolean
           referral_code?: string | null
           referrals_count?: number | null
           referred_by?: string | null
+          role?: string
           updated_at?: string
           user_id: string
         }
@@ -356,9 +393,11 @@ export type Database = {
           credits?: number | null
           display_name?: string | null
           id?: string
+          is_creator?: boolean
           referral_code?: string | null
           referrals_count?: number | null
           referred_by?: string | null
+          role?: string
           updated_at?: string
           user_id?: string
         }
@@ -746,9 +785,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      demote_from_creator: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_profile_is_creator: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      get_profile_role: {
+        Args: { _user_id: string }
+        Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      promote_to_creator: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
+      set_user_role: {
+        Args: { target_user_id: string; new_role: string }
+        Returns: boolean
       }
     }
     Enums: {
