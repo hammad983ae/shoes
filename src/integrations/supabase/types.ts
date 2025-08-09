@@ -44,6 +44,132 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_credits_ledger: {
+        Row: {
+          amount_credits: number
+          created_at: string
+          creator_id: string
+          id: string
+          notes: string | null
+          status: string | null
+          type: string
+        }
+        Insert: {
+          amount_credits: number
+          created_at?: string
+          creator_id: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          type: string
+        }
+        Update: {
+          amount_credits?: number
+          created_at?: string
+          creator_id?: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
+      creator_earnings: {
+        Row: {
+          commission_amount: number
+          commission_rate_at_purchase: number
+          created_at: string
+          creator_id: string
+          id: string
+          order_id: string
+          order_total: number
+        }
+        Insert: {
+          commission_amount: number
+          commission_rate_at_purchase: number
+          created_at?: string
+          creator_id: string
+          id?: string
+          order_id: string
+          order_total: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate_at_purchase?: number
+          created_at?: string
+          creator_id?: string
+          id?: string
+          order_id?: string
+          order_total?: number
+        }
+        Relationships: []
+      }
+      creator_metrics_monthly: {
+        Row: {
+          aov: number | null
+          commission_paid: number | null
+          created_at: string
+          creator_id: string
+          id: string
+          ltv: number | null
+          month: string
+          orders_count: number | null
+          revenue: number | null
+          tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          aov?: number | null
+          commission_paid?: number | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          ltv?: number | null
+          month: string
+          orders_count?: number | null
+          revenue?: number | null
+          tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aov?: number | null
+          commission_paid?: number | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          ltv?: number | null
+          month?: string
+          orders_count?: number | null
+          revenue?: number | null
+          tier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customer_acquisition: {
+        Row: {
+          created_at: string
+          creator_id: string
+          first_order_date: string
+          first_order_user_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          first_order_date: string
+          first_order_user_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          first_order_date?: string
+          first_order_user_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string
@@ -100,6 +226,39 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          creator_id: string | null
+          currency: string
+          id: string
+          order_total: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id?: string | null
+          currency?: string
+          id?: string
+          order_total: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string | null
+          currency?: string
+          id?: string
+          order_total?: number
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -360,11 +519,15 @@ export type Database = {
           accepted_terms: boolean | null
           avatar_url: string | null
           bio: string | null
+          commission_rate: number | null
           created_at: string
+          creator_tier: string | null
           credits: number | null
           display_name: string | null
           id: string
           is_creator: boolean
+          month_revenue_cached: number | null
+          month_updated_at: string | null
           referral_code: string | null
           referrals_count: number | null
           referred_by: string | null
@@ -376,11 +539,15 @@ export type Database = {
           accepted_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          commission_rate?: number | null
           created_at?: string
+          creator_tier?: string | null
           credits?: number | null
           display_name?: string | null
           id?: string
           is_creator?: boolean
+          month_revenue_cached?: number | null
+          month_updated_at?: string | null
           referral_code?: string | null
           referrals_count?: number | null
           referred_by?: string | null
@@ -392,11 +559,15 @@ export type Database = {
           accepted_terms?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          commission_rate?: number | null
           created_at?: string
+          creator_tier?: string | null
           credits?: number | null
           display_name?: string | null
           id?: string
           is_creator?: boolean
+          month_revenue_cached?: number | null
+          month_updated_at?: string | null
           referral_code?: string | null
           referrals_count?: number | null
           referred_by?: string | null
@@ -788,6 +959,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_creator_tier: {
+        Args: { monthly_revenue: number }
+        Returns: {
+          tier: string
+          commission_rate: number
+        }[]
+      }
       demote_from_creator: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -815,6 +993,10 @@ export type Database = {
       set_user_role: {
         Args: { target_user_id: string; new_role: string }
         Returns: boolean
+      }
+      update_creator_metrics: {
+        Args: { creator_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
