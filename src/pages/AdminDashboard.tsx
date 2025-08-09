@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +26,7 @@ interface MessageRow {
   email: string;
   message: string;
   status: string;
+  type: string;
   created_at: string;
   user_id: string | null;
 }
@@ -34,6 +37,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([]);
 
   useEffect(() => {
     if (!user || userRole !== 'admin') {
@@ -41,7 +46,32 @@ const AdminDashboard = () => {
       return;
     }
     loadData();
+    
+    // Set up real-time subscriptions
+    const usersChannel = supabase
+      .channel('admin-users')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, loadData)
+      .subscribe();
+
+    const messagesChannel = supabase
+      .channel('admin-messages')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, loadData)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(usersChannel);
+      supabase.removeChannel(messagesChannel);
+    };
   }, [user, userRole, navigate]);
+
+  useEffect(() => {
+    // Filter users based on search term
+    const filtered = users.filter(user => 
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.display_name && user.display_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredUsers(filtered);
+  }, [users, searchTerm]);
 
   const loadData = async () => {
     try {
@@ -65,33 +95,17 @@ const AdminDashboard = () => {
     }
   };
 
-  const promoteToCreator = async (userId: string) => {
+  const toggleCreatorStatus = async (userId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase.rpc('promote_to_creator', { target_user_id: userId });
-      if (error) throw error;
-      toast({ title: 'Success', description: 'User promoted to creator' });
-      loadData();
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const demoteFromCreator = async (userId: string) => {
-    try {
-      const { error } = await supabase.rpc('demote_from_creator', { target_user_id: userId });
-      if (error) throw error;
-      toast({ title: 'Success', description: 'Creator status revoked' });
-      loadData();
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const setUserRole = async (userId: string, newRole: 'user' | 'creator') => {
-    try {
-      const { error } = await supabase.rpc('set_user_role', { target_user_id: userId, new_role: newRole });
-      if (error) throw error;
-      toast({ title: 'Success', description: `Role changed to ${newRole}` });
+      if (currentStatus) {
+        const { error } = await supabase.rpc('demote_from_creator', { target_user_id: userId });
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Creator status revoked' });
+      } else {
+        const { error } = await supabase.rpc('promote_to_creator', { target_user_id: userId });
+        if (error) throw error;
+        toast({ title: 'Success', description: 'User promoted to creator' });
+      }
       loadData();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -135,6 +149,14 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle>Users Management</CardTitle>
+              <div className="mt-4">
+                <Input
+                  placeholder="Search users by email or display name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="max-w-md"
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -142,68 +164,26 @@ const AdminDashboard = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Display Name</TableHead>
-                    <TableHead>Role</TableHead>
                     <TableHead>Creator</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.display_name || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'destructive' : user.role === 'creator' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={user.is_creator ? 'default' : 'secondary'}>
-                          {user.is_creator ? 'Yes' : 'No'}
-                        </Badge>
+                        {user.role !== 'admin' ? (
+                          <Checkbox
+                            checked={user.is_creator}
+                            onCheckedChange={() => toggleCreatorStatus(user.id, user.is_creator)}
+                          />
+                        ) : (
+                          <Badge variant="destructive">Admin</Badge>
+                        )}
                       </TableCell>
                       <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {!user.is_creator && user.role !== 'admin' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => promoteToCreator(user.id)}
-                            >
-                              Promote to Creator
-                            </Button>
-                          )}
-                          {user.is_creator && user.role !== 'admin' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => demoteFromCreator(user.id)}
-                            >
-                              Revoke Creator
-                            </Button>
-                          )}
-                          {user.role === 'user' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setUserRole(user.id, 'creator')}
-                            >
-                              Set Creator Role
-                            </Button>
-                          )}
-                          {user.role === 'creator' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setUserRole(user.id, 'user')}
-                            >
-                              Set User Role
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -224,6 +204,7 @@ const AdminDashboard = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Message</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
@@ -235,6 +216,11 @@ const AdminDashboard = () => {
                       <TableCell>{msg.name}</TableCell>
                       <TableCell>{msg.email}</TableCell>
                       <TableCell className="max-w-xs truncate">{msg.message}</TableCell>
+                      <TableCell>
+                        <Badge variant={msg.type === 'request' ? 'default' : 'secondary'}>
+                          {msg.type || 'contacting'}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <Badge variant={msg.status === 'reviewed' ? 'default' : 'secondary'}>
                           {msg.status}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home, TrendingUp } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, ShoppingCart, Home, TrendingUp, Laptop, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,11 +53,11 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const dashboardLinks = [];
   
   if (isCreator || userRole === 'admin') {
-    dashboardLinks.push({ label: 'Creator Dashboard', href: '/creator', icon: Star });
+    dashboardLinks.push({ label: 'Creator Dashboard', href: '/creator', icon: Laptop });
   }
   
   if (userRole === 'admin') {
-    dashboardLinks.push({ label: 'Admin Dashboard', href: '/admin', icon: Smartphone });
+    dashboardLinks.push({ label: 'Admin Dashboard', href: '/admin', icon: Settings });
   }
 
   const allLinks = [...links, ...dashboardLinks];
