@@ -14,7 +14,6 @@ import {
   TrendingUp, 
   CreditCard, 
   Trophy,
-  Video,
   ShoppingBag,
   Target
 } from 'lucide-react';
@@ -205,29 +204,6 @@ const CreatorDashboard: React.FC = () => {
     }
   };
 
-  const submitVideoForApproval = async () => {
-    if (!user?.id) return;
-    
-    try {
-      const { error } = await supabase
-        .from('creator_credits_ledger')
-        .insert({
-          creator_id: user.id,
-          type: 'video_bonus',
-          amount_credits: 5000,
-          notes: 'Video submission for approval',
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast.success('Video submitted for approval! You will receive 5,000 credits once approved.');
-      loadCreatorData(); // Refresh data
-    } catch (error) {
-      console.error('Error submitting video:', error);
-      toast.error('Failed to submit video for approval');
-    }
-  };
 
   if (loading) {
     return (
@@ -383,15 +359,12 @@ const CreatorDashboard: React.FC = () => {
             
             <Separator />
             
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2">
               <div>
-                <p className="font-medium">Submit Video for Approval</p>
-                <p className="text-sm text-muted-foreground">Earn 5,000 credits per approved video</p>
+                <p className="font-medium">Video Credits</p>
+                <p className="text-sm text-muted-foreground">Tag our socials in your video for 5,000 credits per video</p>
+                <p className="text-xs text-muted-foreground">Credits are added manually by admin after verification</p>
               </div>
-              <Button onClick={submitVideoForApproval} size="sm">
-                <Video className="h-4 w-4 mr-2" />
-                Submit Video
-              </Button>
             </div>
             
             <div className="text-sm text-muted-foreground">

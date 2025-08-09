@@ -7,16 +7,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { CreatorManagementModal } from '@/components/CreatorManagementModal';
+import { Edit } from 'lucide-react';
 
 interface UserRow {
   id: string;
   email: string;
-  display_name: string | null;
+  display_name: string;
   role: 'user' | 'creator' | 'admin';
   is_creator: boolean;
+  creator_tier: string;
+  commission_rate: number;
+  coupon_code: string | null;
+  credits: number;
   created_at: string;
 }
 
@@ -39,6 +44,8 @@ const AdminDashboard = () => {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [isCreatorModalOpen, setIsCreatorModalOpen] = useState(false);
 
   useEffect(() => {
     if (!user || userRole !== 'admin') {
@@ -75,39 +82,9 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      // Fetch users directly from profiles
-      const { data: userData, error: usersError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          user_id,
-          display_name,
-          role,
-          is_creator,
-          created_at
-        `)
-        .order('created_at', { ascending: false });
-
-      if (usersError) throw usersError;
-
-      // Get auth users for email addresses (only admins can see this)
-      const userProfiles = userData || [];
-      const enrichedUsers = [];
-
-      for (const profile of userProfiles) {
-        // For now, we'll use a placeholder for email since we can't directly query auth.users
-        // In a real app, you'd use an edge function with service role key
-        enrichedUsers.push({
-          id: profile.user_id,
-          email: `user-${profile.user_id.slice(0, 8)}@domain.com`, // Placeholder - would need edge function for real emails
-          display_name: profile.display_name,
-          role: (profile.role as 'user' | 'creator' | 'admin') || 'user',
-          is_creator: profile.is_creator,
-          created_at: profile.created_at
-        });
-      }
-
-      setUsers(enrichedUsers);
+      // Fetch users with emails via edge function
+      const { data: userData } = await supabase.functions.invoke('admin-users-with-emails');
+      setUsers(userData?.users || []);
 
       // Fetch messages
       const { data: messagesData } = await supabase
@@ -125,21 +102,18 @@ const AdminDashboard = () => {
     }
   };
 
-  const toggleCreatorStatus = async (userId: string, currentStatus: boolean) => {
-    try {
-      if (currentStatus) {
-        const { error } = await supabase.rpc('demote_from_creator', { target_user_id: userId });
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Creator status revoked' });
-      } else {
-        const { error } = await supabase.rpc('promote_to_creator', { target_user_id: userId });
-        if (error) throw error;
-        toast({ title: 'Success', description: 'User promoted to creator' });
-      }
-      loadData();
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
+  const handleEditUser = (user: UserRow) => {
+    setSelectedUser(user);
+    setIsCreatorModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedUser(null);
+    setIsCreatorModalOpen(false);
+  };
+
+  const handleUserUpdated = () => {
+    loadData();
   };
 
   const markMessageReviewed = async (messageId: string) => {
@@ -194,26 +168,46 @@ const AdminDashboard = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Display Name</TableHead>
-                    <TableHead>Creator</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Creator Status</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.display_name || 'N/A'}</TableCell>
+                      <TableCell>{user.display_name}</TableCell>
                       <TableCell>
-                        {user.role !== 'admin' ? (
-                          <Checkbox
-                            checked={user.is_creator}
-                            onCheckedChange={() => toggleCreatorStatus(user.id, user.is_creator)}
-                          />
+                        <Badge variant={
+                          user.role === 'admin' ? 'destructive' : 
+                          user.role === 'creator' ? 'default' : 
+                          'secondary'
+                        }>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.is_creator ? (
+                          <Badge className="bg-green-100 text-green-800">
+                            Creator ({user.creator_tier})
+                          </Badge>
                         ) : (
-                          <Badge variant="destructive">Admin</Badge>
+                          <Badge variant="outline">User</Badge>
                         )}
                       </TableCell>
                       <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Manage
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -276,6 +270,13 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <CreatorManagementModal
+        user={selectedUser}
+        isOpen={isCreatorModalOpen}
+        onClose={handleCloseModal}
+        onUserUpdated={handleUserUpdated}
+      />
     </div>
   );
 };
