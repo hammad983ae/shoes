@@ -82,8 +82,16 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      // Fetch users with emails via edge function
-      const { data: userData } = await supabase.functions.invoke('admin-users-with-emails');
+      // Fetch users with emails via edge function - use GET method
+      const { data: userData, error: userError } = await supabase.functions.invoke('admin-users-with-emails', {
+        method: 'GET'
+      });
+      
+      if (userError) {
+        console.error('User data error:', userError);
+        throw userError;
+      }
+      
       setUsers(userData?.users || []);
 
       // Fetch messages
