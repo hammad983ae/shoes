@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,9 +26,7 @@ import { ReferralDiscountNotification } from "./components/ReferralDiscountNotif
 import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
 import ReferralRedirect from "./components/ReferralRedirect";
-
 import Checkout from "./pages/Checkout";
-import ProductDetail from "./pages/ProductDetail";
 
 const App = () => (
   <AuthProvider>

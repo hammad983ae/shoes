@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
@@ -8,6 +9,7 @@ import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import BrandCards from '@/components/BrandCards';
 import FloatingCart from '@/components/FloatingCart';
+import RecommendedSneakersWheel from '@/components/RecommendedSneakersWheel';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
@@ -81,6 +83,12 @@ const Catalog = () => {
         {/* Header Carousel */}
         <HeaderCarousel />
 
+        {/* Recommended Sneakers Wheel */}
+        <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
+          <RecommendedSneakersWheel />
+        </div>
+
+        {/* Sneaker Collection */}
         <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
           <SneakerCarousel onViewProduct={handleViewProduct} />
         </div>
@@ -113,4 +121,4 @@ const Catalog = () => {
   );
 };
 
-export default Catalog; 
+export default Catalog;
