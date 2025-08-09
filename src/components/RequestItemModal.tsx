@@ -72,7 +72,8 @@ const RequestItemModal = ({ isOpen, onClose }: RequestItemModalProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      // Use type assertion since the table exists but isn't in generated types yet
+      const { error } = await (supabase as any)
         .from('item_requests')
         .insert({
           user_id: user.id,

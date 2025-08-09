@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
@@ -98,9 +99,10 @@ const FullCatalog = () => {
       return matchesSearch && matchesCategory && matchesBrand && matchesColor && matchesPrice;
     });
 
-    // Apply favorites filter if enabled
+    // Apply favorites filter if enabled - cast to any to work with current types
     if (showFavorites) {
-      filtered = getFavoriteProducts(filtered);
+      const favoriteProducts = getFavoriteProducts(filtered as any);
+      filtered = favoriteProducts as typeof filtered;
     }
 
     return filtered;
