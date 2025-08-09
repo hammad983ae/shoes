@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import ProductCard from '@/components/ProductCard';
+import ViewProductModal from '@/components/ViewProductModal';
+import SignupIncentiveModal from '@/components/SignupIncentiveModal';
 import FullCatalogNavBar from '@/components/FullCatalogNavBar';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { Sneaker } from '@/types/global';
 
 const FullCatalog = () => {
   const [searchParams] = useSearchParams();
@@ -13,20 +18,53 @@ const FullCatalog = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name-asc');
   const [showFavorites, setShowFavorites] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Sneaker | null>(null);
+  const [showIncentiveModal, setShowIncentiveModal] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState<Sneaker | null>(null);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const { getFavoriteProducts } = useFavorites();
+  const { user } = useAuth();
 
-// Handle URL params for brand filtering
-useEffect(() => {
-  const brandParam = searchParams.get('brand');
-  if (brandParam) {
-    setSelectedBrands([brandParam]);
-  }
-}, [searchParams]);
+  // Handle URL parameters for brand filtering and auto-open product modal
+  useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    const productParam = searchParams.get('product');
+    
+    if (brandParam) {
+      setSelectedBrands([brandParam]);
+    }
+    
+    // Auto-open product modal if product ID is provided
+    if (productParam) {
+      const product = sneakerCatalog.find(s => s.id.toString() === productParam);
+      if (product) {
+        handleViewProduct(product);
+      }
+    }
+  }, [searchParams]);
 
+  const handleViewProduct = (sneaker: Sneaker) => {
+    console.log('handleViewProduct called for:', sneaker.name);
+    // Check if this is the first product view by an unsigned user
+    if (isFirstProductView(!!user)) {
+      console.log('Showing incentive modal for unsigned user');
+      setPendingProduct(sneaker);
+      setShowIncentiveModal(true);
+    } else {
+      console.log('Setting selected product:', sneaker.name);
+      setSelectedProduct(sneaker);
+    }
+  };
+
+  const handleContinueToProduct = () => {
+    if (pendingProduct) {
+      setSelectedProduct(pendingProduct);
+      setPendingProduct(null);
+    }
+  };
 
   const filteredAndSortedSneakers = (() => {
     // Filter sneakers
@@ -109,6 +147,7 @@ useEffect(() => {
                 key={sneaker.id} 
                 sneaker={sneaker} 
                 index={index}
+                onViewProduct={handleViewProduct}
               />
             ))}
           </div>
@@ -123,6 +162,21 @@ useEffect(() => {
         </div>
       </div>
       
+      {/* View Product Modal */}
+      {selectedProduct && (
+        <ViewProductModal
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          sneaker={selectedProduct}
+        />
+      )}
+
+      {/* Signup Incentive Modal */}
+      <SignupIncentiveModal
+        isOpen={showIncentiveModal}
+        onClose={() => setShowIncentiveModal(false)}
+        onContinue={handleContinueToProduct}
+      />
     </div>
   );
 };

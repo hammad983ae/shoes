@@ -4,8 +4,14 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from './SneakerCatalog';
+import { Sneaker } from '@/types/global';
 
-const SneakerCarousel = () => {
+
+interface SneakerCarouselProps {
+  onViewProduct?: (sneaker: Sneaker) => void;
+}
+
+const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -32,6 +38,9 @@ const SneakerCarousel = () => {
     return () => clearInterval(interval);
   }, [isHovered]);
 
+  const handleViewProduct = (sneaker: Sneaker) => {
+    onViewProduct?.(sneaker);
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -60,6 +69,7 @@ const SneakerCarousel = () => {
             <ProductCard
               sneaker={sneaker}
               index={index}
+              onViewProduct={handleViewProduct}
             />
           </div>
         ))}
@@ -68,4 +78,4 @@ const SneakerCarousel = () => {
   );
 };
 
-export default SneakerCarousel;
+export default SneakerCarousel; 
