@@ -75,9 +75,39 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      // Fetch users via edge function
-      const { data: userData } = await supabase.functions.invoke('admin-users');
-      setUsers(userData?.users || []);
+      // Fetch users directly from profiles
+      const { data: userData, error: usersError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          user_id,
+          display_name,
+          role,
+          is_creator,
+          created_at
+        `)
+        .order('created_at', { ascending: false });
+
+      if (usersError) throw usersError;
+
+      // Get auth users for email addresses (only admins can see this)
+      const userProfiles = userData || [];
+      const enrichedUsers = [];
+
+      for (const profile of userProfiles) {
+        // For now, we'll use a placeholder for email since we can't directly query auth.users
+        // In a real app, you'd use an edge function with service role key
+        enrichedUsers.push({
+          id: profile.user_id,
+          email: `user-${profile.user_id.slice(0, 8)}@domain.com`, // Placeholder - would need edge function for real emails
+          display_name: profile.display_name,
+          role: (profile.role as 'user' | 'creator' | 'admin') || 'user',
+          is_creator: profile.is_creator,
+          created_at: profile.created_at
+        });
+      }
+
+      setUsers(enrichedUsers);
 
       // Fetch messages
       const { data: messagesData } = await supabase
