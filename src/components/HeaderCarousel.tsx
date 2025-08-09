@@ -19,7 +19,7 @@ const HeaderCarousel = () => {
     {
       id: 1,
       title: "",
-      backgroundImage: "url('/lovable-uploads/4573f484-65d2-4b31-aff5-9e920868cbe3.png')",
+      backgroundImage: "url('/lovable-uploads/527a6055-20eb-4ac2-b9bb-b1038a398229.png')",
       link: "shop"
     },
     {

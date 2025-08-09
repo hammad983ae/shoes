@@ -1063,6 +1063,13 @@ export type Database = {
           commission_rate: number
         }[]
       }
+      calculate_creator_tier_by_revenue: {
+        Args: { monthly_revenue: number }
+        Returns: {
+          tier: string
+          commission_rate: number
+        }[]
+      }
       demote_from_creator: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -1105,6 +1112,10 @@ export type Database = {
         Returns: undefined
       }
       update_creator_metrics_by_commission: {
+        Args: { creator_user_id: string }
+        Returns: undefined
+      }
+      update_creator_metrics_by_revenue: {
         Args: { creator_user_id: string }
         Returns: undefined
       }

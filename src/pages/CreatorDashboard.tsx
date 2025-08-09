@@ -102,14 +102,14 @@ const CreatorDashboard: React.FC = () => {
 
       setCreatorProfile(profile);
 
-      // Get current month metrics
-      const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-      const { data: monthlyMetrics } = await supabase
-        .from('creator_metrics_monthly')
-        .select('*')
-        .eq('creator_id', user.id)
-        .eq('month', currentMonth)
-        .single();
+        // Get current month metrics - use newer table
+        const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+        const { data: monthlyMetrics } = await supabase
+          .from('creator_monthly_metrics')
+          .select('*')
+          .eq('creator_id', user.id)
+          .eq('month', currentMonth)
+          .maybeSingle();
 
       // Calculate customers acquired this month
       const { count: customersAcquired } = await supabase
@@ -118,25 +118,25 @@ const CreatorDashboard: React.FC = () => {
         .eq('creator_id', user.id)
         .gte('first_order_date', currentMonth);
 
-      if (monthlyMetrics) {
-        setMetrics({
-          revenue: monthlyMetrics.revenue || 0,
-          orders_count: monthlyMetrics.orders_count || 0,
-          aov: monthlyMetrics.aov || 0,
-          ltv: monthlyMetrics.ltv || 0,
-          commission_paid: monthlyMetrics.commission_paid || 0,
-          customers_acquired: customersAcquired || 0
-        });
-      } else {
-        setMetrics({
-          revenue: 0,
-          orders_count: 0,
-          aov: 0,
-          ltv: 0,
-          commission_paid: 0,
-          customers_acquired: customersAcquired || 0
-        });
-      }
+        if (monthlyMetrics) {
+          setMetrics({
+            revenue: monthlyMetrics.total_revenue || 0,
+            orders_count: monthlyMetrics.total_orders || 0,
+            aov: monthlyMetrics.aov || 0,
+            ltv: 0, // Not tracked in new table
+            commission_paid: monthlyMetrics.total_commission || 0,
+            customers_acquired: monthlyMetrics.customers_acquired || 0
+          });
+        } else {
+          setMetrics({
+            revenue: 0,
+            orders_count: 0,
+            aov: 0,
+            ltv: 0,
+            commission_paid: 0,
+            customers_acquired: customersAcquired || 0
+          });
+        }
 
       // Get recent orders
       const { data: orders } = await supabase
@@ -225,7 +225,7 @@ const CreatorDashboard: React.FC = () => {
   }
 
   const tierInfo = getTierDetails(creatorProfile.creator_tier || 'tier1');
-  const monthRevenue = creatorProfile.month_revenue_cached || 0;
+  const monthRevenue = metrics?.revenue || 0; // Use actual monthly revenue from metrics
   const progressToNext = tierInfo.nextThreshold 
     ? Math.min((monthRevenue / tierInfo.nextThreshold) * 100, 100)
     : 100;

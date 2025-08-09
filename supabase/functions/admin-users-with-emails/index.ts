@@ -52,7 +52,7 @@ serve(async (req) => {
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (adminCheck?.role !== 'admin') {
       return new Response(
