@@ -1,3 +1,4 @@
+
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
@@ -20,11 +21,7 @@ const placeholderTee: Sneaker = {
   type: 'shirt'
 };
 
-interface ClothingCarouselProps {
-  onViewProduct: (product: Sneaker) => void;
-}
-
-const ClothingCarousel = ({ onViewProduct }: ClothingCarouselProps) => {
+const ClothingCarousel = () => {
   const navigate = useNavigate();
   
   // For now, just use the placeholder. Later this will fetch from API
@@ -69,7 +66,6 @@ const ClothingCarousel = ({ onViewProduct }: ClothingCarouselProps) => {
               <ProductCard
                 sneaker={product}
                 index={index}
-                onViewProduct={onViewProduct}
               />
             </div>
           ))}

@@ -1,15 +1,11 @@
+
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
-import { Sneaker } from '@/types/global';
 
-interface SneakerCarouselProps {
-  onViewProduct: (sneaker: Sneaker) => void;
-}
-
-const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
+const SneakerCarousel = () => {
   const navigate = useNavigate();
 
   const handleShopAll = () => {
@@ -46,7 +42,6 @@ const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
               <ProductCard 
                 sneaker={sneaker} 
                 index={index}
-                onViewProduct={onViewProduct}
               />
             </div>
           ))}

@@ -22,6 +22,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Catalog from "./pages/Catalog";
 import FullCatalog from "./pages/FullCatalog";
+import ProductDetail from "./pages/ProductDetail";
 import { ReferralDiscountNotification } from "./components/ReferralDiscountNotification";
 import ReturnPolicy from "./pages/ReturnPolicy";
 import OptInPolicy from "./pages/OptInPolicy";
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/catalog" element={<Catalog />} />
                 <Route path="/full-catalog" element={<FullCatalog />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/settings" element={<Settings />} />
