@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -46,6 +47,7 @@ const BestSellingWheel = () => {
       >
         <div className="flex items-center justify-center">
           {items.map((s, i) => {
+            const offset = i - active;
             const isCenter = offset === 0;
             const scale = isCenter ? 'scale-100' : 'scale-75';
             const blur = isCenter ? 'blur-0' : 'blur-sm';

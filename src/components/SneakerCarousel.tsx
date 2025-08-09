@@ -4,9 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from './SneakerCatalog';
-import { Sneaker } from '@/types/global';
-
-
 
 const SneakerCarousel = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -71,4 +68,4 @@ const SneakerCarousel = () => {
   );
 };
 
-export default SneakerCarousel; 
+export default SneakerCarousel;
