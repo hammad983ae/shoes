@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Slide {
   id: number;
@@ -15,15 +14,14 @@ const HeaderCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const slides: Slide[] = [
     {
       id: 1,
-      title: "Website Launched – 20% Off All Sneakers Until August 19th",
-      subtitle: "Limited time offer on all premium sneakers",
-      backgroundImage: "linear-gradient(135deg, hsl(var(--brand-yellow)) 0%, hsl(var(--brand-charcoal)) 100%)",
-      link: "promo"
+      title: "CRALLUX SELLS",
+      subtitle: "Premium sneakers and streetwear",
+      backgroundImage: "url('/lovable-uploads/4573f484-65d2-4b31-aff5-9e920868cbe3.png')",
+      link: "shop"
     },
     {
       id: 2,
@@ -79,13 +77,8 @@ const HeaderCarousel = () => {
   const handleSlideClick = () => {
     const currentLink = slides[currentSlide].link;
     
-    if (currentLink === "promo") {
-      // 20% Off Promo - check if user is logged in
-      if (user) {
-        navigate('/full-catalog');
-      } else {
-        navigate('/signin');
-      }
+    if (currentLink === "shop") {
+      navigate('/full-catalog');
     } else {
       // Direct navigation for other links
       navigate(currentLink);
@@ -124,7 +117,7 @@ const HeaderCarousel = () => {
                 onClick={handleSlideClick}
                 className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
               >
-                {slide.id === 2 ? "Join Before Prices Go Up" : "Learn More"}
+                {slide.id === 1 ? "Shop Now" : "Join Before Prices Go Up"}
               </button>
               
               {/* Trust badge for telegram slide */}
