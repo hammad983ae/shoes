@@ -26,7 +26,7 @@ interface MessageRow {
   email: string;
   message: string;
   status: string;
-  type: string;
+  type: string | null;
   created_at: string;
   user_id: string | null;
 }
@@ -82,7 +82,7 @@ const AdminDashboard = () => {
       // Fetch messages
       const { data: messagesData } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, type')
         .order('created_at', { ascending: false });
       setMessages(messagesData || []);
     } catch (error) {
