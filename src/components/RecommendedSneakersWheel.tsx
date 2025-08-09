@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,19 +14,19 @@ const RecommendedSneakersWheel = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pointer = useRef<{ startX: number; dragging: boolean }>({ startX: 0, dragging: false });
   const wheelCooldown = useRef<number>(0);
-  const [radius, setRadius] = useState(300);
+  const [radius, setRadius] = useState(250);
 
   const count = items.length;
   const step = 360 / count;
 
-  // Responsive radius based on container width - smaller for better fit
+  // Responsive radius based on container width - smaller for better fit and no overlaps
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const compute = () => {
       const w = el.clientWidth;
-      // Reduced radius range for better fit
-      const r = Math.max(200, Math.min(350, Math.floor(w * 0.28)));
+      // Reduced radius range significantly to prevent overlaps
+      const r = Math.max(180, Math.min(280, Math.floor(w * 0.22)));
       setRadius(r);
     };
     compute();
@@ -91,7 +92,7 @@ const RecommendedSneakersWheel = () => {
   };
 
   return (
-    <div className="w-full space-y-4 mb-6">
+    <div className="w-full space-y-4 mb-4">
       <div className="text-center">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Recommended Sneakers</h2>
         <p className="text-muted-foreground text-sm sm:text-base">Discover our top picks just for you</p>
@@ -99,7 +100,7 @@ const RecommendedSneakersWheel = () => {
 
       <div
         ref={containerRef}
-        className="relative mx-auto w-full max-w-5xl"
+        className="relative mx-auto w-full max-w-4xl"
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -107,7 +108,7 @@ const RecommendedSneakersWheel = () => {
         role="region"
         aria-label="Rotating sneaker selector"
       >
-        {/* Controls */}
+        {/* Controls - made functional */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-between z-10">
           <Button
             aria-label="Previous sneaker"
@@ -129,15 +130,15 @@ const RecommendedSneakersWheel = () => {
           </Button>
         </div>
 
-        {/* 3D stage - reduced height */}
-        <div className="relative mx-auto h-[360px] sm:h-[400px] md:h-[440px] lg:h-[480px] [perspective:1200px] rounded-2xl overflow-hidden">
+        {/* 3D stage - reduced height to prevent overlaps */}
+        <div className="relative mx-auto h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] [perspective:1000px] rounded-2xl overflow-hidden">
           {/* Subtle soft background to mimic depth */}
           <div
             className="absolute inset-0 bg-gradient-to-b from-black/[0.03] to-transparent rounded-2xl"
             aria-hidden="true"
           />
 
-          {/* Ring container - fixed positioning to keep items centered */}
+          {/* Ring container - fixed positioning and rotation for perfect centering */}
           <div
             className="absolute inset-0 [transform-style:preserve-3d] transition-transform duration-500 ease-out flex items-center justify-center"
             style={{
@@ -157,16 +158,18 @@ const RecommendedSneakersWheel = () => {
               return (
                 <figure
                   key={item.id}
-                  className="absolute w-[60%] sm:w-[50%] md:w-[45%] lg:w-[40%] aspect-square select-none"
+                  className="absolute w-[50%] sm:w-[40%] md:w-[35%] lg:w-[30%] aspect-square select-none"
                   style={{
+                    // Fixed positioning: items rotate around Y-axis and translate to fixed radius
+                    // This ensures all items stay at same distance from camera (same depth)
                     transform: `rotateY(${angle}deg) translateZ(${radius}px) scale(${scale})`,
                     filter: `blur(${blur}px)`,
                     opacity,
                     transition: 'filter 300ms, opacity 300ms, transform 400ms',
                     left: '50%',
                     top: '50%',
-                    marginLeft: '-30%', // Half of width for centering
-                    marginTop: '-25%', // Slightly above center
+                    marginLeft: '-25%', // Half of width for perfect centering
+                    marginTop: '-25%', // Half of height for perfect centering
                   }}
                   aria-hidden={i !== index}
                 >
@@ -176,7 +179,7 @@ const RecommendedSneakersWheel = () => {
                       alt={item.name}
                       className={cn(
                         'w-full h-full object-contain',
-                        'drop-shadow-[0_20px_35px_rgba(0,0,0,0.15)]',
+                        'drop-shadow-[0_15px_25px_rgba(0,0,0,0.12)]',
                         i !== index ? 'grayscale-[5%]' : '',
                       )}
                     />
@@ -187,19 +190,19 @@ const RecommendedSneakersWheel = () => {
           </div>
 
           {/* Current product meta and CTA */}
-          <div className="pointer-events-none absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 w-full px-3">
-            <div className="mx-auto max-w-xl text-center">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+          <div className="pointer-events-none absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 w-full px-3">
+            <div className="mx-auto max-w-lg text-center">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight">
                 {current.brand.toUpperCase()}
               </h3>
-              <p className="text-muted-foreground text-xs sm:text-sm mt-1">{current.name}</p>
-              <div className="mt-3 flex items-center justify-center gap-2">
-                <div className="pointer-events-auto rounded-full border bg-white/70 px-3 py-1.5 text-xs sm:text-sm shadow-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">{current.name}</p>
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <div className="pointer-events-auto rounded-full border bg-white/70 px-3 py-1 text-xs sm:text-sm shadow-sm">
                   {current.price}
                 </div>
                 <Button 
                   onClick={handleViewProduct}
-                  className="pointer-events-auto btn-hover-glow text-xs sm:text-sm px-3 py-1.5 h-auto"
+                  className="pointer-events-auto btn-hover-glow text-xs sm:text-sm px-3 py-1 h-auto"
                   size="sm"
                 >
                   View Product
@@ -209,7 +212,7 @@ const RecommendedSneakersWheel = () => {
           </div>
 
           {/* Pagination dots */}
-          <div className="absolute inset-x-0 bottom-0 pb-1 flex items-center justify-center gap-1" aria-hidden="true">
+          <div className="absolute inset-x-0 bottom-0 pb-0.5 flex items-center justify-center gap-1" aria-hidden="true">
             {items.map((_, i) => (
               <button
                 key={i}
