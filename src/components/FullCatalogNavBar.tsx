@@ -1,26 +1,21 @@
+
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Heart, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import FilterPanel from '@/components/FilterPanel';
+import EnhancedFilterPanel from '@/components/EnhancedFilterPanel';
 
 interface FullCatalogNavBarProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   showFavorites: boolean;
   setShowFavorites: (show: boolean) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
-  sortBy: string;
-  setSortBy: (sort: string) => void;
-  selectedBrands: string[];
-  setSelectedBrands: (brands: string[]) => void;
-  selectedColors: string[];
-  setSelectedColors: (colors: string[]) => void;
-  selectedTypes: string[];
-  setSelectedTypes: (types: string[]) => void;
-  priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
+  onFiltersChange: (filters: {
+    categories: string[];
+    brands: string[];
+    colors: string[];
+    priceRange: [number, number];
+  }) => void;
 }
 
 const FullCatalogNavBar = ({
@@ -28,18 +23,7 @@ const FullCatalogNavBar = ({
   setSearchTerm,
   showFavorites,
   setShowFavorites,
-  selectedCategory,
-  setSelectedCategory,
-  sortBy,
-  setSortBy,
-  selectedBrands,
-  setSelectedBrands,
-  selectedColors,
-  setSelectedColors,
-  selectedTypes,
-  setSelectedTypes,
-  priceRange,
-  setPriceRange,
+  onFiltersChange,
 }: FullCatalogNavBarProps) => {
   const navigate = useNavigate();
 
@@ -61,7 +45,7 @@ const FullCatalogNavBar = ({
           <div className="relative flex-1 max-w-xs sm:max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Search sneakers..."
+              placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 w-full text-sm"
@@ -80,20 +64,7 @@ const FullCatalogNavBar = ({
               <span className="sm:hidden">Favorites</span>
             </Button>
             
-            <FilterPanel
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              selectedBrands={selectedBrands}
-              setSelectedBrands={setSelectedBrands}
-              selectedColors={selectedColors}
-              setSelectedColors={setSelectedColors}
-              selectedTypes={selectedTypes}
-              setSelectedTypes={setSelectedTypes}
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-            />
+            <EnhancedFilterPanel onFiltersChange={onFiltersChange} />
           </div>
         </div>
       </div>

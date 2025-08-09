@@ -7,6 +7,7 @@ import SignupIncentiveModal from '@/components/SignupIncentiveModal';
 import MainCatalogNavBar from '@/components/MainCatalogNavBar';
 import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
+import ClothingCarousel from '@/components/ClothingCarousel';
 import BrandCards from '@/components/BrandCards';
 import FloatingCart from '@/components/FloatingCart';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,7 +71,7 @@ const Catalog = () => {
 
       {/* Main content */}
       <div className="relative z-10 ml-0 md:ml-16">
-        {/* Main Catalog Navigation Bar */}
+        {/* Main Catalog Navigation Bar - No filters */}
         <MainCatalogNavBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -82,6 +83,11 @@ const Catalog = () => {
         {/* Sneaker Collection */}
         <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
           <SneakerCarousel onViewProduct={handleViewProduct} />
+        </div>
+
+        {/* Clothing Collection */}
+        <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
+          <ClothingCarousel onViewProduct={handleViewProduct} />
         </div>
 
         {/* Brand Cards Section */}

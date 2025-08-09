@@ -1,81 +1,101 @@
-import { useState, useEffect, useRef } from 'react';
-import ProductCard from '@/components/ProductCard';
+
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import ProductCard from '@/components/ProductCard';
 import { useNavigate } from 'react-router-dom';
-import { sneakerCatalog } from './SneakerCatalog';
+import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
 
-
 interface SneakerCarouselProps {
-  onViewProduct?: (sneaker: Sneaker) => void;
+  onViewProduct: (sneaker: Sneaker) => void;
 }
 
 const SneakerCarousel = ({ onViewProduct }: SneakerCarouselProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-scroll functionality
-  useEffect(() => {
-    if (isHovered || !scrollRef.current) return;
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? sneakerCatalog.length - 1 : prev - 1));
+  };
 
-    const scrollContainer = scrollRef.current;
-    const scrollWidth = scrollContainer.scrollWidth;
-    const clientWidth = scrollContainer.clientWidth;
-    const maxScroll = scrollWidth - clientWidth;
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === sneakerCatalog.length - 1 ? 0 : prev + 1));
+  };
 
-    if (maxScroll <= 0) return;
-
-    const interval = setInterval(() => {
-      if (scrollContainer.scrollLeft >= maxScroll) {
-        scrollContainer.scrollLeft = 0;
-      } else {
-        scrollContainer.scrollLeft += 1;
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [isHovered]);
-
-  const handleViewProduct = (sneaker: Sneaker) => {
-    onViewProduct?.(sneaker);
+  const handleShopAll = () => {
+    navigate('/full-catalog?category=Shoes');
   };
 
   return (
-    <div className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 text-center sm:text-left">
-        <h2 className="text-xl sm:text-[1.4rem] font-bold text-foreground">Sneaker Collection</h2>
-        <Button
-          onClick={() => navigate('/full-catalog')}
-          className="flex items-center justify-center gap-2 btn-hover-glow text-sm w-full sm:w-auto"
+    <div className="w-full">
+      {/* Header with title and Shop All button */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+            Sneaker Collection
+          </h2>
+          <p className="text-muted-foreground">
+            Discover our curated sneaker selection
+          </p>
+        </div>
+        <Button 
+          onClick={handleShopAll}
+          className="btn-hover-glow group"
+          variant="outline"
         >
           Shop All Sneakers
-          <ChevronRight className="w-4 h-4" />
+          <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          scrollBehavior: 'smooth',
-        }}
-      >
-        {sneakerCatalog.map((sneaker, index) => (
-          <div key={sneaker.id} className="flex-shrink-0 w-48 sm:w-56 md:w-64 snap-center">
-            <ProductCard
-              sneaker={sneaker}
+      {/* Carousel */}
+      <div className="relative">
+        {/* Navigation Arrows */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
+          onClick={handlePrevious}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm hover:bg-background/90 btn-hover-glow"
+          onClick={handleNext}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+
+        {/* Sneakers Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+          {sneakerCatalog.map((sneaker, index) => (
+            <ProductCard 
+              key={sneaker.id} 
+              sneaker={sneaker} 
               index={index}
-              onViewProduct={handleViewProduct}
+              onViewProduct={onViewProduct}
             />
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {/* Dots indicator for mobile */}
+        <div className="flex justify-center mt-4 space-x-2 sm:hidden">
+          {Array.from({ length: Math.ceil(sneakerCatalog.length / 2) }).map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === Math.floor(currentIndex / 2) ? 'bg-primary' : 'bg-muted'
+              }`}
+              onClick={() => setCurrentIndex(index * 2)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export default SneakerCarousel; 
+export default SneakerCarousel;
