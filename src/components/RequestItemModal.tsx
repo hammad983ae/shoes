@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,16 +121,8 @@ const RequestItemModal = ({ isOpen, onClose }: RequestItemModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle>
             Request New Item
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-6 w-6"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -166,7 +157,7 @@ const RequestItemModal = ({ isOpen, onClose }: RequestItemModalProps) => {
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent side="top" className="z-[100]">
+              <SelectContent side="top" className="z-[9999]">
                 {CATEGORIES.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
