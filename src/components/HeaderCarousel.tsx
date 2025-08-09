@@ -18,8 +18,7 @@ const HeaderCarousel = () => {
   const slides: Slide[] = [
     {
       id: 1,
-      title: "CRALLUX SELLS",
-      subtitle: "Premium sneakers and streetwear",
+      title: "",
       backgroundImage: "url('/lovable-uploads/4573f484-65d2-4b31-aff5-9e920868cbe3.png')",
       link: "shop"
     },
@@ -101,31 +100,19 @@ const HeaderCarousel = () => {
             }`}
             style={{
               background: slide.backgroundImage,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
             }}
           >
             <div className="absolute inset-0 bg-black/20" />
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 md:px-8 max-w-4xl mx-auto">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-                {slide.title}
-              </h2>
-              {slide.subtitle && (
-                <p className="text-base md:text-lg opacity-90 mb-6 max-w-2xl">
-                  {slide.subtitle}
-                </p>
-              )}
               <button
                 onClick={handleSlideClick}
                 className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
               >
                 {slide.id === 1 ? "Shop Now" : "Join Before Prices Go Up"}
               </button>
-              
-              {/* Trust badge for telegram slide */}
-              {slide.id === 2 && (
-                <div className="text-white/80 text-sm">
-                  Trusted by 1,000+ resellers
-                </div>
-              )}
             </div>
           </div>
         ))}
