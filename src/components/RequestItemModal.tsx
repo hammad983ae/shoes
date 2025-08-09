@@ -166,7 +166,7 @@ const RequestItemModal = ({ isOpen, onClose }: RequestItemModalProps) => {
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent side="top" className="z-[100]">
                 {CATEGORIES.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
