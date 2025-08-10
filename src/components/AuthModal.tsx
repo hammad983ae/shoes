@@ -195,7 +195,10 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
                   </a>
                 </Label>
               </div>
-            )}
+              )}
+            
+            {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+            
             <Button
               type="submit"
               className="w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 border-0"
