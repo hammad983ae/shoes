@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -101,18 +101,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
-        // Profile creation is now handled by database trigger
-
-        if (referralCode) {
-          // Show referral discount notification for referred users
+        // Only show success toast if sign up was successful
+        if (data.user && !data.user.email_confirmed_at) {
+          // User created but needs email confirmation
+          if (referralCode) {
+            toast({
+              title: "Welcome! 🎉", 
+              description: "Check your email for confirmation. You'll get 10% off your first order!",
+            });
+          } else {
+            toast({
+              title: "Check your email",
+              description: "We've sent you a confirmation link to complete your registration.",
+            });
+          }
+        } else if (data.user && data.user.email_confirmed_at) {
+          // User created and already confirmed (shouldn't happen in normal flow)
           toast({
-            title: "Welcome! 🎉",
-            description: "You'll get 10% off your first order thanks to your referral link!",
-          });
-        } else {
-          toast({
-            title: "Check your email",
-            description: "We've sent you a confirmation link.",
+            title: "Account created!",
+            description: "Welcome to the platform!",
           });
         }
       }

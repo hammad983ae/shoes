@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useReferralCode } from '@/hooks/useReferralCode';
 import { Checkbox } from '@/components/ui/checkbox';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
   open: boolean;
@@ -38,6 +40,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
   const { signUp, signIn, user } = useAuth();
   const { referralCode, clearReferralCode } = useReferralCode();
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) onOpenChange(false);
@@ -74,6 +77,42 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
+      });
+
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Reset email sent",
+          description: "Check your email for a password reset link.",
+        });
+        setError(null);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email');
+      toast({
+        title: "Error",
+        description: err.message || 'Failed to send reset email',
+        variant: "destructive",
+      });
+    }
+  };
 
   if (fullPage) {
     return (
@@ -221,7 +260,11 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
           </div>
           {!isSignUp && (
             <div className="mt-4 text-center">
-              <button className="text-sm text-white underline hover:text-yellow-200" type="button">
+              <button 
+                className="text-sm text-white underline hover:text-yellow-200" 
+                type="button"
+                onClick={handleForgotPassword}
+              >
                 Forgot your password?
               </button>
             </div>
@@ -399,7 +442,11 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
 
           {!isSignUp && (
             <div className="mt-4 text-center">
-              <button className="text-sm text-white underline hover:text-yellow-200" type="button">
+              <button 
+                className="text-sm text-white underline hover:text-yellow-200" 
+                type="button"
+                onClick={handleForgotPassword}
+              >
                 Forgot your password?
               </button>
             </div>

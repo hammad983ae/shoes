@@ -1114,12 +1114,16 @@ export type Database = {
           commission_rate: number
         }[]
       }
+      delete_user_account: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       demote_from_creator: {
         Args: { target_user_id: string }
         Returns: boolean
       }
       generate_referral_code: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { len?: number }
         Returns: string
       }
       get_current_user_role: {

@@ -44,7 +44,7 @@ interface UserCredits {
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -214,22 +214,30 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) return;
+    
     try {
-      // Sign out first
-      await signOut();
-      
-      // Note: In a real app, you'd want to call an edge function to properly delete all user data
+      // Call our edge function to delete all user data
+      const { error: deletionError } = await supabase.functions.invoke('delete-account', {
+        body: { user_id: user.id }
+      });
+
+      if (deletionError) {
+        throw deletionError;
+      }
+
       toast({
-        title: "Account Deletion",
-        description: "Account deletion process initiated. Please contact support to complete.",
+        title: "Account Deleted",
+        description: "Your account and all data have been permanently deleted.",
       });
       
+      // Navigate to home page
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting account:', error);
       toast({
         title: "Error",
-        description: "Failed to delete account.",
+        description: error.message || "Failed to delete account.",
         variant: "destructive",
       });
     }
@@ -246,16 +254,19 @@ const Settings = () => {
     }
 
     try {
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { error } = await supabase.auth.updateUser({
-        email: newEmail,
-        password: currentPassword
+        email: newEmail
+      }, {
+        emailRedirectTo: redirectUrl
       });
 
       if (error) throw error;
 
       toast({
         title: "Email Update Initiated",
-        description: "Please check your new email for confirmation.",
+        description: "Please check your new email address for a confirmation link.",
       });
       
       setIsChangeEmailOpen(false);
