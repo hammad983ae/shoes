@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -101,25 +101,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
       } else {
-        // Only show success toast if sign up was successful
-        if (data.user && !data.user.email_confirmed_at) {
-          // User created but needs email confirmation
-          if (referralCode) {
-            toast({
-              title: "Welcome! 🎉", 
-              description: "Check your email for confirmation. You'll get 10% off your first order!",
-            });
-          } else {
-            toast({
-              title: "Check your email",
-              description: "We've sent you a confirmation link to complete your registration.",
-            });
-          }
-        } else if (data.user && data.user.email_confirmed_at) {
-          // User created and already confirmed (shouldn't happen in normal flow)
+        // Show success toast when signup is successful (regardless of confirmation status)
+        if (referralCode) {
           toast({
-            title: "Account created!",
-            description: "Welcome to the platform!",
+            title: "Welcome! 🎉", 
+            description: "Check your email for confirmation. You'll get 10% off your first order!",
+          });
+        } else {
+          toast({
+            title: "Confirmation email sent",
+            description: "Check your email for a confirmation link to complete your registration.",
           });
         }
       }
