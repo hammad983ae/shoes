@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Instagram } from 'lucide-react';
+import { ShoppingBag, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CTAButtonsProps {
   onShopNow: () => void;
-  onViewInstagram: () => void;
+  onViewSocials: () => void;
 }
 
-const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
+const CTAButtons = ({ onShopNow, onViewSocials }: CTAButtonsProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [browsingCount, setBrowsingCount] = useState(37);
 
@@ -16,14 +17,29 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    // Update browsing count every 30 minutes (1800000 ms)
-    const updateBrowsingCount = () => {
-      const randomCount = Math.floor(Math.random() * (49 - 15 + 1)) + 15;
-      setBrowsingCount(randomCount);
-    };
+  // Fetch global browsing count from Supabase
+  const fetchBrowsingCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_metrics')
+        .select('value')
+        .eq('key', 'browsing_now')
+        .single();
+      
+      if (error) throw error;
+      setBrowsingCount(data?.value ?? 37);
+    } catch (error) {
+      console.error('Error fetching browsing count:', error);
+      // Fallback to current value
+    }
+  };
 
-    const interval = setInterval(updateBrowsingCount, 1800000); // 30 minutes
+  useEffect(() => {
+    // Initial fetch
+    fetchBrowsingCount();
+    
+    // Poll every 60 seconds
+    const interval = setInterval(fetchBrowsingCount, 60000);
     
     return () => clearInterval(interval);
   }, []);
@@ -64,13 +80,13 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
           </Button>
 
           <Button
-            onClick={onViewInstagram}
+            onClick={onViewSocials}
             variant="outline"
             className="text-lg px-8 py-4 rounded-2xl font-semibold flex items-center gap-3 w-full md:w-auto min-w-0 justify-center border-primary/30 text-primary hover:bg-primary/10 btn-hover-glow"
             size="lg"
           >
-            <Instagram className="w-5 h-5" />
-            View Instagram
+            <Phone className="w-5 h-5" />
+            View Socials
           </Button>
         </div>
         
@@ -80,10 +96,6 @@ const CTAButtons = ({ onShopNow, onViewInstagram }: CTAButtonsProps) => {
           {browsingCount} people are browsing now
         </div>
         
-        {/* Referral line */}
-        <div className="text-center text-white/80 text-sm max-w-2xl">
-          20% Off All Sneakers Until August 19th
-        </div>
       </div>
     </div>
   );

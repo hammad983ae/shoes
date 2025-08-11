@@ -217,21 +217,37 @@ const Settings = () => {
     if (!user) return;
     
     try {
-      // Call our edge function to delete all user data
-      const { error: deletionError } = await supabase.functions.invoke('delete-account', {
-        body: { user_id: user.id }
+      // Get current session
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      
+      if (!token) {
+        throw new Error('No valid session found');
+      }
+
+      // Call edge function with proper authorization
+      const response = await fetch(`https://uvczawicaqqiyutcqoyg.supabase.co/functions/v1/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ user_id: user.id })
       });
 
-      if (deletionError) {
-        throw deletionError;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete account');
       }
 
       toast({
         title: "Account Deleted",
         description: "Your account and all data have been permanently deleted.",
       });
-      
-      // Navigate to home page
+
+      // Sign out and redirect
+      await supabase.auth.signOut();
       navigate('/');
     } catch (error: any) {
       console.error('Error deleting account:', error);

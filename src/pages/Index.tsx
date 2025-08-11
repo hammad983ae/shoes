@@ -53,8 +53,8 @@ const Index = () => {
   };
 
 
-  const handleViewInstagram = () => {
-    window.open('https://instagram.com', '_blank');
+  const handleViewSocials = () => {
+    navigate('/socials');
   };
 
   return (
@@ -76,7 +76,7 @@ const Index = () => {
       {appState === 'cta' && (
         <CTAButtons 
           onShopNow={handleShopNow}
-          onViewInstagram={handleViewInstagram}
+          onViewSocials={handleViewSocials}
         />
       )}
 

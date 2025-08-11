@@ -789,6 +789,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_metrics: {
+        Row: {
+          key: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
       social_connections: {
         Row: {
           created_at: string
@@ -1150,6 +1168,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      nudge_browsing_now: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       promote_to_creator: {
         Args: { target_user_id: string }
