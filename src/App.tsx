@@ -54,7 +54,7 @@ const App = () => (
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/top-posts" element={<Feed />} />
                 <Route path="/credits" element={<GetFreeCredits />} />
-                <Route path="/contact-us" element={<Socials />} />
+                <Route path="/socials" element={<Socials />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/signin" element={<SignIn />} />

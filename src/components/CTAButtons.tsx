@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Phone } from 'lucide-react';
+import { ShoppingBag, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CTAButtonsProps {
@@ -85,7 +85,7 @@ const CTAButtons = ({ onShopNow, onViewSocials }: CTAButtonsProps) => {
             className="text-lg px-8 py-4 rounded-2xl font-semibold flex items-center gap-3 w-full md:w-auto min-w-0 justify-center border-primary/30 text-primary hover:bg-primary/10 btn-hover-glow"
             size="lg"
           >
-            <Phone className="w-5 h-5" />
+            <Smartphone className="w-5 h-5" />
             View Socials
           </Button>
         </div>

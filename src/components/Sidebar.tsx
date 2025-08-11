@@ -45,7 +45,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     { label: 'Catalog', href: '/catalog', icon: ShoppingBag },
     { label: 'Top Posts', href: '/feed', icon: TrendingUp },
     { label: 'Get Free Credits', href: '/credits', icon: Star },
-    { label: 'Socials', href: '/contact-us', icon: Smartphone },
+    { label: 'Socials', href: '/socials', icon: Smartphone },
   ];
 
   // Add conditional dashboard links
@@ -64,7 +64,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
   const currentPath = window.location.pathname;
   const filteredLinks = currentPath === '/feed' 
-    ? allLinks.filter(link => link.href !== '/contact-us')
+    ? allLinks.filter(link => link.href !== '/socials')
     : allLinks;
 
   const handleSignOut = async () => {

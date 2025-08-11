@@ -27,7 +27,7 @@ const HeaderCarousel = () => {
       title: "Join Our Exclusive Telegram – Unlock Wholesale Deals and Early Drops",
       subtitle: "Access member-only pricing and get notified before anyone else",
       backgroundImage: "linear-gradient(135deg, hsl(var(--brand-charcoal)) 0%, hsl(var(--brand-black)) 100%)",
-      link: "/contact-us"
+      link: "/socials"
     }
   ];
 

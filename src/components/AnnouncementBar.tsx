@@ -21,7 +21,7 @@ const AnnouncementBar = () => {
     {
       text: "JOIN OUR TELEGRAM TO GET THE BEST DEALS ON BULK",
       icon: MessageCircle,
-      onClick: () => navigate('/contact-us')
+      onClick: () => navigate('/socials')
     }
   ];
 
