@@ -24,9 +24,9 @@ const HeaderCarousel = () => {
     },
     {
       id: 2,
-      title: "Join Our Exclusive Telegram – Unlock Wholesale Deals and Early Drops",
-      subtitle: "Access member-only pricing and get notified before anyone else",
-      backgroundImage: "linear-gradient(135deg, hsl(var(--brand-charcoal)) 0%, hsl(var(--brand-black)) 100%)",
+      title: "",
+      subtitle: "",
+      backgroundImage: "url('/lovable-uploads/ad6c6d80-e7d0-43f4-9393-b6bfb668d517.png')",
       link: "/socials"
     }
   ];
@@ -105,7 +105,7 @@ const HeaderCarousel = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {slide.id === 1 ? null : <div className="absolute inset-0 bg-black/20" />}
+            <div className="absolute inset-0 bg-white/10" />
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 md:px-8 max-w-4xl mx-auto">
               {slide.title && (
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
@@ -120,14 +120,14 @@ const HeaderCarousel = () => {
               <button
                 onClick={handleSlideClick}
                 className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
-              >
-                {slide.id === 1 ? "Shop Now" : "Join Before Prices Go Up"}
-              </button>
+            >
+              {slide.id === 1 ? "Shop Now" : "Join for Exclusive Access"}
+            </button>
               
               {/* Trust badge for telegram slide */}
               {slide.id === 2 && (
                 <div className="text-white/80 text-sm">
-                  Trusted by 1,000+ resellers
+                  Trusted by 1,000+ members
                 </div>
               )}
             </div>
