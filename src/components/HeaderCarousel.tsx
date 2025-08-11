@@ -85,7 +85,7 @@ const HeaderCarousel = () => {
   };
 
   return (
-    <div className="relative w-screen h-96 overflow-hidden ml-0 md:-ml-16">
+    <div className="relative w-screen h-[480px] overflow-hidden ml-0 md:-ml-16">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -105,7 +105,7 @@ const HeaderCarousel = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            <div className="absolute inset-0 bg-white/10" />
+            <div className="absolute inset-0 bg-white/0" />
             <div className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
               slide.id === 1 ? 'items-center justify-center text-center' : 'items-center justify-end pb-20 text-center'
             }`}>
