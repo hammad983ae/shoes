@@ -110,7 +110,7 @@ const HeaderCarousel = () => {
                 className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
                   slide.id === 1
                     ? 'items-center justify-center text-center'
-                    : 'items-center justify-end pb-20 text-center' // lower on slide 2
+                    : 'items-center justify-end pb-32 text-center' // lower on slide 2
                 }`}
               >
                 {slide.title && (
