@@ -54,7 +54,12 @@ const Index = () => {
 
 
   const handleViewSocials = () => {
-    navigate('/socials');
+    // Same animation as Shop Now but go to socials
+    setShowParticles(true);
+    setAppState('explosion');
+    setTimeout(() => {
+      navigate('/socials');
+    }, 1200); // Match the explosion animation duration
   };
 
   return (
