@@ -6,7 +6,7 @@ interface Slide {
   id: number;
   title: string;
   subtitle?: string;
-  backgroundImage: string;
+  backgroundImage: string; // ex: "url('/path.png')"
   link: string;
 }
 
@@ -14,6 +14,9 @@ const HeaderCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
+
+  // Tweak this if you need a hair more/less zoom specifically on slide 2
+  const SLIDE2_SCALE = 0.9; // 0.88–0.95 usually does it
 
   const slides: Slide[] = [
     {
@@ -34,24 +37,15 @@ const HeaderCarousel = () => {
   // Auto-advance slides
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isTransitioning) {
-        goToNext();
-      }
+      if (!isTransitioning) goToNext();
     }, 5000);
-
     return () => clearInterval(interval);
   }, [isTransitioning, currentSlide]);
 
   const goToNext = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    
-    // Seamless infinite scroll - no visual reset
-    setCurrentSlide((prev) => {
-      const nextSlide = (prev + 1) % slides.length;
-      return nextSlide;
-    });
-    
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
@@ -75,75 +69,84 @@ const HeaderCarousel = () => {
 
   const handleSlideClick = () => {
     const currentLink = slides[currentSlide].link;
-    
-    if (currentLink === "shop") {
-      navigate('/full-catalog');
-    } else {
-      // Direct navigation for other links
-      navigate(currentLink);
-    }
+    if (currentLink === "shop") navigate('/full-catalog');
+    else navigate(currentLink);
   };
 
   return (
     <div className="relative w-screen h-[480px] overflow-hidden ml-0 md:-ml-16">
       {/* Slides */}
       <div className="relative w-full h-full">
-        {slides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-all duration-500 ease-in-out ${
-              index === currentSlide
-                ? 'opacity-100 translate-x-0'
-                : index < currentSlide
-                ? 'opacity-0 -translate-x-full'
-                : 'opacity-0 translate-x-full'
-            }`}
-            style={{
-              background: slide.backgroundImage,
-              backgroundSize: slide.id === 1 ? 'cover' : 'cover',
-              backgroundPosition: slide.id === 1 ? 'center' : 'center center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          >
-            <div className="absolute inset-0 bg-white/0" />
-            <div className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
-              slide.id === 1 ? 'items-center justify-center text-center' : 'items-center justify-end pb-20 text-center'
-            }`}>
-              {slide.title && (
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-                  {slide.title}
-                </h2>
-              )}
-              {slide.subtitle && (
-                <p className="text-base md:text-lg opacity-90 mb-6 max-w-2xl">
-                  {slide.subtitle}
-                </p>
-              )}
-              
-              {/* Show button and trust badge for all slides, but position them differently for slide 2 */}
-              {slide.id === 1 ? (
-                <button
-                  onClick={handleSlideClick}
-                  className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                >
-                  Shop Now
-                </button>
-              ) : (
-                <>
+        {slides.map((slide, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                isActive
+                  ? 'opacity-100 translate-x-0'
+                  : index < currentSlide
+                  ? 'opacity-0 -translate-x-full'
+                  : 'opacity-0 translate-x-full'
+              }`}
+            >
+              {/* Background image layer ONLY (no overlays, no bg colors) */}
+              <div
+                className="absolute inset-0 -z-10 will-change-transform"
+                style={{
+                  backgroundImage: slide.backgroundImage,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center center',
+                  backgroundRepeat: 'no-repeat',
+                  // Scale slide 2 slightly so it frames like slide 1 without moving content
+                  transform: slide.id === 2 ? `scale(${SLIDE2_SCALE})` : 'scale(1)',
+                  transformOrigin: 'center center'
+                }}
+              />
+
+              {/* Content (unchanged layout; no background overlays) */}
+              <div
+                className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
+                  slide.id === 1
+                    ? 'items-center justify-center text-center'
+                    : 'items-center justify-end pb-20 text-center' // lower position for slide 2
+                }`}
+              >
+                {slide.title && (
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+                    {slide.title}
+                  </h2>
+                )}
+                {slide.subtitle && (
+                  <p className="text-base md:text-lg opacity-90 mb-6 max-w-2xl">
+                    {slide.subtitle}
+                  </p>
+                )}
+
+                {slide.id === 1 ? (
                   <button
                     onClick={handleSlideClick}
-                    className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
+                    className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
                   >
-                    Join for Exclusive Access
+                    Shop Now
                   </button>
-                  <div className="text-white/80 text-sm">
-                    Trusted by 1,000+ members
-                  </div>
-                </>
-              )}
+                ) : (
+                  <>
+                    <button
+                      onClick={handleSlideClick}
+                      className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
+                    >
+                      Join for Exclusive Access
+                    </button>
+                    <div className="text-white/80 text-sm">
+                      Trusted by 1,000+ members
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Dots and Arrows Container */}
@@ -161,26 +164,22 @@ const HeaderCarousel = () => {
         {/* Dots */}
         <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
-           <button
-  key={index}
-  onClick={() => goToSlide(index)}
-  className={`rounded-full transition-colors duration-200 ${
-  index === currentSlide
-    ? 'bg-white'
-    : 'bg-white/50 hover:bg-white/75'
-}`}
-style={{
-  width: '12px',
-  height: '12px',
-  minWidth: '12px',
-  minHeight: '12px',
-  maxWidth: '12px',
-  maxHeight: '12px',
-}}
-  aria-label={`Go to slide ${index + 1}`}
-/>
-
-
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`rounded-full transition-colors duration-200 ${
+                index === currentSlide ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+              }`}
+              style={{
+                width: '12px',
+                height: '12px',
+                minWidth: '12px',
+                minHeight: '12px',
+                maxWidth: '12px',
+                maxHeight: '12px',
+              }}
+              aria-label={`Go to slide ${index + 1}`}
+            />
           ))}
         </div>
 
@@ -198,4 +197,4 @@ style={{
   );
 };
 
-export default HeaderCarousel; 
+export default HeaderCarousel;
