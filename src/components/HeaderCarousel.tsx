@@ -6,8 +6,10 @@ interface Slide {
   id: number;
   title: string;
   subtitle?: string;
-  backgroundImage: string; // ex: "url('/path.png')"
+  img: string;           // raw src, not css url()
   link: string;
+  brightness?: number;   // 1 = normal
+  objectPosition?: string; // e.g., 'center 52%'
 }
 
 const HeaderCarousel = () => {
@@ -15,26 +17,27 @@ const HeaderCarousel = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
-  // Tweak this if you need a hair more/less zoom specifically on slide 2
-  const SLIDE2_SCALE = 0.9; // 0.88–0.95 usually does it
-
+  // Tweak these if needed
   const slides: Slide[] = [
     {
       id: 1,
-      title: "",
-      backgroundImage: "url('/lovable-uploads/527a6055-20eb-4ac2-b9bb-b1038a398229.png')",
-      link: "shop"
+      title: '',
+      img: '/lovable-uploads/527a6055-20eb-4ac2-b9bb-b1038a398229.png',
+      link: 'shop',
+      brightness: 1.12,           // lift Slide 1 so it’s not darker
+      objectPosition: 'center',   // centered framing
     },
     {
       id: 2,
-      title: "",
-      subtitle: "",
-      backgroundImage: "url('/lovable-uploads/ad6c6d80-e7d0-43f4-9393-b6bfb668d517.png')",
-      link: "/socials"
+      title: '',
+      subtitle: '',
+      img: '/lovable-uploads/ad6c6d80-e7d0-43f4-9393-b6bfb668d517.png',
+      link: '/socials',
+      brightness: 1,              // leave as-is
+      objectPosition: 'center 52%'// tiny downward bias to avoid top crop
     }
   ];
 
-  // Auto-advance slides
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isTransitioning) goToNext();
@@ -68,9 +71,9 @@ const HeaderCarousel = () => {
   };
 
   const handleSlideClick = () => {
-    const currentLink = slides[currentSlide].link;
-    if (currentLink === "shop") navigate('/full-catalog');
-    else navigate(currentLink);
+    const link = slides[currentSlide].link;
+    if (link === 'shop') navigate('/full-catalog');
+    else navigate(link);
   };
 
   return (
@@ -90,26 +93,24 @@ const HeaderCarousel = () => {
                   : 'opacity-0 translate-x-full'
               }`}
             >
-              {/* Background image layer ONLY (no overlays, no bg colors) */}
-              <div
-                className="absolute inset-0 -z-10 will-change-transform"
+              {/* Image layer: edge-to-edge, centered, no overlays */}
+              <img
+                src={slide.img}
+                alt=""
+                className="absolute inset-0 -z-10 w-full h-full object-cover"
                 style={{
-                  backgroundImage: slide.backgroundImage,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center center',
-                  backgroundRepeat: 'no-repeat',
-                  // Scale slide 2 slightly so it frames like slide 1 without moving content
-                  transform: slide.id === 2 ? `scale(${SLIDE2_SCALE})` : 'scale(1)',
-                  transformOrigin: 'center center'
+                  objectPosition: slide.objectPosition ?? 'center',
+                  filter: `brightness(${slide.brightness ?? 1})`,
                 }}
+                draggable={false}
               />
 
-              {/* Content (unchanged layout; no background overlays) */}
+              {/* Content (unchanged layout) */}
               <div
                 className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
                   slide.id === 1
                     ? 'items-center justify-center text-center'
-                    : 'items-center justify-end pb-20 text-center' // lower position for slide 2
+                    : 'items-center justify-end pb-20 text-center' // lower on slide 2
                 }`}
               >
                 {slide.title && (
@@ -149,9 +150,8 @@ const HeaderCarousel = () => {
         })}
       </div>
 
-      {/* Dots and Arrows Container */}
+      {/* Dots + Arrows */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20">
-        {/* Left Arrow */}
         <button
           onClick={goToPrevious}
           className="text-white hover:text-white/75 transition-all duration-200 flex items-center justify-center"
@@ -161,7 +161,6 @@ const HeaderCarousel = () => {
           <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
         </button>
 
-        {/* Dots */}
         <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
             <button
@@ -170,20 +169,12 @@ const HeaderCarousel = () => {
               className={`rounded-full transition-colors duration-200 ${
                 index === currentSlide ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
               }`}
-              style={{
-                width: '12px',
-                height: '12px',
-                minWidth: '12px',
-                minHeight: '12px',
-                maxWidth: '12px',
-                maxHeight: '12px',
-              }}
+              style={{ width: 12, height: 12, minWidth: 12, minHeight: 12 }}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Right Arrow */}
         <button
           onClick={goToNext}
           className="text-white hover:text-white/75 transition-all duration-200 flex items-center justify-center"
