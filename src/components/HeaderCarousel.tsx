@@ -100,13 +100,15 @@ const HeaderCarousel = () => {
             }`}
             style={{
               background: slide.backgroundImage,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: slide.id === 1 ? 'cover' : 'cover',
+              backgroundPosition: slide.id === 1 ? 'center' : 'center center',
               backgroundRepeat: 'no-repeat'
             }}
           >
             <div className="absolute inset-0 bg-white/10" />
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 md:px-8 max-w-4xl mx-auto">
+            <div className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
+              slide.id === 1 ? 'items-center justify-center text-center' : 'items-center justify-end pb-20 text-center'
+            }`}>
               {slide.title && (
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
                   {slide.title}
