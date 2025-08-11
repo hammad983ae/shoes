@@ -117,18 +117,27 @@ const HeaderCarousel = () => {
                   {slide.subtitle}
                 </p>
               )}
-              <button
-                onClick={handleSlideClick}
-                className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
-            >
-              {slide.id === 1 ? "Shop Now" : "Join for Exclusive Access"}
-            </button>
               
-              {/* Trust badge for telegram slide */}
-              {slide.id === 2 && (
-                <div className="text-white/80 text-sm">
-                  Trusted by 1,000+ members
-                </div>
+              {/* Show button and trust badge for all slides, but position them differently for slide 2 */}
+              {slide.id === 1 ? (
+                <button
+                  onClick={handleSlideClick}
+                  className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Shop Now
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSlideClick}
+                    className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
+                  >
+                    Join for Exclusive Access
+                  </button>
+                  <div className="text-white/80 text-sm">
+                    Trusted by 1,000+ members
+                  </div>
+                </>
               )}
             </div>
           </div>
