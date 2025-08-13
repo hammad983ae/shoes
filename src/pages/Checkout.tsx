@@ -1,24 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { loadChiron } from '@/utils/loadChiron';
 
-// Dynamically load Chiron script if not present
-function useChironScript() {
-  useEffect(() => {
-    if (!(window as any).ChironPayment) {
-      const script = document.createElement('script');
-      script.src = 'https://payment.chironapp.io/chiron-checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-}
 
 export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCart();
@@ -35,7 +24,7 @@ export default function Checkout() {
   const tax = discountedSubtotal * 0.08;
   const total = discountedSubtotal + tax;
 
-  useChironScript();
+  
 
   // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
@@ -100,10 +89,8 @@ export default function Checkout() {
         throw new Error(error?.message || 'Failed to generate payment token');
       }
 
-      // Check if ChironPayment is available
-      if (!(window as any).ChironPayment) {
-        throw new Error('Payment processor not loaded. Please refresh and try again.');
-      }
+      // Load Chiron payment processor
+      await loadChiron();
 
       // Define callback functions
       const callback = {
