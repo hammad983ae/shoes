@@ -1,81 +1,87 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
 
-console.log('🚀 create-payment-token function starting...');
-
-serve(async (req) => {
-  console.log('📥 Request received:', req.method, req.url);
-  
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log('✅ Returning CORS headers for preflight');
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders() });
   }
-
-  console.log('🔄 Processing payment token request...');
 
   try {
-    console.log('📄 Reading request body...');
-    const requestBody = await req.text();
-    console.log('📄 Raw request body:', requestBody);
-    
-    const { amount, items } = JSON.parse(requestBody);
-    console.log('💰 Create payment token request:', { amount, itemCount: items?.length || 0 });
-
-    if (!amount || amount <= 0) {
-      console.error('❌ Invalid amount provided:', amount);
-      throw new Error('Invalid amount - must be greater than 0');
+    const contentType = req.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      return json({ error: "Content-Type must be application/json" }, 415);
     }
 
-    // MOCK RESPONSE since Chiron API doesn't exist
-    console.log('🎭 Generating mock payment token since Chiron API is not available');
-    
-    const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    console.log('✅ Mock payment token generated successfully:', {
-      tokenId: mockToken,
-      amount: amount,
-      itemCount: items?.length || 0
+    const body = await req.json().catch(() => ({}));
+    const rawAmount = body?.amount;
+
+    if (rawAmount === undefined || rawAmount === null || isNaN(Number(rawAmount))) {
+      return json({ error: "Invalid or missing amount" }, 400);
+    }
+
+    // Match guide: send amount as a string with 2 decimals (e.g. "183.60")
+    const amount = Number(rawAmount);
+    const amountStr = amount.toFixed(2);
+
+    const TOKEN_URL = Deno.env.get("CHIRON_TOKEN_URL");
+    const API_KEY = Deno.env.get("CHIRON_API_KEY");
+
+    if (!TOKEN_URL || !API_KEY) {
+      return json({ error: "Server misconfigured: missing CHIRON_TOKEN_URL or CHIRON_API_KEY" }, 500);
+    }
+
+    // Call EXACT Chiron endpoint from the guide (no fallbacks, no /v1 guessing)
+    const upstream = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({ amount: amountStr }),
     });
 
-    const successResponse = { 
-      token: mockToken,
-      amount: amount,
-      mock: true,
-      message: 'This is a mock token - Chiron API not available'
-    };
+    const text = await upstream.text();
+    // Helpful for debugging status codes while keeping secrets safe:
+    console.log("[chiron token] status=", upstream.status, "body=", text.slice(0, 500));
 
-    console.log('📤 Returning mock success response:', successResponse);
+    if (!upstream.ok) {
+      return json(
+        { error: "Token request failed", status: upstream.status, body: safeJson(text) },
+        upstream.status === 404 ? 502 : 502
+      );
+    }
 
-    return new Response(
-      JSON.stringify(successResponse),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    const data = safeParse(text);
+    if (!data || typeof data.id !== "string" || data.id.length < 6) {
+      return json({ error: "Malformed token response", body: data ?? text }, 502);
+    }
 
-  } catch (error) {
-    console.error('💥 Error in create-payment-token:', error);
-    console.error('💥 Error stack:', error.stack);
-    
-    const errorResponse = { 
-      error: error.message || 'Failed to generate payment token',
-      details: error.stack || 'No stack trace available'
-    };
-    
-    console.log('📤 Returning error response:', errorResponse);
-    
-    return new Response(
-      JSON.stringify(errorResponse),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    return json({ token: data.id, amount: amountStr });
+  } catch (err) {
+    console.error("create-payment-token error:", err);
+    return json({ error: "Server error" }, 500);
   }
 });
+
+function json(payload: unknown, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders() },
+  });
+}
+
+function safeParse(s: string) {
+  try { return JSON.parse(s); } catch { return null; }
+}
+function safeJson(s: string) {
+  const p = safeParse(s);
+  return p ?? s;
+}

@@ -92,8 +92,7 @@ export default function Checkout() {
       // Generate payment token from backend
       const { data: tokenData, error } = await supabase.functions.invoke('create-payment-token', {
         body: {
-          amount: total,
-          items: items
+          amount: total.toFixed(2)
         }
       });
 
@@ -132,7 +131,7 @@ export default function Checkout() {
       // Process payment using ChironPayment.pay()
       (window as any).ChironPayment.pay(
         {
-          ssl_amount: total.toFixed(2),
+          ssl_amount: tokenData.amount.toString(),
           ssl_transaction_type: 'ccsale',
           ssl_txn_auth_token: tokenData.token,
           ssl_exp_date: expiry,
@@ -140,8 +139,8 @@ export default function Checkout() {
           ssl_card_number: cardNumber,
           ssl_get_token: 'Y',
           ssl_add_token: 'Y',
-          ssl_first_name: name.split(' ')[0] || name,
-          ssl_last_name: name.split(' ').slice(1).join(' ') || '',
+          ssl_first_name: name.split(' ')[0] || '',
+          ssl_last_name: name.split(' ')[1] || '',
           ssl_avs_zip: zip,
           ssl_city: city,
           ssl_state: state,
