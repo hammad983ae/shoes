@@ -1,28 +1,37 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+console.log('🚀 create-payment-token function starting...');
+
 serve(async (req) => {
+  console.log('📥 Request received:', req.method, req.url);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('✅ Returning CORS headers for preflight');
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { amount, items } = await req.json();
+  console.log('🔄 Processing payment token request...');
 
-    console.log('Create payment token request:', { amount, itemCount: items?.length || 0 });
+  try {
+    console.log('📄 Reading request body...');
+    const requestBody = await req.text();
+    console.log('📄 Raw request body:', requestBody);
+    
+    const { amount, items } = JSON.parse(requestBody);
+    console.log('💰 Create payment token request:', { amount, itemCount: items?.length || 0 });
 
     if (!amount || amount <= 0) {
-      console.error('Invalid amount provided:', amount);
-      throw new Error('Invalid amount');
+      console.error('❌ Invalid amount provided:', amount);
+      throw new Error('Invalid amount - must be greater than 0');
     }
 
-    console.log('Calling Chiron API with amount:', amount);
+    console.log('🌐 Calling Chiron API with amount:', amount);
 
     // Call Chiron API to generate payment token
     const chironResponse = await fetch('https://api.chironapp.io/api/transactions/token/generate', {
@@ -36,31 +45,34 @@ serve(async (req) => {
       })
     });
 
-    console.log('Chiron API response status:', chironResponse.status);
+    console.log('📡 Chiron API response status:', chironResponse.status, chironResponse.statusText);
 
     if (!chironResponse.ok) {
       const errorText = await chironResponse.text();
-      console.error('Chiron API error response:', {
+      console.error('❌ Chiron API error response:', {
         status: chironResponse.status,
         statusText: chironResponse.statusText,
         errorText: errorText
       });
-      throw new Error(`Failed to generate payment token: ${chironResponse.status} - ${errorText}`);
+      throw new Error(`Chiron API failed: ${chironResponse.status} - ${errorText}`);
     }
 
     const chironData = await chironResponse.json();
-
-    console.log('Payment token generated successfully:', {
+    console.log('✅ Payment token generated successfully:', {
       tokenId: chironData.id,
       amount: amount,
       itemCount: items?.length || 0
     });
 
+    const successResponse = { 
+      token: chironData.id,
+      amount: amount
+    };
+
+    console.log('📤 Returning success response:', successResponse);
+
     return new Response(
-      JSON.stringify({ 
-        token: chironData.id,
-        amount: amount
-      }),
+      JSON.stringify(successResponse),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -68,11 +80,18 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in create-payment-token:', error);
+    console.error('💥 Error in create-payment-token:', error);
+    console.error('💥 Error stack:', error.stack);
+    
+    const errorResponse = { 
+      error: error.message || 'Failed to generate payment token',
+      details: error.stack || 'No stack trace available'
+    };
+    
+    console.log('📤 Returning error response:', errorResponse);
+    
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to generate payment token' 
-      }),
+      JSON.stringify(errorResponse),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
