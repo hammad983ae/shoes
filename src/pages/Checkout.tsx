@@ -89,8 +89,6 @@ export default function Checkout() {
         throw new Error(error?.message || 'Failed to generate payment token');
       }
 
-      // Load Chiron payment processor
-      await loadChiron();
 
       // Define callback functions
       const callback = {
