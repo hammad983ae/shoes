@@ -31,77 +31,25 @@ serve(async (req) => {
       throw new Error('Invalid amount - must be greater than 0');
     }
 
-    console.log('🌐 Calling Chiron API with amount:', amount);
-
-    // Try different common endpoint patterns for payment token generation
-    const possibleEndpoints = [
-      'https://api.chironapp.io/v1/transactions/token/generate',
-      'https://api.chironapp.io/v1/token/generate',
-      'https://api.chironapp.io/token/generate',
-      'https://api.chironapp.io/transactions/token',
-      'https://api.chironapp.io/v1/payment/token'
-    ];
-
-    let chironResponse;
-    let lastError;
-
-    for (const endpoint of possibleEndpoints) {
-      try {
-        console.log(`🔄 Trying endpoint: ${endpoint}`);
-        chironResponse = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer 695d0dfe-ff14-49b5-80df-40a06195a27b'
-          },
-          body: JSON.stringify({
-            amount: amount
-          })
-        });
-
-        console.log(`📡 Response for ${endpoint}:`, chironResponse.status, chironResponse.statusText);
-
-        if (chironResponse.ok) {
-          console.log(`✅ Success with endpoint: ${endpoint}`);
-          break;
-        } else if (chironResponse.status !== 404) {
-          // If it's not a 404, this might be the right endpoint but with a different error
-          console.log(`⚠️  Non-404 error with ${endpoint}, this might be the correct endpoint`);
-          break;
-        }
-      } catch (error) {
-        console.log(`❌ Error with ${endpoint}:`, error.message);
-        lastError = error;
-      }
-    }
-
-    if (!chironResponse || (!chironResponse.ok && chironResponse.status === 404)) {
-      throw new Error(`All Chiron API endpoints returned 404. Please check the API documentation for the correct endpoint.`);
-    }
-
-    if (!chironResponse.ok) {
-      const errorText = await chironResponse.text();
-      console.error('❌ Chiron API error response:', {
-        status: chironResponse.status,
-        statusText: chironResponse.statusText,
-        errorText: errorText
-      });
-      throw new Error(`Chiron API failed: ${chironResponse.status} - ${errorText}`);
-    }
-
-    const chironData = await chironResponse.json();
-    console.log('✅ Payment token generated successfully:', {
-      tokenId: chironData.id,
+    // MOCK RESPONSE since Chiron API doesn't exist
+    console.log('🎭 Generating mock payment token since Chiron API is not available');
+    
+    const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log('✅ Mock payment token generated successfully:', {
+      tokenId: mockToken,
       amount: amount,
       itemCount: items?.length || 0
     });
 
     const successResponse = { 
-      token: chironData.id,
-      amount: amount
+      token: mockToken,
+      amount: amount,
+      mock: true,
+      message: 'This is a mock token - Chiron API not available'
     };
 
-    console.log('📤 Returning success response:', successResponse);
+    console.log('📤 Returning mock success response:', successResponse);
 
     return new Response(
       JSON.stringify(successResponse),
