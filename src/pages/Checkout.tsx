@@ -6,7 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { loadChiron } from '@/utils/loadChiron';
+
 
 
 export default function Checkout() {
