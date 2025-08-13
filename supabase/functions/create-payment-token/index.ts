@@ -15,9 +15,14 @@ serve(async (req) => {
   try {
     const { amount, items } = await req.json();
 
+    console.log('Create payment token request:', { amount, itemCount: items?.length || 0 });
+
     if (!amount || amount <= 0) {
+      console.error('Invalid amount provided:', amount);
       throw new Error('Invalid amount');
     }
+
+    console.log('Calling Chiron API with amount:', amount);
 
     // Call Chiron API to generate payment token
     const chironResponse = await fetch('https://api.chironapp.io/api/transactions/token/generate', {
@@ -31,10 +36,16 @@ serve(async (req) => {
       })
     });
 
+    console.log('Chiron API response status:', chironResponse.status);
+
     if (!chironResponse.ok) {
       const errorText = await chironResponse.text();
-      console.error('Chiron API error:', errorText);
-      throw new Error(`Failed to generate payment token: ${chironResponse.status}`);
+      console.error('Chiron API error response:', {
+        status: chironResponse.status,
+        statusText: chironResponse.statusText,
+        errorText: errorText
+      });
+      throw new Error(`Failed to generate payment token: ${chironResponse.status} - ${errorText}`);
     }
 
     const chironData = await chironResponse.json();
