@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Dynamically load Chiron script if not present
 function useChironScript() {
@@ -43,21 +44,115 @@ export default function Checkout() {
     setPaymentSuccess('');
     setSubmitting(true);
     
-    try {
-      // Mock payment processing for now
+    if (!paymentFormRef.current) {
+      setPaymentError('Form reference not found');
+      setSubmitting(false);
+      return;
+    }
 
-      // Mock Chiron payment for now - replace with actual implementation
-      setTimeout(() => {
-        setPaymentSuccess('Payment succeeded!');
-        setSubmitting(false);
-        clearCart();
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
-      }, 2000);
+    const form = paymentFormRef.current;
+    const formData = new FormData(form);
+    
+    // Get form values
+    const name = formData.get('card-name') as string;
+    const cardNumber = (formData.get('card-number') as string)?.replace(/\s+/g, '');
+    const expiry = (formData.get('expiry') as string)?.replace(/[\/\s]/g, '');
+    const cvc = formData.get('cvc') as string;
+    const address = formData.get('address') as string;
+    const city = formData.get('city') as string;
+    const state = formData.get('state') as string;
+    const zip = formData.get('zip') as string;
+    
+    // Validate form
+    if (!name || !cardNumber || !expiry || !cvc || !address || !city || !state || !zip) {
+      setPaymentError('Please fill in all required fields');
+      setSubmitting(false);
+      return;
+    }
+
+    if (cardNumber.length < 13 || cardNumber.length > 19) {
+      setPaymentError('Please enter a valid card number');
+      setSubmitting(false);
+      return;
+    }
+
+    if (expiry.length !== 4) {
+      setPaymentError('Please enter a valid expiration date (MM/YY)');
+      setSubmitting(false);
+      return;
+    }
+
+    if (cvc.length < 3 || cvc.length > 4) {
+      setPaymentError('Please enter a valid CVC code');
+      setSubmitting(false);
+      return;
+    }
+    
+    try {
+      // Generate payment token from backend
+      const { data: tokenData, error } = await supabase.functions.invoke('create-payment-token', {
+        body: {
+          amount: total,
+          items: items
+        }
+      });
+
+      if (error || !tokenData?.token) {
+        throw new Error(error?.message || 'Failed to generate payment token');
+      }
+
+      // Check if ChironPayment is available
+      if (!(window as any).ChironPayment) {
+        throw new Error('Payment processor not loaded. Please refresh and try again.');
+      }
+
+      // Define callback functions
+      const callback = {
+        onError: (error: any) => {
+          console.error('Chiron payment error:', error);
+          setPaymentError(error.ssl_result_message || 'An error occurred during payment processing');
+          setSubmitting(false);
+        },
+        onDeclined: (error: any) => {
+          console.error('Payment declined:', error);
+          setPaymentError(error.errorMessage || 'Payment was declined. Please check your card details and try again.');
+          setSubmitting(false);
+        },
+        onApproval: (response: any) => {
+          console.log('Payment approved:', response);
+          setPaymentSuccess('Payment succeeded!');
+          setSubmitting(false);
+          clearCart();
+          setTimeout(() => {
+            navigate('/');
+          }, 2000);
+        }
+      };
+
+      // Process payment using ChironPayment.pay()
+      (window as any).ChironPayment.pay(
+        {
+          ssl_amount: total.toFixed(2),
+          ssl_transaction_type: 'ccsale',
+          ssl_txn_auth_token: tokenData.token,
+          ssl_exp_date: expiry,
+          ssl_cvv2cvc2: cvc,
+          ssl_card_number: cardNumber,
+          ssl_get_token: 'Y',
+          ssl_add_token: 'Y',
+          ssl_first_name: name.split(' ')[0] || name,
+          ssl_last_name: name.split(' ').slice(1).join(' ') || '',
+          ssl_avs_zip: zip,
+          ssl_city: city,
+          ssl_state: state,
+          ssl_avs_address: address,
+        },
+        callback
+      );
       
     } catch (error: any) {
-      setPaymentError(error.message || 'Failed to process payment.');
+      console.error('Payment initialization error:', error);
+      setPaymentError(error.message || 'Failed to process payment');
       setSubmitting(false);
     }
   };
@@ -147,7 +242,7 @@ export default function Checkout() {
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                   <Input
-                    id="email"
+                    name="email"
                     type="email"
                     placeholder="Email"
                     required
@@ -157,23 +252,54 @@ export default function Checkout() {
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
                   <div className="space-y-3">
-                    <Input id="address" placeholder="Address" required />
+                    <Input name="address" placeholder="Address" required />
                     <div className="grid grid-cols-2 gap-3">
-                      <Input id="city" placeholder="City" required />
-                      <Input id="state" placeholder="State" required />
+                      <Input name="city" placeholder="City" required />
+                      <Input name="state" placeholder="State" required />
                     </div>
-                    <Input id="zip" placeholder="Postal code" required />
+                    <Input name="zip" placeholder="Postal code" required />
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Payment</h3>
                   <div className="space-y-3">
-                    <Input id="card-number" placeholder="Card number" required />
+                    <Input 
+                      name="card-number" 
+                      placeholder="Card number" 
+                      maxLength={19}
+                      onChange={(e) => {
+                        // Format card number with spaces
+                        let value = e.target.value.replace(/\s+/g, '');
+                        if (value.length > 0) {
+                          value = value.match(new RegExp('.{1,4}', 'g'))?.join(' ') || value;
+                        }
+                        e.target.value = value;
+                      }}
+                      required 
+                    />
                     <div className="grid grid-cols-3 gap-3">
-                      <Input id="expiry" placeholder="MM / YY" required />
-                      <Input id="cvc" placeholder="Security code" required />
-                      <Input id="card-name" placeholder="Name on card" required />
+                      <Input 
+                        name="expiry" 
+                        placeholder="MM / YY" 
+                        maxLength={5}
+                        onChange={(e) => {
+                          // Format expiry date
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.length > 2) {
+                            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                          }
+                          e.target.value = value;
+                        }}
+                        required 
+                      />
+                      <Input 
+                        name="cvc" 
+                        placeholder="Security code" 
+                        maxLength={4}
+                        required 
+                      />
+                      <Input name="card-name" placeholder="Name on card" required />
                     </div>
                   </div>
                 </div>
