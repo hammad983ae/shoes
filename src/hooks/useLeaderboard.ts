@@ -34,7 +34,7 @@ export const useLeaderboard = () => {
     try {
       setLeaderboardData(prev => ({ ...prev, loading: true, error: null }));
 
-      // Fetch top profiles
+      // Fetch top profiles - only select public fields for security
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, referrals_count')

@@ -118,7 +118,7 @@ const TopPosts = () => {
     // Get unique user IDs
     const userIds = [...new Set(postsData.map(post => post.user_id))];
     
-    // Fetch profiles for these users
+    // Fetch profiles for these users - only select public fields for security
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, display_name, avatar_url')
@@ -181,6 +181,7 @@ const TopPosts = () => {
   }, [user]);
 
   const searchUsers = useCallback(async () => {
+    // Only select public fields for user search for security
     const { data, error } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url')
@@ -344,7 +345,7 @@ const TopPosts = () => {
       
       if (insertError) throw insertError;
 
-      // Fetch profile data for the new post
+      // Fetch profile data for the new post - only select public fields for security
       const { data: profileData } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url')
