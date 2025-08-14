@@ -22,7 +22,7 @@ const HeaderCarousel = () => {
     {
       id: 1,
       title: 'WEBSITE LAUNCHED',
-      subtitle: 'Introducing the Revolutionary APEX Collection. Where innovation meets luxury in every step.',
+      subtitle: 'It\'s official Crallux Sells is live. Invite your friends, get rewarded.',
       img: '/lovable-uploads/0514b193-6898-4fd5-96ad-078fb325cdae.png',
       link: 'shop',
       brightness: 1.12,           // lift Slide 1 so it's not darker
@@ -32,7 +32,7 @@ const HeaderCarousel = () => {
       id: 2,
       title: 'JOIN OUR TELEGRAM TO UNLOCK WHOLESALE DEALS',
       subtitle: 'Get exclusive access to wholesale pricing and bulk discounts',
-      img: '/lovable-uploads/ad6c6d80-e7d0-43f4-9393-b6bfb668d517.png',
+      img: '/lovable-uploads/c8b383d7-91eb-42e6-91da-6d3634797e34.png',
       link: '/socials',
       brightness: 1,              // leave as-is
       objectPosition: 'center 52%'// tiny downward bias to avoid top crop
@@ -122,7 +122,7 @@ const HeaderCarousel = () => {
                 )}
                 
                 {slide.title && (
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight tracking-tight">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight tracking-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
                     {slide.id === 1 ? (
                       <>
                         <span className="text-white">WEBSITE</span>
@@ -148,7 +148,7 @@ const HeaderCarousel = () => {
                 )}
                 
                 {slide.subtitle && (
-                  <p className="text-lg md:text-xl text-white/90 mb-8 max-w-lg leading-relaxed">
+                  <p className="text-lg md:text-xl text-white/90 mb-8 max-w-lg leading-relaxed" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }}>
                     {slide.subtitle}
                   </p>
                 )}
@@ -165,8 +165,11 @@ const HeaderCarousel = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
-                      <button className="border-2 border-white text-white px-8 py-4 font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-200">
-                        View Collection
+                      <button 
+                        onClick={() => navigate('/get-free-credits')}
+                        className="border-2 border-white text-white px-8 py-4 font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-200"
+                      >
+                        Refer a Friend
                       </button>
                     </>
                   ) : (
@@ -197,10 +200,10 @@ const HeaderCarousel = () => {
                         </svg>
                       ))}
                     </div>
-                    <span className="text-white font-semibold">4.9 Rating</span>
+                    <span className="text-white font-semibold" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }}>5.0 Rating</span>
                   </div>
-                  <div className="text-white/80">
-                    <span className="font-bold">2.5k+</span> Reviews
+                  <div className="text-white/80" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }}>
+                    <span className="font-bold">250+</span> Reviews
                   </div>
                 </div>
               </div>
