@@ -8,14 +8,14 @@ import { Sneaker } from '@/types/global';
 // Placeholder t-shirt product
 const placeholderTee: Sneaker = {
   id: 999,
-  name: 'Placeholder Tee',
-  price: '$0',
+  name: 'Test T-Shirt',
+  price: '$1',
   image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center',
   images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center'],
-  brand: 'TBD',
+  brand: 'Test Brand',
   category: 'Shirts',
-  description: 'Coming soon - placeholder item',
-  inStock: false,
+  description: 'Test item for checkout - $1 price',
+  inStock: true,
   sizing: 'US',
   colors: ['black'],
   type: 'shirt'
