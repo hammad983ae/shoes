@@ -23,7 +23,7 @@ const HeaderCarousel = () => {
       id: 1,
       title: 'WEBSITE LAUNCHED',
       subtitle: 'Introducing the Revolutionary APEX Collection. Where innovation meets luxury in every step.',
-      img: '/lovable-uploads/527a6055-20eb-4ac2-b9bb-b1038a398229.png',
+      img: '/lovable-uploads/0514b193-6898-4fd5-96ad-078fb325cdae.png',
       link: 'shop',
       brightness: 1.12,           // lift Slide 1 so it's not darker
       objectPosition: 'center',   // centered framing
