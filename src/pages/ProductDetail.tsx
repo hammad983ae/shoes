@@ -28,7 +28,28 @@ interface PostWithProduct {
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product: Sneaker | undefined = useMemo(() => sneakerCatalog.find(s => s.id.toString() === id), [id]);
+  
+  // Add placeholder tee to the catalog for testing
+  const placeholderTee: Sneaker = {
+    id: 999,
+    name: 'Test T-Shirt',
+    price: '$1',
+    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center',
+    images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center'],
+    brand: 'Test Brand',
+    category: 'Shirts',
+    description: 'Test item for checkout - $1 price',
+    inStock: true,
+    sizing: 'US',
+    colors: ['black'],
+    type: 'shirt',
+    productDescription: 'A simple test t-shirt to verify the checkout process. Perfect for testing payment flows.',
+    productFeatures: ['100% cotton', 'Comfortable fit', 'Test item only'],
+    productIncludes: ['One t-shirt', 'Test receipt']
+  };
+  
+  const allProducts = [...sneakerCatalog, placeholderTee];
+  const product: Sneaker | undefined = useMemo(() => allProducts.find(s => s.id.toString() === id), [id]);
 
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
