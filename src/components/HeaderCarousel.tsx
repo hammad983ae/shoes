@@ -17,20 +17,21 @@ const HeaderCarousel = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
-  // Tweak these if needed
+  // Updated slides with new content and styling
   const slides: Slide[] = [
     {
       id: 1,
-      title: '',
+      title: 'WEBSITE LAUNCHED',
+      subtitle: 'Introducing the Revolutionary APEX Collection. Where innovation meets luxury in every step.',
       img: '/lovable-uploads/527a6055-20eb-4ac2-b9bb-b1038a398229.png',
       link: 'shop',
-      brightness: 1.12,           // lift Slide 1 so it’s not darker
+      brightness: 1.12,           // lift Slide 1 so it's not darker
       objectPosition: 'center',   // centered framing
     },
     {
       id: 2,
-      title: '',
-      subtitle: '',
+      title: 'JOIN OUR TELEGRAM TO UNLOCK WHOLESALE DEALS',
+      subtitle: 'Get exclusive access to wholesale pricing and bulk discounts',
       img: '/lovable-uploads/ad6c6d80-e7d0-43f4-9393-b6bfb668d517.png',
       link: '/socials',
       brightness: 1,              // leave as-is
@@ -105,45 +106,103 @@ const HeaderCarousel = () => {
                 draggable={false}
               />
 
-              {/* Content (unchanged layout) */}
+              {/* Content with enhanced styling like the reference image */}
               <div
-                className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-4xl mx-auto ${
+                className={`relative z-10 flex flex-col h-full text-white px-4 md:px-8 max-w-5xl mx-auto ${
                   slide.id === 1
-                    ? 'items-center justify-center text-center'
-                    : 'items-center justify-end pb-32 text-center' // lower on slide 2
+                    ? 'items-start justify-center'
+                    : 'items-start justify-center'
                 }`}
               >
-                {slide.title && (
-                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-                    {slide.title}
-                  </h2>
+                {/* NEW DROP badge for first slide */}
+                {slide.id === 1 && (
+                  <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-1 rounded-full text-xs font-bold mb-6 uppercase tracking-wide">
+                    NEW DROP
+                  </div>
                 )}
+                
+                {slide.title && (
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight tracking-tight">
+                    {slide.id === 1 ? (
+                      <>
+                        <span className="text-white">WEBSITE</span>
+                        <br />
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                          LAUNCHED
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-white">JOIN OUR</span>
+                        <br />
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                          TELEGRAM
+                        </span>
+                        <br />
+                        <span className="text-white text-2xl md:text-3xl lg:text-4xl">
+                          TO UNLOCK WHOLESALE DEALS
+                        </span>
+                      </>
+                    )}
+                  </h1>
+                )}
+                
                 {slide.subtitle && (
-                  <p className="text-base md:text-lg opacity-90 mb-6 max-w-2xl">
+                  <p className="text-lg md:text-xl text-white/90 mb-8 max-w-lg leading-relaxed">
                     {slide.subtitle}
                   </p>
                 )}
 
-                {slide.id === 1 ? (
-                  <button
-                    onClick={handleSlideClick}
-                    className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    Shop Now
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleSlideClick}
-                      className="px-6 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200 mb-4"
-                    >
-                      Join for Exclusive Access
-                    </button>
-                    <div className="text-white/80 text-sm">
-                      Trusted by 1,000+ members
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  {slide.id === 1 ? (
+                    <>
+                      <button
+                        onClick={handleSlideClick}
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-8 py-4 font-bold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all duration-200 flex items-center gap-2 group"
+                      >
+                        Shop Now
+                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                      <button className="border-2 border-white text-white px-8 py-4 font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-200">
+                        View Collection
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleSlideClick}
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-8 py-4 font-bold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-all duration-200 flex items-center gap-2 group"
+                      >
+                        Join Telegram
+                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                      <button className="border-2 border-white text-white px-8 py-4 font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-200">
+                        Learn More
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Rating and reviews section */}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="flex text-yellow-400">
+                      {[1,2,3,4,5].map((star) => (
+                        <svg key={star} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
                     </div>
-                  </>
-                )}
+                    <span className="text-white font-semibold">4.9 Rating</span>
+                  </div>
+                  <div className="text-white/80">
+                    <span className="font-bold">2.5k+</span> Reviews
+                  </div>
+                </div>
               </div>
             </div>
           );
