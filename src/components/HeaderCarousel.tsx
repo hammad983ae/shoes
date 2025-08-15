@@ -32,7 +32,7 @@ const HeaderCarousel = () => {
       id: 2,
       title: 'JOIN OUR TELEGRAM TO UNLOCK WHOLESALE DEALS',
       subtitle: 'Get exclusive access to wholesale pricing and bulk discounts',
-      img: '/lovable-uploads/c8b383d7-91eb-42e6-91da-6d3634797e34.png',
+      img: '/lovable-uploads/742b0bb6-cc85-4d3c-9466-74168b06f444.png',
       link: '/socials',
       brightness: 1,              // leave as-is
       objectPosition: 'center 52%'// tiny downward bias to avoid top crop
@@ -127,7 +127,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">WEBSITE</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
                           LAUNCHED
                         </span>
                       </>
@@ -135,7 +135,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">JOIN OUR</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
                           TELEGRAM
                         </span>
                         <br />
@@ -166,7 +166,7 @@ const HeaderCarousel = () => {
                         </svg>
                       </button>
                       <button 
-                        onClick={() => navigate('/get-free-credits')}
+                        onClick={() => navigate('/credits')}
                         className="border-2 border-white text-white px-8 py-4 font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-200"
                       >
                         Refer a Friend

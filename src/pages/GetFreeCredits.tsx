@@ -131,7 +131,7 @@ const GetFreeCredits = () => {
               <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
                 <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
                   <p className="text-xs sm:text-lg font-medium text-foreground text-center">
-                    You get <span className="text-primary font-bold">20% back in credits</span> when someone buys using your link.
+                    You get <span className="text-primary font-bold">10% back in credits</span> when someone buys using your link.
                   </p>
                 </CardContent>
               </Card>

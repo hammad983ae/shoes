@@ -7,15 +7,12 @@ import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import ClothingCarousel from '@/components/ClothingCarousel';
 import BrandCards from '@/components/BrandCards';
-import FloatingCart from '@/components/FloatingCart';
+import CartSidebar from '@/components/CartSidebar';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 const Catalog = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [showFloatingCart, setShowFloatingCart] = useState(false);
-  const [userInteracted, setUserInteracted] = useState(false);
-
   // Handle URL parameters - kept for potential future use
   useEffect(() => {
     const brandParam = searchParams.get('brand');
@@ -24,13 +21,6 @@ const Catalog = () => {
       console.log('Brand filter:', brandParam);
     }
   }, [searchParams]);
-
-  const handleUserInteraction = () => {
-    if (!userInteracted) {
-      setUserInteracted(true);
-      setTimeout(() => setShowFloatingCart(true), 2000);
-    }
-  };
 
   return (
     <div className="min-h-screen page-gradient relative">
@@ -51,12 +41,12 @@ const Catalog = () => {
         <HeaderCarousel />
 
         {/* Sneaker Collection */}
-        <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
+        <div className="px-2 sm:px-4 py-4 sm:py-8">
           <SneakerCarousel />
         </div>
 
         {/* Clothing Collection */}
-        <div className="px-2 sm:px-4 py-4 sm:py-8" onScroll={handleUserInteraction} onClick={handleUserInteraction}>
+        <div className="px-2 sm:px-4 py-4 sm:py-8">
           <ClothingCarousel />
         </div>
 
@@ -66,8 +56,10 @@ const Catalog = () => {
         </div>
       </div>
       
-      {/* Floating Cart */}
-      <FloatingCart show={showFloatingCart} />
+      {/* Cart Sidebar */}
+      <div className="fixed top-4 right-4 z-50">
+        <CartSidebar />
+      </div>
     </div>
   );
 };
