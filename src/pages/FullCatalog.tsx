@@ -16,7 +16,13 @@ import { Button } from '@/components/ui/button'
 import { Heart, ArrowLeft } from 'lucide-react'
 import EnhancedFilterPanel from '@/components/EnhancedFilterPanel'
 
-const extendedCatalog = sneakerCatalog.map(s => ({ ...s, category: 'Shoes' }))
+const extendedCatalog: Sneaker[] = sneakerCatalog.map(s => ({ 
+  ...s, 
+  category: 'Shoes',
+  images: s.images || [s.image || ''],
+  brand: s.brand || 'Unknown',
+  image: s.image || (s.images && s.images[0]) || ''
+}))
 
 const FullCatalog = () => {
   const [searchParams] = useSearchParams()
@@ -116,7 +122,7 @@ const FullCatalog = () => {
           {visibleProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 max-w-screen-2xl w-full">
               {visibleProducts.map((product, i) => (
-                <ProductCard key={product.id} sneaker={product} index={i} onViewProduct={handleViewProduct} />
+                <ProductCard key={product.id} sneaker={product as any} index={i} onViewProduct={handleViewProduct} />
               ))}
               <div className="animate-fade-in" style={{ animationDelay: `${(visibleProducts.length + 1) * 0.1}s` }}>
                 <RequestNewItemsCard />

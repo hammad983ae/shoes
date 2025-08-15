@@ -137,7 +137,7 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, typeof item.size === 'number' ? item.size : parseInt(item.size, 10), item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
                         <Minus className="h-3 w-3" />
@@ -147,7 +147,7 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, typeof item.size === 'number' ? item.size : parseInt(item.size, 10), item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>

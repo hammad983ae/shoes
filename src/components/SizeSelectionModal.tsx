@@ -31,6 +31,7 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
         price: sneaker.price,
         image: sneaker.image,
         size: selectedSize,
+        size_type: 'US' // Default to US for size selection modal
       });
       
       // Start cart animation

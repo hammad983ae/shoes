@@ -157,14 +157,12 @@ const ProductDetail = () => {
     
     // Add items to cart one by one to ensure proper notification
     for (let i = 0; i < parseInt(quantity); i++) {
-      // Convert size to a number
-      const sizeNumber = parseFloat(selectedSize);
       addItem({
         id: product.id,
         name: product.name,
         price: product.price,
         image: product.images[currentIndex],
-        size: sizeNumber, // Convert size to number
+        size: selectedSize, // Keep exact selected size string
         size_type: product.sizing === 'EU' ? 'EU' : 'US'
       });
     }
