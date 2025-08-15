@@ -80,7 +80,7 @@ const MainCatalogNavBar = ({
         <div className="search-dim-overlay fixed inset-0 bg-black/50 z-40 cursor-pointer" />
       )}
 
-      <div className="sticky top-0 z-50 w-full px-4 md:px-8 py-2 md:py-4">
+      <div className="sticky top-[40px] z-40 w-full px-4 md:px-8 py-2 md:py-4">
         <div className="flex justify-center items-center gap-4">
           <div ref={searchRef} className="relative max-w-[240px] sm:max-w-md w-full z-50">
             <div className="relative backdrop-blur-md bg-background/60 rounded-lg border border-border/50 shadow-lg">
