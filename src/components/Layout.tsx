@@ -17,7 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="relative min-h-screen bg-background">
-      <AnnouncementBar />  // no sticky, just render normally
+      <AnnouncementBar />
 
       {/* Sidebar (non-sticky) */}
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
