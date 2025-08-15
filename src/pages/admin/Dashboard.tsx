@@ -5,13 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  ShoppingCart, 
   Users, 
   Eye,
   AlertTriangle,
-  CheckCircle,
   Clock,
   ArrowUpRight,
   ArrowDownRight,

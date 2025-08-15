@@ -4,15 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Users,
   Eye,
   ArrowUpRight,
-  ArrowDownRight,
   Mail,
   Share2,
   Target,
@@ -22,10 +19,7 @@ import {
   Pause,
   Plus,
   Filter,
-  Download,
-  Search,
-  Edit,
-  MoreHorizontal
+  Download
 } from "lucide-react";
 
 // Mock marketing data

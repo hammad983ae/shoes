@@ -30,9 +30,16 @@ import CartAddNotification from "./components/CartAddNotification";
    import OptInPolicy from "./pages/OptInPolicy";
    import ReferralRedirect from "./components/ReferralRedirect";
    import Checkout from "./pages/Checkout";
-   import CreatorDashboard from "./pages/CreatorDashboard";
-   import AdminDashboard from "./pages/AdminDashboard";
-   import RouteGuard from "./components/RouteGuard";
+import CreatorDashboard from "./pages/CreatorDashboard";
+import { DashboardLayout } from "./components/DashboardLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import Analytics from "./pages/admin/Analytics";
+import Marketing from "./pages/admin/Marketing";
+import Orders from "./pages/admin/Orders";
+import Products from "./pages/admin/Products";
+import Users from "./pages/admin/Users";
+import AdminNotFound from "./pages/admin/NotFound";
+import RouteGuard from "./components/RouteGuard";
 
    const App = () => (
      <AuthProvider>
@@ -71,11 +78,19 @@ import CartAddNotification from "./components/CartAddNotification";
                          <CreatorDashboard />
                        </RouteGuard>
                      } />
-                     <Route path="/admin" element={
-                       <RouteGuard requireRole="admin">
-                         <AdminDashboard />
-                       </RouteGuard>
-                     } />
+                      <Route path="/admin/*" element={
+                        <RouteGuard requireRole="admin">
+                          <Routes>
+                            <Route path="/" element={<DashboardLayout currentPage="dashboard"><Dashboard /></DashboardLayout>} />
+                            <Route path="/analytics" element={<DashboardLayout currentPage="analytics"><Analytics /></DashboardLayout>} />
+                            <Route path="/marketing" element={<DashboardLayout currentPage="marketing"><Marketing /></DashboardLayout>} />
+                            <Route path="/orders" element={<DashboardLayout currentPage="orders"><Orders /></DashboardLayout>} />
+                            <Route path="/products" element={<DashboardLayout currentPage="products"><Products /></DashboardLayout>} />
+                            <Route path="/users" element={<DashboardLayout currentPage="users"><Users /></DashboardLayout>} />
+                            <Route path="*" element={<AdminNotFound />} />
+                          </Routes>
+                        </RouteGuard>
+                      } />
                      <Route path="*" element={<NotFound />} />
                    </Routes>
                    <ReferralDiscountNotification />

@@ -17,7 +17,6 @@ import {
   Eye,
   MoreHorizontal,
   Star,
-  ShoppingCart,
   DollarSign
 } from "lucide-react";
 

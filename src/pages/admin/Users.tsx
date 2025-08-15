@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { 
   Users as UsersIcon,
   Search,
@@ -19,9 +18,6 @@ import {
   UserCheck,
   Star,
   TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
   DollarSign,
   Camera,
   Video,

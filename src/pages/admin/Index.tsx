@@ -1,24 +1,8 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Star, ShoppingBag, Heart, Play } from "lucide-react";
 
 export default function Index() {
-  const [currentImage, setCurrentImage] = useState(0);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
-  const heroImages = [
-    "/api/placeholder/800/1000",
-    "/api/placeholder/800/1001", 
-    "/api/placeholder/800/1002"
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % heroImages.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,7 +68,7 @@ export default function Index() {
                 variant="outline" 
                 size="lg" 
                 className="border-white text-white hover:bg-white hover:text-black"
-                onClick={() => setIsVideoPlaying(true)}
+                onClick={() => {}}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Watch Film
