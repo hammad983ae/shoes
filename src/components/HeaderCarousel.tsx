@@ -32,7 +32,7 @@ const HeaderCarousel = () => {
       id: 2,
       title: 'JOIN OUR TELEGRAM TO UNLOCK WHOLESALE DEALS',
       subtitle: 'Get exclusive access to wholesale pricing and bulk discounts',
-      img: '/lovable-uploads/742b0bb6-cc85-4d3c-9466-74168b06f444.png',
+      img: '/lovable-uploads/5bf1e999-602b-47ad-9de8-c862124d9496.png',
       link: '/socials',
       brightness: 1,              // leave as-is
       objectPosition: 'center 52%'// tiny downward bias to avoid top crop
@@ -127,7 +127,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">WEBSITE</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent drop-shadow-lg">
                           LAUNCHED
                         </span>
                       </>
@@ -135,7 +135,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">JOIN OUR</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent drop-shadow-lg">
                           TELEGRAM
                         </span>
                         <br />
