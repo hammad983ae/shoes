@@ -5,9 +5,9 @@
    import { CartProvider } from "@/contexts/CartContext";
    import { FavoritesProvider } from "@/contexts/FavoritesContext";
    import { AuthProvider } from "@/contexts/AuthContext";
-   import Layout from "./components/Layout";
-   import GlobalCartProvider from "./components/Global aparat/GlobalCartProvider";
-   import { CartAddNotification } from "./components/CartAddNotification"; // Add this import
+import Layout from "./components/Layout";
+import GlobalCartProvider from "./components/GlobalCartProvider";
+import CartAddNotification from "./components/CartAddNotification";
    import Index from "./pages/Index";
    import NotFound from "./pages/NotFound";
    import GetFreeCredits from "./pages/GetFreeCredits";

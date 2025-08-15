@@ -22,9 +22,6 @@ const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
     }
   };
 
-  const handleNotificationHide = () => {
-    setShowNotification(false);
-  };
 
   useCartNotification(handleItemAdded);
 
@@ -36,10 +33,7 @@ const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
           <div className="fixed top-2 right-4 z-50">
             <CartSidebar />
           </div>
-          <CartAddNotification 
-            show={showNotification} 
-            onHide={handleNotificationHide}
-          />
+          <CartAddNotification />
         </>
       )}
     </>
