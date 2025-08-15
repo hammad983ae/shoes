@@ -37,11 +37,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-        onItemAdded?.();
+        setTimeout(() => onItemAdded?.(), 50);
         return updated;
       }
       
-      onItemAdded?.();
+      setTimeout(() => onItemAdded?.(), 50);
       return [...prevItems, { ...newItem, quantity: 1 }];
     });
   };
