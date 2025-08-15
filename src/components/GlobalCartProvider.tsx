@@ -16,7 +16,10 @@ const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
   const isLandingPage = location.pathname === '/';
 
   const handleItemAdded = () => {
-    setShowNotification(true);
+    // Only show notification if not already showing
+    if (!showNotification) {
+      setShowNotification(true);
+    }
   };
 
   const handleNotificationHide = () => {

@@ -18,7 +18,7 @@ interface CartContextType {
   getTotalItems: () => number;
   getTotalPrice: () => number;
   onItemAdded?: () => void;
-  setOnItemAdded?: (callback: () => void) => void;
+  setOnItemAdded?: (callback?: () => void) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -37,11 +37,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-        setTimeout(() => onItemAdded?.(), 50);
+        // Only trigger notification for actual additions
+        if (onItemAdded) {
+          setTimeout(() => onItemAdded(), 100);
+        }
         return updated;
       }
       
-      setTimeout(() => onItemAdded?.(), 50);
+      // Only trigger notification for actual additions
+      if (onItemAdded) {
+        setTimeout(() => onItemAdded(), 100);
+      }
       return [...prevItems, { ...newItem, quantity: 1 }];
     });
   };
