@@ -75,12 +75,17 @@ const FullCatalog = () => {
   };
 
   const filteredAndSortedProducts = (() => {
+    console.log('Filtering with:', filters);
+    
     // Filter products
     let filtered = extendedCatalog.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       
+      // Fix category matching - ensure exact match
       const matchesCategory = filters.categories.length === 0 || 
-        filters.categories.includes(product.category);
+        filters.categories.some(filterCategory => 
+          product.category && product.category.toLowerCase() === filterCategory.toLowerCase()
+        );
       
       const matchesBrand = filters.brands.length === 0 || 
         filters.brands.includes(product.brand);
@@ -97,8 +102,12 @@ const FullCatalog = () => {
         parseInt(product.price.replace('$', '')) >= filters.priceRange[0] && 
         parseInt(product.price.replace('$', '')) <= filters.priceRange[1];
       
-      return matchesSearch && matchesCategory && matchesBrand && matchesColor && matchesPrice;
+      const result = matchesSearch && matchesCategory && matchesBrand && matchesColor && matchesPrice;
+      
+      return result;
     });
+
+    console.log('Filtered products:', filtered.length);
 
     // Apply favorites filter if enabled - cast to any to work with current types
     if (showFavorites) {
@@ -124,14 +133,20 @@ const FullCatalog = () => {
           setSearchTerm={setSearchTerm}
         />
         
-        {/* Full Catalog Navigation Bar with Enhanced Filters */}
-        <FullCatalogNavBar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          showFavorites={showFavorites}
-          setShowFavorites={setShowFavorites}
-          onFiltersChange={handleFiltersChange}
-        />
+        {/* Full Catalog Navigation Bar with Enhanced Filters - positioned under main search */}
+        <div className="sticky top-[4.5rem] z-40 w-full px-4 md:px-8 py-2">
+          <div className="flex justify-center">
+            <div className="flex items-center gap-4 max-w-[240px] sm:max-w-md w-full">
+              <FullCatalogNavBar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                showFavorites={showFavorites}
+                setShowFavorites={setShowFavorites}
+                onFiltersChange={handleFiltersChange}
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="flex justify-center px-2 sm:px-4 py-4 sm:py-8 w-full">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 max-w-screen-2xl w-full">
@@ -144,8 +159,10 @@ const FullCatalog = () => {
               />
             ))}
             
-            {/* Request New Items Card - Always appears at the end */}
-            <RequestNewItemsCard />
+            {/* Request New Items Card - positioned as regular product card */}
+            <div className="animate-fade-in" style={{ animationDelay: `${(filteredAndSortedProducts.length + 1) * 0.1}s` }}>
+              <RequestNewItemsCard />
+            </div>
           </div>
 
           {filteredAndSortedProducts.length === 0 && (
@@ -153,7 +170,7 @@ const FullCatalog = () => {
               <p className="text-muted-foreground text-lg mb-4">
                 No products found matching your criteria.
               </p>
-              <div className="max-w-sm mx-auto">
+              <div className="max-w-sm mx-auto animate-fade-in">
                 <RequestNewItemsCard />
               </div>
             </div>

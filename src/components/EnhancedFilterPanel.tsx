@@ -103,7 +103,10 @@ const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
       : selectedCategories.filter(c => c !== category);
     
     setSelectedCategories(newCategories);
-    updateFilters(newCategories, selectedBrands, selectedColors, priceRange);
+    // Force immediate update
+    setTimeout(() => {
+      updateFilters(newCategories, selectedBrands, selectedColors, priceRange);
+    }, 0);
   };
 
   const handleBrandChange = (brand: string, checked: boolean) => {
@@ -112,7 +115,10 @@ const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
       : selectedBrands.filter(b => b !== brand);
     
     setSelectedBrands(newBrands);
-    updateFilters(selectedCategories, newBrands, selectedColors, priceRange);
+    // Force immediate update
+    setTimeout(() => {
+      updateFilters(selectedCategories, newBrands, selectedColors, priceRange);
+    }, 0);
   };
 
   const handleColorChange = (color: string, checked: boolean) => {

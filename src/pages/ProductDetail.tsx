@@ -177,11 +177,15 @@ const ProductDetail = () => {
           setSearchTerm={setSearchTerm}
         />
 
-        {/* Breadcrumb / Back */}
-        <nav className="mb-4 sm:mb-6">
-          <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
-            <ChevronLeft className="w-4 h-4" /> Back
-          </Button>
+        {/* Breadcrumb / Back - aligned with search bar */}
+        <nav className="mb-4 sm:mb-6 sticky top-[4.5rem] z-40 w-full px-4 md:px-8 py-2">
+          <div className="flex justify-center">
+            <div className="max-w-[240px] sm:max-w-md w-full">
+              <Button variant="outline" onClick={() => navigate(-1)} className="gap-2 backdrop-blur-md bg-background/60 border border-border/50">
+                <ChevronLeft className="w-4 h-4" /> Back
+              </Button>
+            </div>
+          </div>
         </nav>
 
         {/* Title */}

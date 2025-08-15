@@ -37,7 +37,7 @@ const CartSidebar = () => {
       <SheetTrigger asChild>
         <Button 
           variant="outline" 
-          className="h-12 w-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 btn-hover-glow relative backdrop-blur-md bg-background/60 border-border/50"
+          className="fixed top-2 right-4 h-10 w-10 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 btn-hover-glow relative backdrop-blur-md bg-background/60 border-border/50 z-[45]"
         >
           <ShoppingBag className="w-5 h-5" />
           {getTotalItems() > 0 && (
