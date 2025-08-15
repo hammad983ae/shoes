@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import CartSidebar from './CartSidebar';
 import CartAddNotification from './CartAddNotification';
 import useCartNotification from '../hooks/useCartNotification';
 
@@ -10,8 +9,6 @@ interface GlobalCartProviderProps {
 
 const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
   const location = useLocation();
-
-  // Don't show cart on landing page
   const isLandingPage = location.pathname === '/';
 
   const handleItemAdded = useCallback(() => {
@@ -23,15 +20,7 @@ const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
   return (
     <>
       {children}
-      {!isLandingPage && (
-        <>
-          {/* Adjusted cart sidebar positioning for desktop alignment */}
-          <div className="fixed top-[4.5rem] right-4 z-50 md:top-[4.5rem]">
-            <CartSidebar />
-          </div>
-          <CartAddNotification />
-        </>
-      )}
+      {!isLandingPage && <CartAddNotification />}
     </>
   );
 };

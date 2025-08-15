@@ -154,7 +154,8 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
         name: sneaker.name,
         price: sneaker.price,
         image: sneaker.images[currentIndex],
-        size: parseFloat(selectedSize) || 0
+        size: parseFloat(selectedSize) || 0,
+        size_type: 'EU' // Explicitly set to 'EU'
       });
     }
     setIsAnimating(true);

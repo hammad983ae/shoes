@@ -159,14 +159,12 @@ const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="gap-2 btn-hover-glow relative">
+        <Button
+          variant="outline"
+          size="sm"
+          className="btn-hover-glow backdrop-blur-md bg-background/60 rounded-full w-10 h-10 flex items-center justify-center"
+        >
           <Filter className="w-4 h-4" />
-          Filter
-          {hasActiveFilters && (
-            <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-              !
-            </Badge>
-          )}
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-80">

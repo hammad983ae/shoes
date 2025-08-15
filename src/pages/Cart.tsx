@@ -59,23 +59,34 @@ const Cart = () => {
   
   // For size editing - handle both EU and US sizes
   const getSizesForItem = (item: any) => {
-    // If size is a string (EU sizing), show EU sizes with US conversion
-    if (typeof item.size === 'string' && !isNaN(parseInt(item.size))) {
-      const euSizes = [
+    if (item.size_type === 'US') {
+      return ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
+    } else if (item.size_type === 'EU') {
+      return [
         { eu: '39', us: '6' }, { eu: '40', us: '6.5' }, { eu: '41', us: '7' },
         { eu: '42', us: '7.5' }, { eu: '43', us: '8' }, { eu: '44', us: '8.5' },
         { eu: '45', us: '9' }, { eu: '46', us: '9.5' }, { eu: '47', us: '10' },
         { eu: '48', us: '10.5' }, { eu: '49', us: '11' }, { eu: '50', us: '11.5' },
         { eu: '51', us: '12' }, { eu: '52', us: '12.5' }, { eu: '53', us: '13' }
       ];
-      return euSizes;
     } else {
-      // US sizes
+      console.error('Unknown or missing size type for item:', item);
+      // Fallback to US sizes if size_type is unknown
       return ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13'];
     }
   };
 
   function handleSizeChange(item: any, newSize: string) {
+    // Add console logs to verify newSize and parseFloat result
+    console.log('New Size:', newSize);
+    console.log('Parsed Size:', parseFloat(newSize) || 0);
+    console.log('Dropdown value expected:', item.size);
+    getSizesForItem(item).forEach(size => {
+      if (typeof size === 'object') {
+        const val = `EU ${size.eu} (US ${size.us})`;
+        if (val === item.size) console.log('Matched:', val);
+      }
+    });
     // Remove old item, add new with same quantity
     removeItem(item.id, item.size);
     // Re-add with new size and same quantity
@@ -85,7 +96,8 @@ const Cart = () => {
         name: item.name,
         price: item.price,
         image: item.image,
-        size: parseFloat(newSize) || 0
+        size: parseFloat(newSize) || 0,
+        size_type: item.size_type
       });
     }
   }
@@ -206,17 +218,15 @@ const Cart = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-muted-foreground">Size:</span>
                       <select
-                        className="border rounded px-2 py-1 text-sm bg-background"
                         value={item.size}
                         onChange={e => handleSizeChange(item, e.target.value)}
+                        className="border rounded px-2 py-1 text-sm bg-background"
                       >
-                        {getSizesForItem(item).map(size => {
-                          if (typeof size === 'string') {
-                            return <option key={size} value={size}>{size}</option>;
-                          } else {
-                            return <option key={size.eu} value={size.eu}>{size.eu} ({size.us})</option>;
-                          }
-                        })}
+                        {getSizesForItem(item).map(size => (
+                          <option key={typeof size === 'object' ? size.eu : size} value={typeof size === 'object' ? `EU ${size.eu} (US ${size.us})` : size}>
+                            {typeof size === 'object' ? `EU ${size.eu} (US ${size.us})` : size}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <p className="text-primary font-bold mt-1">{item.price}</p>
@@ -225,17 +235,20 @@ const Cart = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(item.id, typeof item.size === 'number' ? item.size : parseInt(item.size, 10), item.quantity - 1)}
+                      disabled={item.quantity <= 1}
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="h-3 w-3" />
                     </Button>
                     <span className="w-8 text-center">{item.quantity}</span>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(item.id, typeof item.size === 'number' ? item.size : parseInt(item.size, 10), item.quantity + 1)}
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="h-3 w-3" />
                     </Button>
                   </div>
                   <Button
@@ -394,11 +407,11 @@ const Cart = () => {
       
       {/* Credits Modal */}
       <Dialog open={showCreditsModal} onOpenChange={setShowCreditsModal}>
-        <DialogContent>
+        <DialogContent aria-describedby="cart-description">
           <DialogHeader>
             <DialogTitle>Use Credits</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div id="cart-description" className="space-y-4">
             <div className="text-sm text-muted-foreground">
               Current Balance: <span className="font-semibold">{credits} credits</span>
             </div>

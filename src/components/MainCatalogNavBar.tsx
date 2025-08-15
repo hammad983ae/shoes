@@ -1,11 +1,11 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
+import CartSidebar from '@/components/CartSidebar';
 
 interface MainCatalogNavBarProps {
   searchTerm: string;
@@ -29,7 +29,7 @@ const MainCatalogNavBar = ({
         sneaker.keywords?.some(keyword => 
           keyword.toLowerCase().includes(searchTerm.toLowerCase())
         )
-      ).slice(0, 5); // Limit to 5 results
+      ).slice(0, 5);
       
       setFilteredResults(results);
       setShowResults(true);
@@ -41,17 +41,13 @@ const MainCatalogNavBar = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
-      // Check if click is outside search container and not on the dim overlay
       if (searchRef.current && !searchRef.current.contains(target)) {
-        // Also check if it's not clicking on the search results container
         if (!target.closest('.search-results-container') && !target.closest('.search-dim-overlay')) {
           setShowResults(false);
         }
       }
     };
 
-    // Handle clicks on the dim overlay specifically
     const handleDimOverlayClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (target.classList.contains('search-dim-overlay')) {
@@ -70,7 +66,6 @@ const MainCatalogNavBar = ({
   const handleProductClick = (sneaker: Sneaker) => {
     setShowResults(false);
     setSearchTerm('');
-    // Navigate directly to the product page
     navigate(`/product/${sneaker.id}`);
   };
 
@@ -81,16 +76,13 @@ const MainCatalogNavBar = ({
 
   return (
     <>
-      {/* Background Dim Overlay - positioned fixed to cover entire screen but behind search */}
       {showResults && (
         <div className="search-dim-overlay fixed inset-0 bg-black/50 z-40 cursor-pointer" />
       )}
-      
+
       <div className="sticky top-0 z-50 w-full px-4 md:px-8 py-2 md:py-4">
-        <div className="flex justify-center">
-          {/* Search Container - centered and elevated above dim overlay */}
+        <div className="flex justify-center items-center gap-4">
           <div ref={searchRef} className="relative max-w-[240px] sm:max-w-md w-full z-50">
-            {/* Floating Search Bar */}
             <div className="relative backdrop-blur-md bg-background/60 rounded-lg border border-border/50 shadow-lg">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -106,12 +98,10 @@ const MainCatalogNavBar = ({
               />
             </div>
 
-            {/* Search Results Dropdown - also elevated above dim overlay */}
             {showResults && (
               <div className="search-results-container absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-xl max-h-64 sm:max-h-96 overflow-y-auto z-50">
                 {filteredResults.length > 0 ? (
                   <>
-                    {/* Results */}
                     <div className="p-2">
                       {filteredResults.map((sneaker) => (
                         <button
@@ -131,8 +121,6 @@ const MainCatalogNavBar = ({
                         </button>
                       ))}
                     </div>
-                    
-                    {/* Bottom Button */}
                     <div className="border-t border-border/50 p-3">
                       <Button 
                         onClick={handleShopAll}
@@ -152,6 +140,11 @@ const MainCatalogNavBar = ({
                 )}
               </div>
             )}
+          </div>
+
+          {/* Cart button aligned with search bar */}
+          <div className="z-50">
+            <CartSidebar alignWithStickyNav={true} />
           </div>
         </div>
       </div>

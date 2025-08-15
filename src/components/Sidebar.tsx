@@ -73,7 +73,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
     <>
       {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-2 left-4 z-50 h-10 w-10 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300 flex items-center justify-center"
+        className="md:hidden fixed top-2 md:top-4 left-4 z-50 h-10 w-10 bg-card/80 backdrop-blur-sm border border-border rounded-lg text-primary hover:bg-card/90 transition-all duration-300 flex items-center justify-center"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         <Menu className="w-4 h-4" />
@@ -81,7 +81,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
       {/* Mobile Sidebar Overlay */}
       {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm">
+        <div className="md:hidden fixed inset-0 z-[90] bg-background/80 backdrop-blur-sm">
           <div className="fixed left-0 top-0 h-full w-80 bg-card backdrop-blur-md border-r border-border p-6">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-bold text-primary">Menu</h2>

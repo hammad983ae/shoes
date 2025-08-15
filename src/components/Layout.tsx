@@ -1,3 +1,6 @@
+// ✅ Cleaned up Layout.tsx: Removed global cart button logic
+// Cart button now expected to be rendered inside individual sticky nav bars (e.g., MainCatalogNavBar.tsx)
+
 import { ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
@@ -11,20 +14,12 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (isHomePage) {
     return <>{children}</>;
   }
-
-  // Remove forced authentication - allow browsing without sign-in
-  // if (!isAuthenticated(user)) {
-  //   return (
-  //     <>
-  //       <AuthModal open={true} onOpenChange={setShowAuthModal} />
-  //     </>
-  //   );
-  // }
 
   return (
     <div className="min-h-screen bg-background">

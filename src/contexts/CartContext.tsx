@@ -5,8 +5,9 @@ interface CartItem {
   name: string;
   price: string;
   image: string;
-  size: number;
+  size: string | number; // Allow size to be a string for formatted sizes
   quantity: number;
+  size_type: 'EU' | 'US';
 }
 
 interface CartContextType {
@@ -21,16 +22,31 @@ interface CartContextType {
   setShowNotification: (value: boolean) => void;
   onItemAdded?: () => void;
   setOnItemAdded?: (callback?: () => void) => void;
+  toggleCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+const EU_SIZE_MAP = [
+  { eu: '39', us: '6' }, { eu: '40', us: '6.5' }, { eu: '41', us: '7' },
+  { eu: '42', us: '7.5' }, { eu: '43', us: '8' }, { eu: '44', us: '8.5' },
+  { eu: '45', us: '9' }, { eu: '46', us: '9.5' }, { eu: '47', us: '10' },
+  { eu: '48', us: '10.5' }, { eu: '49', us: '11' }, { eu: '50', us: '11.5' },
+  { eu: '51', us: '12' }, { eu: '52', us: '12.5' }, { eu: '53', us: '13' }
+];
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [showNotification, setShowNotification] = useState(false);
   const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const toggleCart = () => {
+    setIsCartOpen(!isCartOpen);
+  };
 
   const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
+    // Ensure the size is passed as a string directly from the product detail page
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === newItem.id && item.size === newItem.size);
       const updatedItems = existingItem
@@ -97,7 +113,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       showNotification,
       setShowNotification,
       onItemAdded,
-      setOnItemAdded
+      setOnItemAdded,
+      toggleCart
     }}>
       {children}
     </CartContext.Provider>

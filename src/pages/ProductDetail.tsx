@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, ChevronLeft, Star, Check, Loader2 } from 'lucide-react';
+import { Heart, Star, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
 import { useCart } from '@/contexts/CartContext';
@@ -53,7 +53,7 @@ const ProductDetail = () => {
   const product: Sneaker | undefined = useMemo(() => allProducts.find(s => s.id.toString() === id), [id]);
 
   const { addItem } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { isFavorite } = useFavorites();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
@@ -114,6 +114,10 @@ const ProductDetail = () => {
     })();
   }, [product]);
 
+  useEffect(() => {
+    console.log('Selected Size Updated:', selectedSize);
+  }, [selectedSize]);
+
   if (!product) {
     return (
       <div className="min-h-screen page-gradient flex items-center justify-center p-6">
@@ -153,12 +157,15 @@ const ProductDetail = () => {
     
     // Add items to cart one by one to ensure proper notification
     for (let i = 0; i < parseInt(quantity); i++) {
-      addItem({ 
-        id: product.id, 
-        name: product.name, 
-        price: product.price, 
-        image: product.images[currentIndex], 
-        size: parseFloat(selectedSize) || 0 
+      // Convert size to a number
+      const sizeNumber = parseFloat(selectedSize);
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images[currentIndex],
+        size: sizeNumber, // Convert size to number
+        size_type: product.sizing === 'EU' ? 'EU' : 'US'
       });
     }
     
@@ -172,19 +179,21 @@ const ProductDetail = () => {
     <main className="min-h-screen page-gradient">
       <section className="relative z-10 ml-0 md:ml-16 px-3 sm:px-6 py-4 sm:py-8">
         {/* Main Catalog Navigation Bar */}
-        <MainCatalogNavBar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-
-        {/* Breadcrumb / Back - aligned with search bar */}
-        <nav className="mb-4 sm:mb-6 sticky top-[4.5rem] z-40 w-full px-4 md:px-8 py-2">
-          <div className="flex justify-center">
-            <div className="max-w-[240px] sm:max-w-md w-full">
-              <Button variant="outline" onClick={() => navigate(-1)} className="gap-2 backdrop-blur-md bg-background/60 border border-border/50">
-                <ChevronLeft className="w-4 h-4" /> Back
-              </Button>
-            </div>
+        <nav className="sticky top-0 z-40 w-full px-4 md:px-8 py-1">
+          <div className="flex items-center justify-start gap-2 max-w-screen-lg mx-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/catalog')}
+              className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
+            </Button>
+            <MainCatalogNavBar
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
           </div>
         </nav>
 
@@ -197,7 +206,7 @@ const ProductDetail = () => {
         {/* Content */}
         <article className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Images */}
-          <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden">
+          <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden flex-shrink-0">
             {product.images && product.images.length > 0 && (
               <div className="carousel-container">
                 <div
@@ -232,15 +241,14 @@ const ProductDetail = () => {
               variant="ghost"
               size="icon"
               className="absolute top-2 left-2 bg-background/80 hover:bg-background z-20"
-              onClick={() => toggleFavorite(product.id)}
-              aria-label="Toggle favorite"
             >
               <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
             </Button>
           </div>
 
-          {/* Details */}
-          <div className="rounded-lg border border-border bg-background/40 p-4 sm:p-6">
+          {/* Product Details */}
+          <div className="flex-1">
+            {/* Details content here */}
             <div className="flex items-center justify-between mb-3">
               <p className="text-xl sm:text-2xl font-bold text-primary">{product.price}</p>
               <span className="text-xs sm:text-sm text-muted-foreground">{product.stock || 'In Stock'}</span>
@@ -268,13 +276,18 @@ const ProductDetail = () => {
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {sizes.map((s: any) => {
                   const isEu = product.sizing === 'EU' && typeof s === 'object';
-                  const value = isEu ? s.eu : s;
-                  const selected = selectedSize === value;
-                  return (
-                    <Button key={value} variant={selected ? 'default' : 'outline'} onClick={() => setSelectedSize(value)} className="h-10 text-xs">
-                      {isEu ? `${s.eu} (${s.us})` : String(s)}
-                    </Button>
-                  );
+                  const displayValue = isEu ? `EU ${s.eu} (US ${s.us})` : s;
+const selected = selectedSize === displayValue;
+return (
+  <Button
+    key={displayValue}
+    variant={selected ? 'default' : 'outline'}
+    onClick={() => setSelectedSize(displayValue)}
+    className="h-10 text-xs"
+  >
+    {displayValue}
+  </Button>
+);
                 })}
               </div>
             </div>
