@@ -86,7 +86,7 @@ const MainCatalogNavBar = ({
         <div className="search-dim-overlay fixed inset-0 bg-black/50 z-40 cursor-pointer" />
       )}
       
-      <div className="sticky top-0 z-50 w-full px-6 md:px-8 py-2 md:py-4">
+      <div className="sticky top-0 z-50 w-full px-4 md:px-8 py-2 md:py-4">
         <div className="flex justify-center">
           {/* Search Container - centered and elevated above dim overlay */}
           <div ref={searchRef} className="relative max-w-[240px] sm:max-w-md w-full z-50">
@@ -136,9 +136,12 @@ const MainCatalogNavBar = ({
                     <div className="border-t border-border/50 p-3">
                       <Button 
                         onClick={handleShopAll}
-                        className="w-full btn-hover-glow"
+                        className="w-full btn-hover-glow flex items-center justify-center gap-2"
                       >
-                        Shop All Sneakers
+                        <span>Shop All Sneakers</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </Button>
                     </div>
                   </>

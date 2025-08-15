@@ -127,7 +127,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">WEBSITE</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent drop-shadow-lg">
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent filter drop-shadow-[2px_2px_4px_rgba(0,0,0,0.7)]">
                           LAUNCHED
                         </span>
                       </>
@@ -135,7 +135,7 @@ const HeaderCarousel = () => {
                       <>
                         <span className="text-white">JOIN OUR</span>
                         <br />
-                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent drop-shadow-lg">
+                        <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent filter drop-shadow-[2px_2px_4px_rgba(0,0,0,0.7)]">
                           TELEGRAM
                         </span>
                         <br />

@@ -17,25 +17,31 @@ interface CartContextType {
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  onItemAdded?: () => void;
+  setOnItemAdded?: (callback: () => void) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
 
   const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === newItem.id && item.size === newItem.size);
       
       if (existingItem) {
-        return prevItems.map(item =>
+        const updated = prevItems.map(item =>
           item.id === newItem.id && item.size === newItem.size
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+        onItemAdded?.();
+        return updated;
       }
       
+      onItemAdded?.();
       return [...prevItems, { ...newItem, quantity: 1 }];
     });
   };
@@ -82,7 +88,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       updateQuantity,
       clearCart,
       getTotalItems,
-      getTotalPrice
+      getTotalPrice,
+      onItemAdded,
+      setOnItemAdded
     }}>
       {children}
     </CartContext.Provider>

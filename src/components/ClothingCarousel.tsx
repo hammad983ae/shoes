@@ -39,7 +39,7 @@ const ClothingCarousel = () => {
   return (
     <div className="w-full">
       {/* Header with title and Shop All button */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Clothing Collection
@@ -50,11 +50,11 @@ const ClothingCarousel = () => {
         </div>
         <Button 
           onClick={handleShopAll}
-          className="btn-hover-glow group"
+          className="btn-hover-glow group flex items-center justify-center gap-2 w-full sm:w-auto"
           variant="outline"
         >
-          Shop All Clothing
-          <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          <span>Shop All Clothing</span>
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
 

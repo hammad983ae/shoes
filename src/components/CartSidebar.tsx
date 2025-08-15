@@ -42,15 +42,15 @@ const CartSidebar = () => {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-full sm:w-96 z-50">
-        <SheetHeader className="pb-4">
+      <SheetContent side="right" className="w-full sm:w-96 z-50 flex flex-col max-h-screen">
+        <SheetHeader className="pb-4 flex-shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
             Cart ({getTotalItems()} items)
           </SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col flex-1 min-h-0">
           {items.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-center">
               <div>
@@ -60,7 +60,7 @@ const CartSidebar = () => {
             </div>
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
                 {items.map((item) => (
                   <div key={`${item.id}-${item.size}`} className="border rounded-lg p-4 space-y-3">
                     <div className="flex gap-3">
@@ -113,7 +113,7 @@ const CartSidebar = () => {
                 ))}
               </div>
 
-              <div className="border-t pt-4 mt-4">
+              <div className="border-t pt-4 flex-shrink-0 bg-background">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-lg font-semibold">Total:</span>
                   <span className="text-lg font-bold">${getTotalPrice().toFixed(2)}</span>

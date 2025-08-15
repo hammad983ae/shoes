@@ -7,6 +7,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "./components/Layout";
+import GlobalCartProvider from "./components/GlobalCartProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GetFreeCredits from "./pages/GetFreeCredits";
@@ -42,42 +43,44 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Layout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/catalog" element={<Catalog />} />
-                <Route path="/full-catalog" element={<FullCatalog />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/edit-profile" element={<EditProfile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/wallet" element={<Wallet />} />
-                <Route path="/feed" element={<Feed />} />
-                <Route path="/top-posts" element={<Feed />} />
-                <Route path="/credits" element={<GetFreeCredits />} />
-                <Route path="/socials" element={<Socials />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/return-policy" element={<ReturnPolicy />} />
-                <Route path="/opt-in-policy" element={<OptInPolicy />} />
-                <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
-                <Route path="/creator" element={
-                  <RouteGuard requireCreator>
-                    <CreatorDashboard />
-                  </RouteGuard>
-                } />
-                <Route path="/admin" element={
-                  <RouteGuard requireRole="admin">
-                    <AdminDashboard />
-                  </RouteGuard>
-                } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <ReferralDiscountNotification />
+              <GlobalCartProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/catalog" element={<Catalog />} />
+                  <Route path="/full-catalog" element={<FullCatalog />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/edit-profile" element={<EditProfile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/wallet" element={<Wallet />} />
+                  <Route path="/feed" element={<Feed />} />
+                  <Route path="/top-posts" element={<Feed />} />
+                  <Route path="/credits" element={<GetFreeCredits />} />
+                  <Route path="/socials" element={<Socials />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/return-policy" element={<ReturnPolicy />} />
+                  <Route path="/opt-in-policy" element={<OptInPolicy />} />
+                  <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
+                  <Route path="/creator" element={
+                    <RouteGuard requireCreator>
+                      <CreatorDashboard />
+                    </RouteGuard>
+                  } />
+                  <Route path="/admin" element={
+                    <RouteGuard requireRole="admin">
+                      <AdminDashboard />
+                    </RouteGuard>
+                  } />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <ReferralDiscountNotification />
+              </GlobalCartProvider>
             </Layout>
           </BrowserRouter>
         </TooltipProvider>

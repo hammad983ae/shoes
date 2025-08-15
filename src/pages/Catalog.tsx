@@ -7,7 +7,7 @@ import HeaderCarousel from '@/components/HeaderCarousel';
 import SneakerCarousel from '@/components/SneakerCarousel';
 import ClothingCarousel from '@/components/ClothingCarousel';
 import BrandCards from '@/components/BrandCards';
-import CartSidebar from '@/components/CartSidebar';
+
 import InteractiveParticles from '@/components/InteractiveParticles';
 
 const Catalog = () => {
@@ -54,11 +54,6 @@ const Catalog = () => {
         <div className="px-2 sm:px-4 py-4 sm:py-8">
           <BrandCards />
         </div>
-      </div>
-      
-      {/* Cart Sidebar */}
-      <div className="fixed top-4 right-4 z-50">
-        <CartSidebar />
       </div>
     </div>
   );
