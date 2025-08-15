@@ -1,3 +1,13 @@
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import AnnouncementBar from './AnnouncementBar';
+import Sidebar from './Sidebar';
+import ChatBotWidget from './ChatBotWidget';
+
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
@@ -24,3 +34,5 @@ const Layout = ({ children }: LayoutProps) => {
     </div>
   );
 };
+
+export default Layout;
