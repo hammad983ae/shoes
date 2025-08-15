@@ -63,7 +63,14 @@ const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
     colors: string[],
     range: [number, number]
   ) => {
-    const newSearchParams = new URLSearchParams();
+    const newSearchParams = new URLSearchParams(searchParams);
+    
+    // Clear existing filter params
+    newSearchParams.delete('category');
+    newSearchParams.delete('brand');
+    newSearchParams.delete('color');
+    newSearchParams.delete('priceMin');
+    newSearchParams.delete('priceMax');
     
     if (categories.length > 0) {
       newSearchParams.set('category', categories.join(','));

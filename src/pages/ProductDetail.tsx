@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Heart, ChevronLeft, Star, Check, Loader2, Search } from 'lucide-react';
+import { Heart, ChevronLeft, Star, Check, Loader2 } from 'lucide-react';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
 import { useCart } from '@/contexts/CartContext';
+import MainCatalogNavBar from '@/components/MainCatalogNavBar';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -171,23 +171,11 @@ const ProductDetail = () => {
   return (
     <main className="min-h-screen page-gradient">
       <section className="relative z-10 ml-0 md:ml-16 px-3 sm:px-6 py-4 sm:py-8">
-        {/* Search Bar */}
-        <div className="mb-4 sm:mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full text-sm"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchTerm.trim()) {
-                  navigate(`/catalog?search=${encodeURIComponent(searchTerm.trim())}`);
-                }
-              }}
-            />
-          </div>
-        </div>
+        {/* Main Catalog Navigation Bar */}
+        <MainCatalogNavBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
 
         {/* Breadcrumb / Back */}
         <nav className="mb-4 sm:mb-6">

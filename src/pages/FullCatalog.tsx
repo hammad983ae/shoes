@@ -6,6 +6,7 @@ import ProductCard from '@/components/ProductCard';
 import ViewProductModal from '@/components/ViewProductModal';
 import SignupIncentiveModal from '@/components/SignupIncentiveModal';
 import FullCatalogNavBar from '@/components/FullCatalogNavBar';
+import MainCatalogNavBar from '@/components/MainCatalogNavBar';
 import RequestNewItemsCard from '@/components/RequestNewItemsCard';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { useFavorites } from '@/contexts/FavoritesContext';
@@ -117,6 +118,12 @@ const FullCatalog = () => {
 
       {/* Main content */}
       <div className="relative z-10 ml-0 md:ml-16">
+        {/* Main Catalog Navigation Bar */}
+        <MainCatalogNavBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+        
         {/* Full Catalog Navigation Bar with Enhanced Filters */}
         <FullCatalogNavBar
           searchTerm={searchTerm}
@@ -138,9 +145,7 @@ const FullCatalog = () => {
             ))}
             
             {/* Request New Items Card - Always appears at the end */}
-            <div className="col-span-1">
-              <RequestNewItemsCard />
-            </div>
+            <RequestNewItemsCard />
           </div>
 
           {filteredAndSortedProducts.length === 0 && (

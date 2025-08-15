@@ -1,22 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
 const useCartNotification = (onItemAdded: () => void) => {
-  const { setOnItemAdded, setShowNotification } = useCart();
+  const { setOnItemAdded } = useCart();
+
+  const handleItemAdded = useCallback(() => {
+    onItemAdded();
+  }, [onItemAdded]);
 
   useEffect(() => {
     if (setOnItemAdded) {
-      setOnItemAdded(() => () => {
-        onItemAdded();
-      });
+      setOnItemAdded(handleItemAdded);
     }
     return () => {
       if (setOnItemAdded) {
         setOnItemAdded(undefined);
-        setShowNotification(false); // Cleanup notification state
       }
     };
-  }, [setOnItemAdded, onItemAdded, setShowNotification]);
+  }, [setOnItemAdded, handleItemAdded]);
 };
 
 export default useCartNotification;

@@ -35,12 +35,11 @@ const CartSidebar = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="relative bg-background/80 backdrop-blur-sm border-border/40"
+        <Button 
+          variant="outline" 
+          className="h-12 w-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 btn-hover-glow relative backdrop-blur-md bg-background/60 border-border/50"
         >
-          <ShoppingBag className="h-5 w-5" />
+          <ShoppingBag className="w-5 h-5" />
           {getTotalItems() > 0 && (
             <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {getTotalItems()}

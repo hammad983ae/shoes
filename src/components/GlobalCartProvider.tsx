@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import CartSidebar from './CartSidebar';
 import CartAddNotification from './CartAddNotification';
@@ -9,19 +9,14 @@ interface GlobalCartProviderProps {
 }
 
 const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
-  const [showNotification, setShowNotification] = useState(false);
   const location = useLocation();
 
   // Don't show cart on landing page
   const isLandingPage = location.pathname === '/';
 
-  const handleItemAdded = () => {
-    // Only show notification if not already showing
-    if (!showNotification) {
-      setShowNotification(true);
-    }
-  };
-
+  const handleItemAdded = useCallback(() => {
+    // Notification is handled by the CartContext and CartAddNotification component
+  }, []);
 
   useCartNotification(handleItemAdded);
 
@@ -30,7 +25,8 @@ const GlobalCartProvider = ({ children }: GlobalCartProviderProps) => {
       {children}
       {!isLandingPage && (
         <>
-          <div className="fixed top-2 right-4 z-50">
+          {/* Adjusted cart sidebar positioning for desktop alignment */}
+          <div className="fixed top-[4.5rem] right-4 z-50 md:top-[4.5rem]">
             <CartSidebar />
           </div>
           <CartAddNotification />
