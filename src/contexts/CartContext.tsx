@@ -17,6 +17,8 @@ interface CartContextType {
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  showNotification: boolean;
+  setShowNotification: (value: boolean) => void;
   onItemAdded?: () => void;
   setOnItemAdded?: (callback?: () => void) => void;
 }
@@ -25,30 +27,26 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [showNotification, setShowNotification] = useState(false);
   const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
 
   const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === newItem.id && item.size === newItem.size);
-      
-      if (existingItem) {
-        const updated = prevItems.map(item =>
-          item.id === newItem.id && item.size === newItem.size
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-        // Only trigger notification for actual additions
-        if (onItemAdded) {
-          setTimeout(() => onItemAdded(), 100);
-        }
-        return updated;
-      }
-      
-      // Only trigger notification for actual additions
+      const updatedItems = existingItem
+        ? prevItems.map(item =>
+            item.id === newItem.id && item.size === newItem.size
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        : [...prevItems, { ...newItem, quantity: 1 }];
+
+      // Trigger notification only on item addition
+      setShowNotification(true);
       if (onItemAdded) {
         setTimeout(() => onItemAdded(), 100);
       }
-      return [...prevItems, { ...newItem, quantity: 1 }];
+      return updatedItems;
     });
   };
 
@@ -73,6 +71,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setItems([]);
+    setShowNotification(false); // Reset notification on cart clear
   };
 
   const getTotalItems = () => {
@@ -95,6 +94,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       clearCart,
       getTotalItems,
       getTotalPrice,
+      showNotification,
+      setShowNotification,
       onItemAdded,
       setOnItemAdded
     }}>
