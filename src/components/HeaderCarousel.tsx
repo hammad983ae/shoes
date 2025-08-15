@@ -78,7 +78,7 @@ const HeaderCarousel = () => {
   };
 
   return (
-    <div className="relative w-screen h-[480px] overflow-hidden ml-0 md:-ml-16">
+    <div className="relative w-full h-[480px] overflow-hidden">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => {
