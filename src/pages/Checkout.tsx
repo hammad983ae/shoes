@@ -7,24 +7,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-
-
 export default function Checkout() {
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items, clearCart } = useCart();
+  const [appliedDiscount] = useState(0);
+  const [discountType] = useState<'credits' | 'coupon' | null>(null);
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
   const paymentFormRef = useRef<HTMLFormElement>(null);
 
-  // Get any existing credit discount from localStorage or state
-  const [creditDiscount] = useState(0); // This would come from cart context
-  const subtotal = getTotalPrice();
-  const discountedSubtotal = Math.max(0, subtotal - creditDiscount);
-  const tax = discountedSubtotal * 0.08;
-  const total = discountedSubtotal + tax;
+  const subtotal = items.reduce((sum, item) => {
+    const price = parseFloat(item.price.replace('$', ''));
+    return sum + (price * item.quantity);
+  }, 0);
 
-  
+  const discount = appliedDiscount;
+  const tax = (subtotal - discount) * 0.0875; // 8.75% tax
+  const total = subtotal - discount + tax;
 
   // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
@@ -88,7 +88,6 @@ export default function Checkout() {
       if (error || !tokenData?.token) {
         throw new Error(error?.message || 'Failed to generate payment token');
       }
-
 
       // Define callback functions
       const callback = {
@@ -199,21 +198,21 @@ export default function Checkout() {
                 {/* Order Summary */}
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg space-y-2">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
+                    <span>Subtotal:</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
-                  {creditDiscount > 0 && (
+                  {discount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Credit Discount</span>
-                      <span>-${creditDiscount.toFixed(2)}</span>
+                      <span>{discountType === 'credits' ? 'Credits Applied' : 'Coupon Discount'}:</span>
+                      <span>-${discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span>Tax</span>
+                    <span>Tax:</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                    <span>Total</span>
+                    <span>Total:</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
                 </div>

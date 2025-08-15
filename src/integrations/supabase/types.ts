@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1100,36 +1100,36 @@ export type Database = {
     }
     Functions: {
       admin_set_coupon_code: {
-        Args: { target_user_id: string; new_code: string }
+        Args: { new_code: string; target_user_id: string }
         Returns: Json
       }
       admin_set_creator_status: {
         Args: {
-          target_user_id: string
           is_creator_status: boolean
           new_role?: string
+          target_user_id: string
         }
         Returns: Json
       }
       calculate_creator_tier: {
         Args: { monthly_revenue: number }
         Returns: {
-          tier: string
           commission_rate: number
+          tier: string
         }[]
       }
       calculate_creator_tier_by_commission: {
         Args: { monthly_commission: number }
         Returns: {
-          tier: string
           commission_rate: number
+          tier: string
         }[]
       }
       calculate_creator_tier_by_revenue: {
         Args: { monthly_revenue: number }
         Returns: {
-          tier: string
           commission_rate: number
+          tier: string
         }[]
       }
       delete_user_account: {
@@ -1158,10 +1158,10 @@ export type Database = {
       }
       grant_user_credits: {
         Args: {
-          target_user_id: string
           credit_amount: number
           credit_type?: string
           notes_text?: string
+          target_user_id: string
         }
         Returns: boolean
       }
@@ -1178,7 +1178,7 @@ export type Database = {
         Returns: boolean
       }
       set_user_role: {
-        Args: { target_user_id: string; new_role: string }
+        Args: { new_role: string; target_user_id: string }
         Returns: boolean
       }
       update_creator_metrics: {

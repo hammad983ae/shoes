@@ -13,7 +13,7 @@ import {
 
 const CartSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice } = useCart();
+  const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice, addItem } = useCart();
   const navigate = useNavigate();
 
   const handleGoToCart = () => {
@@ -23,6 +23,13 @@ const CartSidebar = () => {
 
   const formatPrice = (price: string) => {
     return parseFloat(price.replace('$', '')).toFixed(2);
+  };
+
+  const handleSizeChange = (item: any, newSize: number) => {
+    removeItem(item.id, item.size);
+    setTimeout(() => {
+      addItem({...item, size: newSize});
+    }, 100);
   };
 
   return (
@@ -74,14 +81,9 @@ const CartSidebar = () => {
                         <span>Size:</span>
                         <select 
                           value={item.size} 
-                          onChange={(e) => {
-                            const newSize = parseInt(e.target.value);
-                            removeItem(item.id, item.size);
-                            setTimeout(() => {
-                              addItem({...item, size: newSize});
-                            }, 100);
-                          }}
-                          className="bg-background border rounded px-1 py-0.5 text-xs"
+                          onChange={(e) => handleSizeChange(item, parseInt(e.target.value))}
+                          className="bg-background border rounded px-1 py-0.5 text-xs z-50"
+                          style={{zIndex: 1000}}
                         >
                           {[6, 7, 8, 9, 10, 11, 12, 13, 14].map(size => (
                             <option key={size} value={size}>{size}</option>
@@ -144,7 +146,6 @@ const CartSidebar = () => {
             </div>
           </div>
         )}
-        </div>
       </SheetContent>
     </Sheet>
   );

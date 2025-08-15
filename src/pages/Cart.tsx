@@ -10,38 +10,46 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
+import { useToast } from '@/hooks/use-toast';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems, addItem } = useCart();
+  const { items, updateQuantity, removeItem, addItem } = useCart();
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [coupon, setCoupon] = useState('');
-  const [redeemState, setRedeemState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showPostPurchase, setShowPostPurchase] = useState(false);
   const [purchasedItems] = useState<any[]>([]);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
-  const [creditsToUse, setCreditsToUse] = useState('');
-  const [creditDiscount, setCreditDiscount] = useState(0);
-  const [currentBalance, setCurrentBalance] = useState(0);
-  const [creditsApplied, setCreditsApplied] = useState(false);
+  const [creditsToApply, setCreditsToApply] = useState(0);
+  const [appliedCredits, setAppliedCredits] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
+  const [credits, setCredits] = useState(0);
   
-  const subtotal = getTotalPrice();
-  const discountedSubtotal = Math.max(0, subtotal - creditDiscount);
-  const estimatedTax = discountedSubtotal * 0.08;
-  const total = discountedSubtotal + estimatedTax;
+  const subtotal = items.reduce((sum, item) => {
+    const price = parseFloat(item.price.replace('$', ''));
+    return sum + (price * item.quantity);
+  }, 0);
+
+  const creditsDiscount = appliedCredits;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const totalDiscount = creditsDiscount + couponDiscount;
+  const discountedSubtotal = Math.max(0, subtotal - totalDiscount);
+  const tax = discountedSubtotal * 0.0875; // 8.75% tax
+  const total = discountedSubtotal + tax;
 
   // Fetch user credits from database
   useEffect(() => {
     const fetchUserCredits = async () => {
       if (user) {
         const { data, error } = await supabase
-          .from('profiles')
-          .select('credits')
+          .from('user_credits')
+          .select('current_balance')
           .eq('user_id', user.id)
           .single();
         
         if (data && !error) {
-          setCurrentBalance(data.credits || 0);
+          setCredits(data.current_balance || 0);
         }
       }
     };
@@ -83,29 +91,68 @@ const Cart = () => {
   }
 
   const handleCreditsSubmit = () => {
-    const credits = parseInt(creditsToUse) || 0;
-    if (credits > currentBalance) {
-      alert('Insufficient credits');
-      return;
+    if (creditsToApply > 0 && creditsToApply <= credits) {
+      setAppliedCredits(creditsToApply);
+      setAppliedCoupon(null); // Remove coupon if applying credits
+      setShowCreditsModal(false);
+      toast({
+        title: "Credits Applied",
+        description: `Applied ${creditsToApply} credits to your order.`,
+      });
     }
-    if (credits > subtotal * 100) { // Assuming 1 dollar = 100 credits
-      alert('Credits exceed order total');
-      return;
-    }
-    setCreditDiscount(credits / 100); // Convert credits to dollars
-    setCreditsApplied(true);
-    setShowCreditsModal(false);
   };
 
   const handleRemoveCredits = () => {
-    setCreditDiscount(0);
-    setCreditsApplied(false);
-    setCreditsToUse('');
+    setAppliedCredits(0);
+    setCreditsToApply(0);
+  };
+
+  const handleCouponSubmit = async () => {
+    if (!couponCode.trim()) return;
+    
+    try {
+      // Validate coupon code exists in database
+      const { data, error } = await supabase
+        .from('coupon_codes')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .single();
+      
+      if (error || !data) {
+        toast({
+          title: "Invalid Coupon",
+          description: "This coupon code is not valid.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Apply 10% discount
+      const discount = subtotal * 0.10;
+      setAppliedCoupon({code: couponCode.toUpperCase(), discount});
+      setAppliedCredits(0); // Remove credits if applying coupon
+      setCouponCode('');
+      toast({
+        title: "Coupon Applied",
+        description: `${couponCode.toUpperCase()} applied! 10% discount.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to apply coupon code.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
   };
 
   const handleCheckout = () => {
     navigate('/checkout');
   };
+  
   if (items.length === 0) {
     return (
       <div className="min-h-screen page-gradient relative">
@@ -212,78 +259,101 @@ const Cart = () => {
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span>Subtotal ({getTotalItems()} items)</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              {creditDiscount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Credit Discount:</span>
-                  <span>-${creditDiscount.toFixed(2)}</span>
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>${subtotal.toFixed(2)}</span>
                 </div>
-              )}
-              <div className="flex justify-between">
-                <span>Estimated Tax (8%)</span>
-                <span>${estimatedTax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span className="text-muted-foreground">FREE</span>
-              </div>
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
+                {appliedCredits > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Credits Applied:</span>
+                    <span>-${appliedCredits.toFixed(2)}</span>
+                  </div>
+                )}
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon ({appliedCoupon.code}):</span>
+                    <span>-${appliedCoupon.discount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Tax:</span>
+                  <span>${tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total:</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
 
-
-              {/* Use Credits Option for Signed-in Users */}
-              {user && !creditsApplied && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setShowCreditsModal(true)}
-                >
-                  Use Credits (Balance: {currentBalance})
-                </Button>
-              )}
-              
-              {user && creditsApplied && (
-                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <span className="text-lg">✓</span>
-                    <span className="font-medium">Credits Applied</span>
+              {user && (
+                <>
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Apply Credits</span>
+                      <span className="text-sm text-muted-foreground">
+                        Available: {credits} credits
+                      </span>
+                    </div>
+                    
+                    {appliedCredits > 0 ? (
+                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <span className="text-green-700 font-medium">
+                          {appliedCredits} credits applied
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleRemoveCredits}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : credits > 0 && !appliedCoupon ? (
+                      <Button 
+                        onClick={() => setShowCreditsModal(true)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Apply Credits
+                      </Button>
+                    ) : credits === 0 && !appliedCoupon ? (
+                      <p className="text-sm text-muted-foreground">
+                        No credits available
+                      </p>
+                    ) : null}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRemoveCredits}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              )}
 
-              {/* Coupon code input */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={coupon}
-                  onChange={e => setCoupon(e.target.value)}
-                  placeholder="Redeem coupon code"
-                  className="flex-1 border rounded px-3 py-2 text-sm bg-background"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => setRedeemState('success')} // Placeholder handler
-                  disabled={redeemState === 'loading'}
-                >
-                  {redeemState === 'loading' ? '...' : 'Redeem'}
-                </Button>
-              </div>
+                  <div className="space-y-4 mb-6">
+                    <div className="font-medium">Redeem Coupon Code</div>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <span className="text-green-700 font-medium">
+                          {appliedCoupon.code} applied (10% off)
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleRemoveCoupon}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : !appliedCredits ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-input bg-background rounded-md text-sm"
+                        />
+                        <Button variant="outline" onClick={handleCouponSubmit}>Redeem</Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              )}
 
               {/* Guest Checkout Options */}
               {!user && (
@@ -292,7 +362,7 @@ const Cart = () => {
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => navigate('/signin')}
                   >
-                    Create Account for 20% Off
+                    Create Account for 10% Off
                   </Button>
                   <div className="text-center text-sm text-muted-foreground">OR</div>
                   <Button 
@@ -330,17 +400,17 @@ const Cart = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              Current Balance: <span className="font-semibold">{creditsToUse ? currentBalance - parseInt(creditsToUse) : currentBalance} credits</span>
+              Current Balance: <span className="font-semibold">{credits} credits</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              Order Total: <span className="font-semibold">${creditsToUse ? Math.max(0, subtotal - (parseInt(creditsToUse) / 100)).toFixed(2) : subtotal.toFixed(2)}</span>
+              Order Total: <span className="font-semibold">${subtotal.toFixed(2)}</span>
             </div>
             <Input
               type="number"
               placeholder="Credits to use"
-              value={creditsToUse}
-              onChange={(e) => setCreditsToUse(e.target.value)}
-              max={Math.min(currentBalance, subtotal * 100)}
+              value={creditsToApply}
+              onChange={(e) => setCreditsToApply(parseInt(e.target.value) || 0)}
+              max={Math.min(credits, subtotal * 100)}
             />
             <div className="text-xs text-muted-foreground">
               100 credits = $1.00
