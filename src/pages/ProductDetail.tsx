@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, ChevronLeft, Star, Check, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Heart, ChevronLeft, Star, Check, Loader2, Search } from 'lucide-react';
 import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
 import { useCart } from '@/contexts/CartContext';
@@ -57,6 +58,7 @@ const ProductDetail = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState('1');
+  const [searchTerm, setSearchTerm] = useState('');
   const [addToCartState, setAddToCartState] = useState<'idle' | 'loading' | 'success'>('idle');
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -148,9 +150,18 @@ const ProductDetail = () => {
   const handleAddToCart = async () => {
     if (!selectedSize) return;
     setAddToCartState('loading');
+    
+    // Add items to cart one by one to ensure proper notification
     for (let i = 0; i < parseInt(quantity); i++) {
-      addItem({ id: product.id, name: product.name, price: product.price, image: product.images[currentIndex], size: parseFloat(selectedSize) || 0 });
+      addItem({ 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        image: product.images[currentIndex], 
+        size: parseFloat(selectedSize) || 0 
+      });
     }
+    
     setAddToCartState('success');
     setTimeout(() => setAddToCartState('idle'), 1200);
   };
@@ -160,6 +171,24 @@ const ProductDetail = () => {
   return (
     <main className="min-h-screen page-gradient">
       <section className="relative z-10 ml-0 md:ml-16 px-3 sm:px-6 py-4 sm:py-8">
+        {/* Search Bar */}
+        <div className="mb-4 sm:mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchTerm.trim()) {
+                  navigate(`/catalog?search=${encodeURIComponent(searchTerm.trim())}`);
+                }
+              }}
+            />
+          </div>
+        </div>
+
         {/* Breadcrumb / Back */}
         <nav className="mb-4 sm:mb-6">
           <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
