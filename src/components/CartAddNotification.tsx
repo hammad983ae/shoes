@@ -1,27 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
-interface CartAddNotificationProps {
-  show: boolean;
-  onHide: () => void;
-}
-
-const CartAddNotification = ({ show, onHide }: CartAddNotificationProps) => {
+const CartAddNotification = () => {
+  const { showNotification, setShowNotification } = useCart();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (show) {
+    if (showNotification) {
       setIsVisible(true);
       const timer = setTimeout(() => {
         setIsVisible(false);
-        setTimeout(onHide, 300); // Wait for fade out animation
-      }, 1000);
-      
+        setTimeout(() => setShowNotification(false), 300); // Reset after fade-out
+      }, 1000); // Show for 1 second
       return () => clearTimeout(timer);
     }
-  }, [show, onHide]);
+  }, [showNotification, setShowNotification]);
 
-  if (!show) return null;
+  if (!showNotification) return null;
 
   return (
     <div 
