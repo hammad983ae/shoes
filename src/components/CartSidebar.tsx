@@ -49,7 +49,7 @@ const CartSidebar = () => {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-full sm:w-96 z-50 flex flex-col" style={{maxHeight: 'calc(100vh - 80px)'}}>
+      <SheetContent side="right" className="w-full sm:w-96 z-50 flex flex-col h-full" style={{height: 'calc(100vh - 0px)'}}>
         <SheetHeader className="pb-4 flex-shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
@@ -131,7 +131,7 @@ const CartSidebar = () => {
               ))}
             </div>
 
-            <div className="border-t pt-4 mt-4 flex-shrink-0 bg-background">
+            <div className="border-t pt-4 mt-4 flex-shrink-0 bg-background sticky bottom-0" style={{marginBottom: '80px'}}>
               <div className="flex justify-between items-center mb-4">
                 <span className="text-lg font-semibold">Total:</span>
                 <span className="text-lg font-bold">${getTotalPrice().toFixed(2)}</span>
