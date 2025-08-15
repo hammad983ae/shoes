@@ -1,32 +1,33 @@
-import React, { useState } from 'react';
+// ✅ Cleaned up Layout.tsx: Removed global cart button logic
+// Cart button now expected to be rendered inside individual sticky nav bars (e.g., MainCatalogNavBar.tsx)
+
+import { ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import AnnouncementBar from './AnnouncementBar';
 import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
+import AnnouncementBar from './AnnouncementBar';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (isHomePage) return <>{children}</>;
+  if (isHomePage) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="relative min-h-screen bg-background">
-      <AnnouncementBar />  // no sticky, just render normally
-
-      {/* Sidebar (non-sticky) */}
+    <div className="min-h-screen bg-background">
+      <AnnouncementBar />
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-
-      {/* Main content wrapper */}
-      <div className="relative z-10 transition-all duration-300 ml-0 md:ml-16">
+      <div className="transition-all duration-300 ml-0 md:ml-16">
         {children}
       </div>
-
       <ChatBotWidget />
     </div>
   );

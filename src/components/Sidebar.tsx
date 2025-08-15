@@ -60,6 +60,11 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
   const allLinks = [...links, ...dashboardLinks];
 
+  const currentPath = window.location.pathname;
+  const filteredLinks = currentPath === '/feed' 
+    ? allLinks.filter(link => link.href !== '/socials')
+    : allLinks;
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -89,7 +94,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
             </div>
             
             <div className="space-y-2 md:space-y-4">
-              {allLinks.map((link, idx) => (
+              {filteredLinks.map((link, idx) => (
                 <Link
                   key={idx}
                   to={link.href}
@@ -152,7 +157,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
         <div className="flex flex-col w-full">
           {/* Main Navigation */}
           <div className="flex-1 pt-6 space-y-2">
-            {allLinks.map((link, idx) => (
+            {filteredLinks.map((link, idx) => (
               <Link
                 key={idx}
                 to={link.href}

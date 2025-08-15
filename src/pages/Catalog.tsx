@@ -29,16 +29,21 @@ const Catalog = () => {
       {/* Sidebar */}
       <Sidebar isOpen={true} onToggle={() => {}} onBackToHome={() => {}} />
 
-      {/* Main content */}
-      <div className="relative z-10 ml-0 md:ml-16">
-        {/* Main Catalog Navigation Bar - Sticky */}
+      {/* Main Catalog Navigation Bar - No filters */}
+      <div className="relative z-20 ml-0 md:ml-16">
         <MainCatalogNavBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
         />
+      </div>
 
-        {/* Header Carousel */}
+      {/* Header Carousel - Full Width */}
+      <div className="relative z-10 -mt-4">
         <HeaderCarousel />
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 ml-0 md:ml-16">
 
         {/* Sneaker Collection */}
         <div className="px-2 sm:px-4 py-4 sm:py-8">
