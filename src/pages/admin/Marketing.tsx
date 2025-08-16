@@ -1,160 +1,22 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp,
   DollarSign,
-  Users,
   Eye,
-  ArrowUpRight,
-  Mail,
-  Share2,
   Target,
-  BarChart3,
-  ExternalLink,
-  Play,
-  Pause,
   Plus,
   Filter,
   Download
 } from "lucide-react";
 
-// Mock marketing data
-const marketingData = {
-  overview: {
-    totalSpend: 45890,
-    totalRevenue: 189450,
-    roas: 4.13,
-    impressions: 2847392,
-    clicks: 48567,
-    ctr: 1.71,
-    conversions: 1247,
-    conversionRate: 2.57
-  },
-  campaigns: [
-    {
-      id: 'CAM-001',
-      name: 'Summer Electronics Sale',
-      type: 'Google Ads',
-      status: 'active',
-      spend: 12450,
-      revenue: 52890,
-      roas: 4.25,
-      impressions: 789432,
-      clicks: 12567,
-      conversions: 342,
-      startDate: '2024-01-01',
-      endDate: '2024-01-31'
-    },
-    {
-      id: 'CAM-002',
-      name: 'Facebook Fitness Collection',
-      type: 'Meta Ads',
-      status: 'active',
-      spend: 8950,
-      revenue: 34670,
-      roas: 3.87,
-      impressions: 567890,
-      clicks: 9870,
-      conversions: 234,
-      startDate: '2024-01-05',
-      endDate: '2024-02-05'
-    },
-    {
-      id: 'CAM-003',
-      name: 'Email Newsletter Campaign',
-      type: 'Email',
-      status: 'completed',
-      spend: 450,
-      revenue: 12890,
-      roas: 28.64,
-      impressions: 45000,
-      clicks: 2890,
-      conversions: 156,
-      startDate: '2024-01-10',
-      endDate: '2024-01-17'
-    },
-    {
-      id: 'CAM-004',
-      name: 'Instagram Influencer Collab',
-      type: 'Social',
-      status: 'paused',
-      spend: 5600,
-      revenue: 18940,
-      roas: 3.38,
-      impressions: 234567,
-      clicks: 4567,
-      conversions: 89,
-      startDate: '2024-01-12',
-      endDate: '2024-01-26'
-    }
-  ],
-  emailCampaigns: [
-    {
-      name: 'Weekly Newsletter #4',
-      sent: 12450,
-      opened: 4890,
-      clicked: 567,
-      purchased: 89,
-      revenue: 8945,
-      sentDate: '2024-01-15'
-    },
-    {
-      name: 'Flash Sale Alert',
-      sent: 8950,
-      opened: 4230,
-      clicked: 890,
-      purchased: 156,
-      revenue: 12340,
-      sentDate: '2024-01-12'
-    },
-    {
-      name: 'New Product Launch',
-      sent: 15670,
-      opened: 6780,
-      clicked: 1234,
-      purchased: 234,
-      revenue: 18670,
-      sentDate: '2024-01-08'
-    }
-  ],
-  utmSources: [
-    { source: 'google_ads', clicks: 12567, conversions: 342, revenue: 52890, roas: 4.21 },
-    { source: 'facebook_ads', clicks: 9870, conversions: 234, revenue: 34670, roas: 3.51 },
-    { source: 'email_newsletter', clicks: 2890, conversions: 156, revenue: 12890, roas: 28.64 },
-    { source: 'instagram_influencer', clicks: 4567, conversions: 89, revenue: 18940, roas: 4.15 }
-  ],
-  discountCodes: [
-    { code: 'SAVE20', uses: 456, revenue: 23450, discount: 20 },
-    { code: 'WELCOME10', uses: 789, revenue: 15670, discount: 10 },
-    { code: 'FLASH30', uses: 234, revenue: 18940, discount: 30 },
-    { code: 'STUDENT15', uses: 567, revenue: 12340, discount: 15 }
-  ]
-};
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'active': return 'bg-green-100 text-green-800 border-green-200';
-    case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
-    default: return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-}
-
-function getCampaignIcon(type: string) {
-  switch (type) {
-    case 'Google Ads': return Target;
-    case 'Meta Ads': return Share2;
-    case 'Email': return Mail;
-    case 'Social': return Users;
-    default: return BarChart3;
-  }
-}
-
 export default function Marketing() {
+  const [loading] = useState(true);
+
   return (
     <DashboardLayout currentPage="marketing">
       <div className="p-6 space-y-6">
@@ -186,11 +48,8 @@ export default function Marketing() {
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total ROAS</p>
-                  <p className="text-2xl font-bold">{marketingData.overview.roas}x</p>
-                  <p className="text-xs text-green-600 flex items-center">
-                    <ArrowUpRight className="w-3 h-3 mr-1" />
-                    +12.4%
-                  </p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0x</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
                 </div>
               </div>
             </CardContent>
@@ -201,11 +60,8 @@ export default function Marketing() {
                 <Target className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Ad Spend</p>
-                  <p className="text-2xl font-bold">${marketingData.overview.totalSpend.toLocaleString()}</p>
-                  <p className="text-xs text-blue-600 flex items-center">
-                    <ArrowUpRight className="w-3 h-3 mr-1" />
-                    +8.7%
-                  </p>
+                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">$0</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
                 </div>
               </div>
             </CardContent>
@@ -216,11 +72,8 @@ export default function Marketing() {
                 <Eye className="h-4 w-4 text-purple-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Impressions</p>
-                  <p className="text-2xl font-bold">{(marketingData.overview.impressions / 1000000).toFixed(1)}M</p>
-                  <p className="text-xs text-purple-600 flex items-center">
-                    <ArrowUpRight className="w-3 h-3 mr-1" />
-                    +15.2%
-                  </p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
                 </div>
               </div>
             </CardContent>
@@ -231,11 +84,8 @@ export default function Marketing() {
                 <TrendingUp className="h-4 w-4 text-orange-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Conversion Rate</p>
-                  <p className="text-2xl font-bold">{marketingData.overview.conversionRate}%</p>
-                  <p className="text-xs text-orange-600 flex items-center">
-                    <ArrowUpRight className="w-3 h-3 mr-1" />
-                    +3.4%
-                  </p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0%</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
                 </div>
               </div>
             </CardContent>
@@ -265,77 +115,40 @@ export default function Marketing() {
             </div>
 
             <div className="space-y-4">
-              {marketingData.campaigns.map((campaign) => {
-                const CampaignIcon = getCampaignIcon(campaign.type);
-                return (
-                  <Card key={campaign.id}>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <Card key={index}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-muted rounded-lg">
-                            <CampaignIcon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-semibold">{campaign.name}</h4>
-                              <Badge className={getStatusColor(campaign.status)}>
-                                {campaign.status}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">{campaign.type} • {campaign.id}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {campaign.startDate} - {campaign.endDate}
-                            </p>
+                          <Skeleton className="h-10 w-10 rounded-lg" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-5 w-48" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-24" />
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {campaign.status === 'active' ? (
-                            <Button variant="outline" size="sm">
-                              <Pause className="w-3 h-3 mr-1" />
-                              Pause
-                            </Button>
-                          ) : (
-                            <Button variant="outline" size="sm">
-                              <Play className="w-3 h-3 mr-1" />
-                              Resume
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="w-3 h-3" />
-                          </Button>
+                          <Skeleton className="h-8 w-16" />
+                          <Skeleton className="h-8 w-8" />
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Spend</p>
-                          <p className="text-lg font-bold">${campaign.spend.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Revenue</p>
-                          <p className="text-lg font-bold">${campaign.revenue.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">ROAS</p>
-                          <p className="text-lg font-bold text-green-600">{campaign.roas}x</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Impressions</p>
-                          <p className="text-lg font-bold">{campaign.impressions.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Clicks</p>
-                          <p className="text-lg font-bold">{campaign.clicks.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Conversions</p>
-                          <p className="text-lg font-bold">{campaign.conversions}</p>
-                        </div>
+                      <div className="grid grid-cols-6 gap-4 mt-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <div key={i} className="space-y-1">
+                            <Skeleton className="h-3 w-12" />
+                            <Skeleton className="h-5 w-16" />
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
-                );
-              })}
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No campaigns found
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -347,50 +160,27 @@ export default function Marketing() {
                 <CardDescription>Track opens, clicks, and conversions from email marketing</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {marketingData.emailCampaigns.map((email, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                      <div className="flex items-center space-x-4">
-                        <Mail className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <p className="font-medium">{email.name}</p>
-                          <p className="text-sm text-muted-foreground">Sent {email.sentDate}</p>
+                {loading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
+                        <Skeleton className="h-5 w-64" />
+                        <div className="grid grid-cols-5 gap-6">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="text-right space-y-1">
+                              <Skeleton className="h-3 w-8" />
+                              <Skeleton className="h-4 w-12" />
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <div className="grid grid-cols-5 gap-6 text-right">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Sent</p>
-                          <p className="font-medium">{email.sent.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Opened</p>
-                          <p className="font-medium">{email.opened.toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {((email.opened / email.sent) * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Clicked</p>
-                          <p className="font-medium">{email.clicked.toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {((email.clicked / email.opened) * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Purchased</p>
-                          <p className="font-medium">{email.purchased}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {((email.purchased / email.clicked) * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Revenue</p>
-                          <p className="font-medium text-green-600">${email.revenue.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No email campaigns found
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -403,39 +193,24 @@ export default function Marketing() {
                 <CardDescription>Track traffic and conversions by UTM parameters</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {marketingData.utmSources.map((source, index) => (
-                    <div key={source.source} className="flex items-center justify-between p-4 rounded-lg border">
-                      <div className="flex items-center space-x-4">
-                        <Badge variant="outline" className="w-8 h-6 flex items-center justify-center">
-                          {index + 1}
-                        </Badge>
-                        <div>
-                          <p className="font-medium">{source.source.replace(/_/g, ' ').toUpperCase()}</p>
-                          <p className="text-sm text-muted-foreground">UTM Source</p>
+                {loading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="grid grid-cols-4 gap-6">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                            <Skeleton key={i} className="h-4 w-16" />
+                          ))}
                         </div>
                       </div>
-                      <div className="grid grid-cols-4 gap-6 text-right">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Clicks</p>
-                          <p className="font-medium">{source.clicks.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Conversions</p>
-                          <p className="font-medium">{source.conversions}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Revenue</p>
-                          <p className="font-medium">${source.revenue.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">ROAS</p>
-                          <p className="font-medium text-green-600">{source.roas}x</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No UTM data available
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -445,115 +220,71 @@ export default function Marketing() {
             <Card>
               <CardHeader>
                 <CardTitle>Discount Code Performance</CardTitle>
-                <CardDescription>Monitor usage and effectiveness of promotional codes</CardDescription>
+                <CardDescription>Track usage and effectiveness of discount codes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {marketingData.discountCodes.map((code) => (
-                    <div key={code.code} className="flex items-center justify-between p-4 rounded-lg border">
-                      <div className="flex items-center space-x-4">
-                        <div className="px-3 py-1 bg-primary/10 text-primary rounded-lg font-mono text-sm">
-                          {code.code}
-                        </div>
-                        <div>
-                          <p className="font-medium">{code.discount}% Discount</p>
-                          <p className="text-sm text-muted-foreground">Promotional Code</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-6 text-right">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Uses</p>
-                          <p className="text-xl font-bold">{code.uses}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Revenue</p>
-                          <p className="text-xl font-bold">${code.revenue.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Avg Order</p>
-                          <p className="text-xl font-bold">${Math.round(code.revenue / code.uses)}</p>
+                {loading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
+                        <Skeleton className="h-4 w-24" />
+                        <div className="grid grid-cols-3 gap-6">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <Skeleton key={i} className="h-4 w-12" />
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No discount codes found
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Channel Performance</CardTitle>
-                  <CardDescription>Compare ROAS across different marketing channels</CardDescription>
+                  <CardDescription>Performance metrics by marketing channel</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Email Marketing</span>
-                        <span className="font-medium">28.6x ROAS</span>
-                      </div>
-                      <Progress value={100} className="h-2" />
+                  {loading ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <Skeleton key={index} className="h-12 w-full" />
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Google Ads</span>
-                        <span className="font-medium">4.2x ROAS</span>
-                      </div>
-                      <Progress value={15} className="h-2" />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No channel data available
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Meta Ads</span>
-                        <span className="font-medium">3.9x ROAS</span>
-                      </div>
-                      <Progress value={14} className="h-2" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Social Media</span>
-                        <span className="font-medium">3.4x ROAS</span>
-                      </div>
-                      <Progress value={12} className="h-2" />
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Budget Allocation</CardTitle>
-                  <CardDescription>Monthly marketing spend by channel</CardDescription>
+                  <CardTitle>Attribution Analysis</CardTitle>
+                  <CardDescription>Multi-touch attribution insights</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Google Ads</span>
-                      <span className="text-lg font-bold">$12,450</span>
+                  {loading ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <Skeleton key={index} className="h-12 w-full" />
+                      ))}
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Meta Ads</span>
-                      <span className="text-lg font-bold">$8,950</span>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No attribution data available
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Email Tools</span>
-                      <span className="text-lg font-bold">$450</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Influencers</span>
-                      <span className="text-lg font-bold">$5,600</span>
-                    </div>
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Total Spend</span>
-                        <span className="text-xl font-bold">${marketingData.overview.totalSpend.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

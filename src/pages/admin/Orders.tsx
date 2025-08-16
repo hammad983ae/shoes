@@ -8,121 +8,40 @@ import {
   Search,
   Filter,
   Download,
-  Eye,
   Package,
   Truck,
   CheckCircle,
   XCircle,
   Clock,
-  AlertTriangle,
-  MoreHorizontal,
-  MapPin
+  AlertTriangle
 } from "lucide-react";
 
-// Mock orders data
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Data state - will be replaced with real API calls
 const ordersData = {
   summary: {
-    total: 3247,
-    pending: 89,
-    processing: 156,
-    shipped: 234,
-    delivered: 2689,
-    returned: 79
+    total: 0,
+    pending: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    returned: 0
   },
-  recentOrders: [
-    {
-      id: '#3542',
-      customer: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      total: 299.99,
-      status: 'processing',
-      items: 2,
-      date: '2024-01-15',
-      shippingAddress: 'New York, NY',
-      paymentMethod: 'Credit Card'
-    },
-    {
-      id: '#3541',
-      customer: 'Mike Chen',
-      email: 'mike.chen@email.com',
-      total: 189.50,
-      status: 'shipped',
-      items: 1,
-      date: '2024-01-15',
-      shippingAddress: 'Los Angeles, CA',
-      paymentMethod: 'PayPal'
-    },
-    {
-      id: '#3540',
-      customer: 'Emma Davis',
-      email: 'emma.davis@email.com',
-      total: 449.99,
-      status: 'delivered',
-      items: 3,
-      date: '2024-01-14',
-      shippingAddress: 'Chicago, IL',
-      paymentMethod: 'Credit Card'
-    },
-    {
-      id: '#3539',
-      customer: 'James Wilson',
-      email: 'james.wilson@email.com',
-      total: 89.99,
-      status: 'pending',
-      items: 1,
-      date: '2024-01-14',
-      shippingAddress: 'Houston, TX',
-      paymentMethod: 'Apple Pay'
-    },
-    {
-      id: '#3538',
-      customer: 'Lisa Brown',
-      email: 'lisa.brown@email.com',
-      total: 329.99,
-      status: 'returned',
-      items: 2,
-      date: '2024-01-13',
-      shippingAddress: 'Phoenix, AZ',
-      paymentMethod: 'Credit Card'
-    }
-  ],
+  recentOrders: [],
   fulfillmentStats: {
-    avgProcessingTime: '1.2 days',
-    avgShippingTime: '3.4 days',
-    onTimeDelivery: 94.2,
-    returnRate: 2.4
+    avgProcessingTime: "0 days",
+    avgShippingTime: "0 days",
+    onTimeDelivery: 0,
+    returnRate: 0
   },
-  lowStockAlerts: [
-    { product: 'Wireless Bluetooth Headphones', stock: 5, sku: 'WBH-001' },
-    { product: 'Smart Fitness Watch', stock: 8, sku: 'SFW-002' },
-    { product: 'Phone Case Pro Max', stock: 3, sku: 'PCP-003' },
-    { product: 'Laptop Stand Adjustable', stock: 12, sku: 'LSA-004' }
-  ]
+  lowStockAlerts: []
 };
 
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'processing': return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'shipped': return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
-    case 'returned': return 'bg-red-100 text-red-800 border-red-200';
-    default: return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-}
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case 'pending': return Clock;
-    case 'processing': return Package;
-    case 'shipped': return Truck;
-    case 'delivered': return CheckCircle;
-    case 'returned': return XCircle;
-    default: return Clock;
-  }
-}
-
 export default function Orders() {
+  const [loading] = useState(true);
+  
   return (
     <DashboardLayout currentPage="orders">
       <div className="p-6 space-y-6">
@@ -153,7 +72,7 @@ export default function Orders() {
                 <div className="w-2 h-2 bg-gray-500 rounded-full" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Orders</p>
-                  <p className="text-xl font-bold">{ordersData.summary.total.toLocaleString()}</p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">0</p>}
                 </div>
               </div>
             </CardContent>
@@ -244,53 +163,44 @@ export default function Orders() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {ordersData.recentOrders.map((order) => {
-                    const StatusIcon = getStatusIcon(order.status);
-                    return (
-                      <div key={order.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
                         <div className="flex items-center space-x-4">
-                          <StatusIcon className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium">{order.id}</span>
-                              <Badge className={getStatusColor(order.status)}>
-                                {order.status}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">{order.customer}</p>
-                            <p className="text-xs text-muted-foreground">{order.email}</p>
+                          <Skeleton className="h-5 w-5 rounded" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-32" />
                           </div>
                         </div>
                         <div className="flex items-center space-x-8">
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Total</p>
-                            <p className="font-medium">${order.total}</p>
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-3 w-8" />
+                            <Skeleton className="h-4 w-12" />
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Items</p>
-                            <p className="font-medium">{order.items}</p>
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-3 w-8" />
+                            <Skeleton className="h-4 w-8" />
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Date</p>
-                            <p className="font-medium">{order.date}</p>
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-3 w-8" />
+                            <Skeleton className="h-4 w-16" />
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Location</p>
-                            <p className="font-medium flex items-center">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              {order.shippingAddress}
-                            </p>
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-3 w-12" />
+                            <Skeleton className="h-4 w-20" />
                           </div>
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <Skeleton className="h-8 w-8 rounded" />
+                          <Skeleton className="h-8 w-8 rounded" />
                         </div>
                       </div>
-                    );
-                  })}
+                    ))
+                  ) : ordersData.recentOrders.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No orders found
+                    </div>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
@@ -383,26 +293,30 @@ export default function Orders() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {ordersData.lowStockAlerts.map((item) => (
-                    <div key={item.sku} className="flex items-center justify-between p-4 rounded-lg border border-orange-200 bg-orange-50">
-                      <div className="flex items-center space-x-3">
-                        <Package className="h-5 w-5 text-orange-600" />
-                        <div>
-                          <p className="font-medium">{item.product}</p>
-                          <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-orange-200 bg-orange-50">
+                        <div className="flex items-center space-x-3">
+                          <Package className="h-5 w-5 text-orange-600" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-20" />
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-6 w-8" />
+                          </div>
+                          <Skeleton className="h-8 w-16 rounded" />
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Stock Level</p>
-                          <p className="text-xl font-bold text-orange-600">{item.stock}</p>
-                        </div>
-                        <Button size="sm">
-                          Restock
-                        </Button>
-                      </div>
+                    ))
+                  ) : ordersData.lowStockAlerts.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No stock alerts
                     </div>
-                  ))}
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
