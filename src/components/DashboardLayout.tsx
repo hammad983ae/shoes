@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -74,8 +75,8 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
               const isActive = currentPage === item.id;
               return (
                 <div key={item.id} className="relative group">
-                  <a
-                    href={item.id === 'dashboard' ? `/admin` : `/admin/${item.id}`}
+                  <Link
+                    to={item.id === 'dashboard' ? `/admin` : `/admin/${item.id}`}
                     className={cn(
                       "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200",
                       isActive
@@ -87,7 +88,7 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
                       "h-6 w-6 transition-colors",
                       isActive ? "text-primary-foreground" : item.color
                     )} />
-                  </a>
+                  </Link>
                   
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
