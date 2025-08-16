@@ -109,9 +109,9 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
             {navigation.map((item) => {
               const isActive = currentPage === item.id;
               return (
-                  <a
-                    key={item.id}
-                    href={item.id === 'dashboard' ? '/admin' : `/admin/${item.id}`}
+                <a
+                  key={item.id}
+                  href={`/${item.id}`}
                   className={cn(
                     "flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     isActive
@@ -209,7 +209,7 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
               return (
                 <div key={item.id} className="relative group">
                   <a
-                    href={item.id === 'dashboard' ? '/admin' : `/admin/${item.id}`}
+                    href={`/${item.id}`}
                     className={cn(
                       "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200",
                       isActive
