@@ -48,56 +48,59 @@ import RouteGuard from "./components/RouteGuard";
            <TooltipProvider>
              <Toaster />
              <Sonner />
-             <BrowserRouter>
-               <Layout>
-                 <GlobalCartProvider>
-                   <Routes>
-                     <Route path="/" element={<Index />} />
-                     <Route path="/catalog" element={<Catalog />} />
-                     <Route path="/full-catalog" element={<FullCatalog />} />
-                     <Route path="/product/:id" element={<ProductDetail />} />
-                     <Route path="/profile" element={<Profile />} />
-                     <Route path="/edit-profile" element={<EditProfile />} />
-                     <Route path="/settings" element={<Settings />} />
-                     <Route path="/wallet" element={<Wallet />} />
-                     <Route path="/feed" element={<Feed />} />
-                     <Route path="/top-posts" element={<Feed />} />
-                     <Route path="/credits" element={<GetFreeCredits />} />
-                     <Route path="/socials" element={<Socials />} />
-                     <Route path="/cart" element={<Cart />} />
-                     <Route path="/checkout" element={<Checkout />} />
-                     <Route path="/signin" element={<SignIn />} />
-                     <Route path="/reset-password" element={<ResetPassword />} />
-                     <Route path="/privacy" element={<Privacy />} />
-                     <Route path="/terms" element={<Terms />} />
-                     <Route path="/return-policy" element={<ReturnPolicy />} />
-                     <Route path="/opt-in-policy" element={<OptInPolicy />} />
-                     <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
-                     <Route path="/creator" element={
-                       <RouteGuard requireCreator>
-                         <CreatorDashboard />
-                       </RouteGuard>
-                     } />
-                      <Route path="/admin/*" element={
-                        <RouteGuard requireRole="admin">
-                          <Routes>
-                            <Route path="/" element={<DashboardLayout currentPage="dashboard"><Dashboard /></DashboardLayout>} />
-                            <Route path="/analytics" element={<DashboardLayout currentPage="analytics"><Analytics /></DashboardLayout>} />
-                            <Route path="/marketing" element={<DashboardLayout currentPage="marketing"><Marketing /></DashboardLayout>} />
-                            <Route path="/orders" element={<DashboardLayout currentPage="orders"><Orders /></DashboardLayout>} />
-                            <Route path="/products" element={<DashboardLayout currentPage="products"><Products /></DashboardLayout>} />
-                            <Route path="/users" element={<DashboardLayout currentPage="users"><Users /></DashboardLayout>} />
-                            <Route path="*" element={<AdminNotFound />} />
-                          </Routes>
+              <BrowserRouter>
+                <GlobalCartProvider>
+                  <Routes>
+                    {/* Main app routes with Layout */}
+                    <Route path="/" element={<Layout><Index /></Layout>} />
+                    <Route path="/catalog" element={<Layout><Catalog /></Layout>} />
+                    <Route path="/full-catalog" element={<Layout><FullCatalog /></Layout>} />
+                    <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
+                    <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                    <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
+                    <Route path="/settings" element={<Layout><Settings /></Layout>} />
+                    <Route path="/wallet" element={<Layout><Wallet /></Layout>} />
+                    <Route path="/feed" element={<Layout><Feed /></Layout>} />
+                    <Route path="/top-posts" element={<Layout><Feed /></Layout>} />
+                    <Route path="/credits" element={<Layout><GetFreeCredits /></Layout>} />
+                    <Route path="/socials" element={<Layout><Socials /></Layout>} />
+                    <Route path="/cart" element={<Layout><Cart /></Layout>} />
+                    <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                    <Route path="/signin" element={<Layout><SignIn /></Layout>} />
+                    <Route path="/reset-password" element={<Layout><ResetPassword /></Layout>} />
+                    <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+                    <Route path="/terms" element={<Layout><Terms /></Layout>} />
+                    <Route path="/return-policy" element={<Layout><ReturnPolicy /></Layout>} />
+                    <Route path="/opt-in-policy" element={<Layout><OptInPolicy /></Layout>} />
+                    <Route path="/ref/:referralCode" element={<Layout><ReferralRedirect /></Layout>} />
+                    <Route path="/creator" element={
+                      <Layout>
+                        <RouteGuard requireCreator>
+                          <CreatorDashboard />
                         </RouteGuard>
-                      } />
-                     <Route path="*" element={<NotFound />} />
-                   </Routes>
-                   <ReferralDiscountNotification />
-                   <CartAddNotification /> {/* Add this line */}
-                 </GlobalCartProvider>
-               </Layout>
-             </BrowserRouter>
+                      </Layout>
+                    } />
+                    
+                    {/* Admin routes without Layout - only DashboardLayout */}
+                    <Route path="/admin/*" element={
+                      <RouteGuard requireRole="admin">
+                        <Routes>
+                          <Route path="/" element={<DashboardLayout currentPage="dashboard"><Dashboard /></DashboardLayout>} />
+                          <Route path="/analytics" element={<DashboardLayout currentPage="analytics"><Analytics /></DashboardLayout>} />
+                          <Route path="/marketing" element={<DashboardLayout currentPage="marketing"><Marketing /></DashboardLayout>} />
+                          <Route path="/orders" element={<DashboardLayout currentPage="orders"><Orders /></DashboardLayout>} />
+                          <Route path="/products" element={<DashboardLayout currentPage="products"><Products /></DashboardLayout>} />
+                          <Route path="/users" element={<DashboardLayout currentPage="users"><Users /></DashboardLayout>} />
+                          <Route path="*" element={<AdminNotFound />} />
+                        </Routes>
+                      </RouteGuard>
+                    } />
+                    <Route path="*" element={<Layout><NotFound /></Layout>} />
+                  </Routes>
+                  <ReferralDiscountNotification />
+                  <CartAddNotification />
+                </GlobalCartProvider>
+              </BrowserRouter>
            </TooltipProvider>
          </FavoritesProvider>
        </CartProvider>
