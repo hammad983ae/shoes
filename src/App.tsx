@@ -26,10 +26,12 @@ import CartAddNotification from "./components/CartAddNotification";
    import FullCatalog from "./pages/FullCatalog";
    import ProductDetail from "./pages/ProductDetail";
    import { ReferralDiscountNotification } from "./components/ReferralDiscountNotification";
-   import ReturnPolicy from "./pages/ReturnPolicy";
-   import OptInPolicy from "./pages/OptInPolicy";
-   import ReferralRedirect from "./components/ReferralRedirect";
-   import Checkout from "./pages/Checkout";
+import ReturnPolicy from "./pages/ReturnPolicy";
+import OptInPolicy from "./pages/OptInPolicy";
+import ReferralRedirect from "./components/ReferralRedirect";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
+import OrderHistory from "./pages/OrderHistory";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import { DashboardLayout } from "./components/DashboardLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -64,9 +66,11 @@ import RouteGuard from "./components/RouteGuard";
                      <Route path="/top-posts" element={<Feed />} />
                      <Route path="/credits" element={<GetFreeCredits />} />
                      <Route path="/socials" element={<Socials />} />
-                     <Route path="/cart" element={<Cart />} />
-                     <Route path="/checkout" element={<Checkout />} />
-                     <Route path="/signin" element={<SignIn />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                      <Route path="/order-history" element={<OrderHistory />} />
+                      <Route path="/signin" element={<SignIn />} />
                      <Route path="/reset-password" element={<ResetPassword />} />
                      <Route path="/privacy" element={<Privacy />} />
                      <Route path="/terms" element={<Terms />} />

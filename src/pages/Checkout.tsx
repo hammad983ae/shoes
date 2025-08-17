@@ -8,9 +8,11 @@ import { Check, Tag, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
+  const { user } = useAuth();
   const [couponCode, setCouponCode] = useState('');
   const [creditsToUse, setCreditsToUse] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);

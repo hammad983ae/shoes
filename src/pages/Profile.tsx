@@ -502,12 +502,12 @@ const Profile = () => {
               {/* Bottom Bar */}
               <div className="flex flex-col sm:flex-row justify-between items-center pt-3 sm:pt-4 border-t border-gray-700 w-full gap-1.5 sm:gap-2">
                 <Button
-                  onClick={() => setIsTransactionHistoryOpen(true)}
+                  onClick={() => navigate('/order-history')}
                   variant="ghost"
                   className="flex-1 text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors duration-200 text-xs sm:text-sm h-8 sm:h-auto"
                 >
                   <History className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-                  History
+                  View Orders
                 </Button>
                 <Button
                   onClick={() => navigate('/settings')}

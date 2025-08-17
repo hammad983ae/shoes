@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { 
   Filter,
   Download
 } from "lucide-react";
 
 export default function Analytics() {
-  const [loading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const { loading: analyticsLoading } = useAnalytics();
+
+  useEffect(() => {
+    // Real loading from analytics hook
+    setLoading(analyticsLoading);
+  }, [analyticsLoading]);
 
   return (
     <DashboardLayout currentPage="analytics">
