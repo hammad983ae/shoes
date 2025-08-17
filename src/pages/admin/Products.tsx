@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProducts } from "@/hooks/useProducts";
 import { 
   Search,
   Filter,
@@ -16,17 +16,7 @@ import {
 } from "lucide-react";
 
 export default function Products() {
-  const [loading] = useState(true);
-
-  const productsData = {
-    summary: {
-      totalProducts: 0,
-      inStock: 0,
-      lowStock: 0,
-      outOfStock: 0,
-      totalValue: 0
-    }
-  };
+  const { loading, summary } = useProducts();
 
   return (
     <DashboardLayout currentPage="products">
@@ -59,7 +49,7 @@ export default function Products() {
                 <Package className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Products</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{productsData.summary.totalProducts}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.totalProducts}</p>}
                 </div>
               </div>
             </CardContent>
@@ -70,7 +60,7 @@ export default function Products() {
                 <div className="w-4 h-4 bg-green-500 rounded-full" />
                 <div>
                   <p className="text-sm text-muted-foreground">In Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{productsData.summary.inStock}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.inStock}</p>}
                 </div>
               </div>
             </CardContent>
@@ -81,7 +71,7 @@ export default function Products() {
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Low Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{productsData.summary.lowStock}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.lowStock}</p>}
                 </div>
               </div>
             </CardContent>
@@ -92,7 +82,7 @@ export default function Products() {
                 <div className="w-4 h-4 bg-red-500 rounded-full" />
                 <div>
                   <p className="text-sm text-muted-foreground">Out of Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{productsData.summary.outOfStock}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.outOfStock}</p>}
                 </div>
               </div>
             </CardContent>

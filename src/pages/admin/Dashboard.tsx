@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { 
   TrendingUp, 
   Users, 
@@ -67,9 +67,7 @@ function KPIGrid({ loading = true }: { loading?: boolean }) {
 }
 
 export default function Dashboard() {
-  const [loading] = useState(true);
-  const recentOrders: any[] = [];
-  const alerts: any[] = [];
+  const { loading, recentOrders, alerts } = useAdminDashboard();
   
   return (
     <DashboardLayout currentPage="dashboard">
