@@ -1,23 +1,36 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-import { useCheckout } from '@/hooks/useCheckout';
 import { supabase } from '@/integrations/supabase/client';
+import { loadChiron } from '@/utils/loadChiron';
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
-  const { createOrder, loading: checkoutLoading } = useCheckout();
   const [appliedDiscount] = useState(0);
   const [discountType] = useState<'credits' | 'coupon' | null>(null);
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
+  const [chironLoaded, setChironLoaded] = useState(false);
   const paymentFormRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const initChiron = async () => {
+      try {
+        await loadChiron();
+        setChironLoaded(true);
+      } catch (error) {
+        console.error('Failed to load Chiron:', error);
+        setPaymentError('Payment system failed to load. Please refresh the page.');
+      }
+    };
+    initChiron();
+  }, []);
 
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''));
@@ -298,9 +311,9 @@ export default function Checkout() {
                 <Button 
                   type="submit" 
                   className="w-full py-3 text-lg font-semibold"
-                  disabled={submitting}
+                  disabled={submitting || !chironLoaded}
                 >
-                  {submitting ? 'Processing...' : `Complete order • $${total.toFixed(2)}`}
+                  {!chironLoaded ? 'Loading payment system...' : submitting ? 'Processing...' : `Complete order • $${total.toFixed(2)}`}
                 </Button>
 
                 <div className="text-center text-sm text-muted-foreground">

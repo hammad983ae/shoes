@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProducts } from "@/hooks/useProducts";
+import { AddProductModal } from "@/components/AddProductModal";
 import { 
   Search,
   Filter,
@@ -17,6 +19,7 @@ import {
 
 export default function Products() {
   const { loading, summary } = useProducts();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   return (
     <DashboardLayout currentPage="products">
