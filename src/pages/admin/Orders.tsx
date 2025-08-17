@@ -16,12 +16,11 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrders } from "@/hooks/useOrders";
 
 export default function Orders() {
-  const { loading, orders, summary, fulfillmentStats, createOrder } = useOrders();
+  const { loading, orders, summary, fulfillmentStats } = useOrders();
   
   return (
     <DashboardLayout currentPage="orders">

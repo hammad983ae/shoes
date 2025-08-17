@@ -174,7 +174,7 @@ interface SneakerCatalogProps {
 }
 
 const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
-  const { products: dynamicProducts, loading: productsLoading } = useDynamicProducts();
+  const { products: dynamicProducts } = useDynamicProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name-asc'); // Default to alphabetical order

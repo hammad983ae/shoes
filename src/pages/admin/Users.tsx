@@ -22,7 +22,6 @@ import {
   TrendingUp,
   DollarSign,
   Edit,
-  MoreHorizontal
 } from "lucide-react";
 import { useUsers } from "@/hooks/useUsers";
 
@@ -240,7 +239,7 @@ export default function Users() {
                       <div key={user.id} className="flex items-center justify-between p-4 rounded-lg border">
                         <div className="flex items-center space-x-4">
                           <Avatar>
-                            <AvatarImage src={user.avatar_url || ''} />
+                            <AvatarImage src={user.email || ''} />
                             <AvatarFallback>{user.display_name.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div>

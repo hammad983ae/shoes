@@ -6,9 +6,11 @@ import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { useCheckout } from '@/hooks/useCheckout';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
+  const { createOrder, loading: checkoutLoading } = useCheckout();
   const [appliedDiscount] = useState(0);
   const [discountType] = useState<'credits' | 'coupon' | null>(null);
   const navigate = useNavigate();

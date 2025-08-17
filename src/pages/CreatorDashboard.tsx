@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import {
   Copy,
   TrendingUp,
@@ -22,11 +21,7 @@ import {
   Star,
   Trophy,
   Camera,
-  Link as LinkIcon,
-  Plus,
-  X,
-  Check,
-  Trash2
+  Link as LinkIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCreatorDashboard } from "@/hooks/useCreatorDashboard";
@@ -521,7 +516,7 @@ export default function CreatorDashboard() {
                     <input
                       type="checkbox"
                       checked={item.completed}
-                      onChange={() => toggleGoal(item.id)}
+                      onChange={() => toggleGoal(item.id.toString())}
                       className="rounded border-border"
                     />
                     <span className={cn("text-sm", item.completed && "line-through text-muted-foreground")}>
@@ -531,7 +526,7 @@ export default function CreatorDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteGoal(item.id)}
+                    onClick={() => deleteGoal(item.id.toString())}
                     className="text-destructive hover:text-destructive px-2"
                   >
                     ×
