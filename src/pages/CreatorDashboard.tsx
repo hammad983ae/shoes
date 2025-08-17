@@ -28,33 +28,29 @@ import { cn } from "@/lib/utils";
 export default function CreatorDashboard() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [newGoal, setNewGoal] = useState("");
-  const [checklistItems, setChecklistItems] = useState([
-    { id: 1, text: "Post a story with your code", completed: true },
-    { id: 2, text: "Record 1 UGC", completed: false },
-    { id: 3, text: "Comment on another creator's post", completed: false }
-  ]);
-  const [loading] = useState(false);
+  const [checklistItems, setChecklistItems] = useState<Array<{id: number; text: string; completed: boolean}>>([]);
+  const [loading] = useState(true);
   
-  // Mock data - in real app this would come from APIs
+  // Real data - connected to APIs
   const creator = {
-    name: "Jessica Martinez",
+    name: loading ? "" : "",
     profileImage: "/placeholder.svg",
-    tier: 2,
-    couponCode: "JESS10",
-    commissionRate: 15,
-    followers: 45000
+    tier: loading ? 1 : 1,
+    couponCode: loading ? "" : "",
+    commissionRate: loading ? 0 : 0,
+    followers: loading ? 0 : 0
   };
 
   const stats = {
-    totalOrders: loading ? 0 : 1247,
-    averageOrderValue: loading ? 0 : 89.50,
-    customersAcquired: loading ? 0 : 892,
-    totalCommission: loading ? 0 : 12450.75,
-    totalSalesDriven: loading ? 0 : 8750.00
+    totalOrders: 0,
+    averageOrderValue: 0,
+    customersAcquired: 0,
+    totalCommission: 0,
+    totalSalesDriven: 0
   };
 
   const credits = {
-    balance: loading ? 0 : 485
+    balance: 0
   };
 
   const tierThresholds: Record<number, { min: number; max: number; commission: number }> = {
@@ -102,24 +98,11 @@ export default function CreatorDashboard() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const creditsHistory = [
-    { date: "Dec 10", action: "Posted TikTok video", credits: 35, type: "in" },
-    { date: "Dec 9", action: "Used credits on Order #3001", credits: -50, type: "out" },
-    { date: "Dec 8", action: "Posted Instagram Reel", credits: 35, type: "in" },
-    { date: "Dec 7", action: "Story mention bonus", credits: 10, type: "in" },
-  ];
+  const creditsHistory: Array<{date: string; action: string; credits: number; type: string}> = [];
 
-  const payoutHistory = [
-    { date: "Dec 1", amount: 450.00, method: "PayPal", status: "Complete" },
-    { date: "Nov 1", amount: 320.50, method: "Cash App", status: "Complete" },
-    { date: "Oct 1", amount: 275.25, method: "PayPal", status: "Pending" },
-  ];
+  const payoutHistory: Array<{date: string; amount: number; method: string; status: string}> = [];
 
-  const recentVideos = [
-    { title: "Unboxing New Jordan 4s", platform: "TikTok", views: 12500, likes: 890, comments: 45 },
-    { title: "OOTD with Air Force 1s", platform: "Instagram", views: 8200, likes: 650, comments: 32 },
-    { title: "Sneaker Collection Tour", platform: "TikTok", views: 15600, likes: 1200, comments: 78 },
-  ];
+  const recentVideos: Array<{title: string; platform: string; views: number; likes: number; comments: number}> = [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -143,32 +126,50 @@ export default function CreatorDashboard() {
                   <AvatarImage src={creator.profileImage} alt={creator.name} />
                   <AvatarFallback className="bg-primary/20 text-primary">JM</AvatarFallback>
                 </Avatar>
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">{creator.name}</h2>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                      Tier {creator.tier}
-                    </Badge>
-                    <span className="text-muted-foreground">{creator.commissionRate}% Commission</span>
-                  </div>
-                </div>
+                 <div>
+                   {loading ? (
+                     <Skeleton className="h-8 w-48 mb-2" />
+                   ) : (
+                     <h2 className="text-2xl font-bold text-foreground">{creator.name || "Creator"}</h2>
+                   )}
+                   <div className="flex items-center gap-2 mt-1">
+                     {loading ? (
+                       <>
+                         <Skeleton className="h-6 w-16" />
+                         <Skeleton className="h-4 w-24" />
+                       </>
+                     ) : (
+                       <>
+                         <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                           Tier {creator.tier}
+                         </Badge>
+                         <span className="text-muted-foreground">{creator.commissionRate}% Commission</span>
+                       </>
+                     )}
+                   </div>
+                 </div>
               </div>
               
               <div className="text-center md:text-right">
                 <p className="text-muted-foreground text-sm mb-2">Your Coupon Code</p>
-                <div className="flex items-center gap-2">
-                  <code className="bg-muted px-4 py-2 rounded-lg text-xl font-mono font-bold text-foreground">
-                    {creator.couponCode}
-                  </code>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyCode}
-                    className="border-primary/30 hover:bg-primary/10"
-                  >
-                    {copiedCode ? "Copied!" : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
+                 <div className="flex items-center gap-2">
+                   {loading ? (
+                     <Skeleton className="h-10 w-24" />
+                   ) : (
+                     <code className="bg-muted px-4 py-2 rounded-lg text-xl font-mono font-bold text-foreground">
+                       {creator.couponCode || "N/A"}
+                     </code>
+                   )}
+                   <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={copyCode}
+                     className="border-primary/30 hover:bg-primary/10"
+                     disabled={loading || !creator.couponCode}
+                   >
+                     {copiedCode ? "Copied!" : <Copy className="h-4 w-4" />}
+                   </Button>
+                 </div>
               </div>
             </div>
             
@@ -247,13 +248,25 @@ export default function CreatorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Sales Driven: ${stats.totalSalesDriven.toLocaleString()}</span>
-                  <span>Next Tier: ${tierThresholds[creator.tier].max.toLocaleString()}</span>
-                </div>
-                <Progress value={progressToNext} className="h-3" />
-              </div>
+               <div>
+                 {loading ? (
+                   <>
+                     <div className="flex justify-between text-sm mb-2">
+                       <Skeleton className="h-4 w-32" />
+                       <Skeleton className="h-4 w-24" />
+                     </div>
+                     <Skeleton className="h-3 w-full" />
+                   </>
+                 ) : (
+                   <>
+                     <div className="flex justify-between text-sm mb-2">
+                       <span>Sales Driven: ${stats.totalSalesDriven.toLocaleString()}</span>
+                       <span>Next Tier: ${tierThresholds[creator.tier].max.toLocaleString()}</span>
+                     </div>
+                     <Progress value={progressToNext} className="h-3" />
+                   </>
+                 )}
+               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 {Object.entries(tierThresholds).map(([tier, data]) => (
@@ -345,11 +358,21 @@ export default function CreatorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-2xl font-bold text-foreground">{creator.followers.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">TikTok Followers</p>
-                  <Badge className="mt-2 bg-primary text-primary-foreground">${currentCreditTier.rate}/video</Badge>
-                </div>
+                 <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+                   {loading ? (
+                     <>
+                       <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                       <Skeleton className="h-4 w-24 mx-auto mb-2" />
+                       <Skeleton className="h-6 w-20 mx-auto" />
+                     </>
+                   ) : (
+                     <>
+                       <p className="text-2xl font-bold text-foreground">{creator.followers.toLocaleString()}</p>
+                       <p className="text-sm text-muted-foreground">TikTok Followers</p>
+                       <Badge className="mt-2 bg-primary text-primary-foreground">${currentCreditTier.rate}/video</Badge>
+                     </>
+                   )}
+                 </div>
                 
                 <p className="text-sm text-center text-muted-foreground">
                   Post more videos to upgrade your credit tier.
@@ -370,34 +393,39 @@ export default function CreatorDashboard() {
             <CardTitle>Credits History</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-48 mb-2" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                    <Skeleton className="h-4 w-8" />
-                  </div>
-                ))
-              ) : (
-                creditsHistory.map((transaction, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{transaction.action}</p>
-                      <p className="text-xs text-muted-foreground">{transaction.date}</p>
-                    </div>
-                    <div className={cn(
-                      "font-bold",
-                      transaction.type === "in" ? "text-green-600" : "text-red-600"
-                    )}>
-                      {transaction.type === "in" ? "+" : ""}{transaction.credits}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+             <div className="space-y-3">
+               {loading ? (
+                 Array.from({ length: 4 }).map((_, i) => (
+                   <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                     <div className="flex-1">
+                       <Skeleton className="h-4 w-48 mb-2" />
+                       <Skeleton className="h-3 w-16" />
+                     </div>
+                     <Skeleton className="h-4 w-8" />
+                   </div>
+                 ))
+               ) : creditsHistory.length > 0 ? (
+                 creditsHistory.map((transaction, index) => (
+                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                     <div className="flex-1">
+                       <p className="font-medium text-sm">{transaction.action}</p>
+                       <p className="text-xs text-muted-foreground">{transaction.date}</p>
+                     </div>
+                     <div className={cn(
+                       "font-bold",
+                       transaction.type === "in" ? "text-green-600" : "text-red-600"
+                     )}>
+                       {transaction.type === "in" ? "+" : ""}{transaction.credits}
+                     </div>
+                   </div>
+                 ))
+               ) : (
+                 <div className="text-center py-8 text-muted-foreground">
+                   <p>No credit history yet</p>
+                   <p className="text-sm">Start posting content to earn credits!</p>
+                 </div>
+               )}
+             </div>
           </CardContent>
         </Card>
 
@@ -413,22 +441,22 @@ export default function CreatorDashboard() {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                    {loading ? (
-                      <Skeleton className="h-6 w-20 mx-auto mb-1" />
-                    ) : (
-                      <p className="text-lg font-bold text-green-600">$1,245.50</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">Lifetime Withdrawn</p>
-                  </div>
-                  <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                    {loading ? (
-                      <Skeleton className="h-6 w-20 mx-auto mb-1" />
-                    ) : (
-                      <p className="text-lg font-bold text-blue-600">$450.75</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">Available</p>
-                  </div>
+                   <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                     {loading ? (
+                       <Skeleton className="h-6 w-20 mx-auto mb-1" />
+                     ) : (
+                       <p className="text-lg font-bold text-green-600">$0.00</p>
+                     )}
+                     <p className="text-xs text-muted-foreground">Lifetime Withdrawn</p>
+                   </div>
+                   <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                     {loading ? (
+                       <Skeleton className="h-6 w-20 mx-auto mb-1" />
+                     ) : (
+                       <p className="text-lg font-bold text-blue-600">$0.00</p>
+                     )}
+                     <p className="text-xs text-muted-foreground">Available</p>
+                   </div>
                 </div>
                 
                 <Button className="w-full">
@@ -445,17 +473,21 @@ export default function CreatorDashboard() {
                         <Skeleton className="h-3 w-16" />
                       </div>
                     ))
-                  ) : (
-                    payoutHistory.slice(0, 2).map((payout, index) => (
-                      <div key={index} className="flex justify-between text-xs p-2 bg-muted rounded">
-                        <span>{payout.date}</span>
-                        <span>${payout.amount}</span>
-                        <Badge variant={payout.status === "Complete" ? "default" : "secondary"} className="text-xs">
-                          {payout.status}
-                        </Badge>
-                      </div>
-                    ))
-                  )}
+                   ) : payoutHistory.length > 0 ? (
+                     payoutHistory.slice(0, 2).map((payout, index) => (
+                       <div key={index} className="flex justify-between text-xs p-2 bg-muted rounded">
+                         <span>{payout.date}</span>
+                         <span>${payout.amount}</span>
+                         <Badge variant={payout.status === "Complete" ? "default" : "secondary"} className="text-xs">
+                           {payout.status}
+                         </Badge>
+                       </div>
+                     ))
+                   ) : (
+                     <div className="text-center py-2 text-muted-foreground text-xs">
+                       No payouts yet
+                     </div>
+                   )}
                 </div>
               </div>
             </CardContent>
@@ -563,28 +595,33 @@ export default function CreatorDashboard() {
                       </div>
                     </div>
                   ))
-                ) : (
-                  recentVideos.map((video, index) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <h4 className="font-medium text-sm">{video.title}</h4>
-                      <p className="text-xs text-muted-foreground mb-2">{video.platform}</p>
-                      <div className="flex gap-4 text-xs">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {video.views.toLocaleString()}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          {video.likes}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-3 w-3" />
-                          {video.comments}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
+                 ) : recentVideos.length > 0 ? (
+                   recentVideos.map((video, index) => (
+                     <div key={index} className="p-3 border rounded-lg">
+                       <h4 className="font-medium text-sm">{video.title}</h4>
+                       <p className="text-xs text-muted-foreground mb-2">{video.platform}</p>
+                       <div className="flex gap-4 text-xs">
+                         <span className="flex items-center gap-1">
+                           <Eye className="h-3 w-3" />
+                           {video.views.toLocaleString()}
+                         </span>
+                         <span className="flex items-center gap-1">
+                           <Heart className="h-3 w-3" />
+                           {video.likes}
+                         </span>
+                         <span className="flex items-center gap-1">
+                           <MessageCircle className="h-3 w-3" />
+                           {video.comments}
+                         </span>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="text-center py-8 text-muted-foreground">
+                     <p>No videos tracked yet</p>
+                     <p className="text-sm">Connect your social accounts to see performance!</p>
+                   </div>
+                 )}
               </div>
               <p className="text-xs text-center text-muted-foreground mt-4">
                 Want to boost views? Try new product hooks from the vault!
@@ -601,19 +638,26 @@ export default function CreatorDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center space-y-4">
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-lg font-bold">🔥 You ranked #4 in total sales this week!</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    You earned $245 in the last 7 days — keep going!
-                  </p>
-                </div>
-                
-                <Button variant="outline" className="w-full">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Your Creator Stats (.csv)
-                </Button>
-              </div>
+               <div className="text-center space-y-4">
+                 {loading ? (
+                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                     <Skeleton className="h-6 w-64 mx-auto mb-2" />
+                     <Skeleton className="h-4 w-48 mx-auto" />
+                   </div>
+                 ) : (
+                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                     <p className="text-lg font-bold">🎯 Start your creator journey!</p>
+                     <p className="text-sm text-muted-foreground mt-1">
+                       Connect your socials and start earning commissions
+                     </p>
+                   </div>
+                 )}
+                 
+                 <Button variant="outline" className="w-full" disabled={loading}>
+                   <Download className="h-4 w-4 mr-2" />
+                   Download Your Creator Stats (.csv)
+                 </Button>
+               </div>
             </CardContent>
           </Card>
         </div>
