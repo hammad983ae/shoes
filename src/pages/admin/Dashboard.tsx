@@ -14,10 +14,20 @@ import {
   MoreHorizontal
 } from "lucide-react";
 
-function KPICard({ title, loading = true }: {
+function KPICard({ title, value, loading = true, isCurrency = false }: {
   title: string;
+  value?: number;
   loading?: boolean;
+  isCurrency?: boolean;
 }) {
+  const formatValue = (val: number) => {
+    if (isCurrency) return `$${val.toFixed(2)}`;
+    if (title === "Conversion Rate" || title === "Cart Abandonment" || title === "Bounce Rate") {
+      return `${val.toFixed(1)}%`;
+    }
+    return val.toString();
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -34,7 +44,7 @@ function KPICard({ title, loading = true }: {
         {loading ? (
           <Skeleton className="h-8 w-20" />
         ) : (
-          <div className="text-2xl font-bold">$0</div>
+          <div className="text-2xl font-bold">{formatValue(value || 0)}</div>
         )}
         <div className="text-xs text-muted-foreground mt-1">
           {loading ? <Skeleton className="h-3 w-24" /> : "No data available"}
@@ -44,30 +54,30 @@ function KPICard({ title, loading = true }: {
   );
 }
 
-function KPIGrid({ loading = true }: { loading?: boolean }) {
+function KPIGrid({ loading = true, stats }: { loading?: boolean; stats?: any }) {
   return (
     <>
       {/* Primary KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard title="Revenue" loading={loading} />
-        <KPICard title="Orders" loading={loading} />
-        <KPICard title="Average Order Value" loading={loading} />
-        <KPICard title="Conversion Rate" loading={loading} />
+        <KPICard title="Revenue" value={stats?.revenue} loading={loading} isCurrency={true} />
+        <KPICard title="Orders" value={stats?.orders} loading={loading} />
+        <KPICard title="Average Order Value" value={stats?.averageOrderValue} loading={loading} isCurrency={true} />
+        <KPICard title="Conversion Rate" value={stats?.conversionRate} loading={loading} />
       </div>
 
       {/* Secondary KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard title="New Customers" loading={loading} />
-        <KPICard title="Returning Customers" loading={loading} />
-        <KPICard title="Cart Abandonment" loading={loading} />
-        <KPICard title="Bounce Rate" loading={loading} />
+        <KPICard title="New Customers" value={stats?.newCustomers} loading={loading} />
+        <KPICard title="Returning Customers" value={stats?.returningCustomers} loading={loading} />
+        <KPICard title="Cart Abandonment" value={stats?.cartAbandonment} loading={loading} />
+        <KPICard title="Bounce Rate" value={stats?.bounceRate} loading={loading} />
       </div>
     </>
   );
 }
 
 export default function Dashboard() {
-  const { loading, recentOrders, alerts } = useAdminDashboard();
+  const { loading, stats, recentOrders, alerts } = useAdminDashboard();
   
   return (
     <DashboardLayout currentPage="dashboard">
@@ -100,19 +110,19 @@ export default function Dashboard() {
           </TabsList>
 
           <TabsContent value="today" className="space-y-6">
-            <KPIGrid loading={loading} />
+            <KPIGrid loading={loading} stats={stats} />
           </TabsContent>
 
           <TabsContent value="7d" className="space-y-6">
-            <KPIGrid loading={loading} />
+            <KPIGrid loading={loading} stats={stats} />
           </TabsContent>
 
           <TabsContent value="30d" className="space-y-6">
-            <KPIGrid loading={loading} />
+            <KPIGrid loading={loading} stats={stats} />
           </TabsContent>
 
           <TabsContent value="90d" className="space-y-6">
-            <KPIGrid loading={loading} />
+            <KPIGrid loading={loading} stats={stats} />
           </TabsContent>
         </Tabs>
 
@@ -175,7 +185,7 @@ export default function Dashboard() {
                   ))
                 )}
               </div>
-              <Button variant="outline" className="w-full mt-4">
+              <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = '/admin/orders'}>
                 View All Orders
               </Button>
             </CardContent>

@@ -1,12 +1,9 @@
-import { useState } from "react";
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +11,7 @@ import {
   DollarSign,
   Eye,
   Target,
-  Plus,
+  
   Filter,
   Download,
   Facebook,
@@ -25,36 +22,7 @@ import {
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 export default function Marketing() {
-  const { loading, campaigns, summary, createCampaign } = useCampaigns();
-  const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
-  const [campaignType, setCampaignType] = useState<'meta_ads' | 'tiktok_ads' | 'email' | 'discount'>('meta_ads');
-  const [campaignName, setCampaignName] = useState('');
-  const [campaignPlatform, setCampaignPlatform] = useState('');
-  const [campaignSpend, setCampaignSpend] = useState('');
-
-  const handleCreateCampaign = async () => {
-    if (!campaignName.trim()) return;
-    
-    const campaignData = {
-      type: campaignType,
-      platform: campaignPlatform || campaignType.replace('_', ' '),
-      name: campaignName,
-      spend: parseFloat(campaignSpend) || 0,
-      revenue: 0,
-      roas: 0,
-      clicks: 0,
-      conversions: 0,
-      status: 'active' as const
-    };
-    
-    const result = await createCampaign(campaignData);
-    if (result.success) {
-      setShowNewCampaignModal(false);
-      setCampaignName('');
-      setCampaignPlatform('');
-      setCampaignSpend('');
-    }
-  };
+  const { loading, campaigns, summary } = useCampaigns();
 
   return (
     <DashboardLayout currentPage="marketing">
@@ -72,144 +40,22 @@ export default function Marketing() {
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
-            <Dialog open={showNewCampaignModal} onOpenChange={setShowNewCampaignModal}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Campaign
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Create New Campaign</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Tabs value={campaignType} onValueChange={(v) => setCampaignType(v as any)}>
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="meta_ads" className="text-xs">
-                        <Facebook className="w-3 h-3 mr-1" />
-                        Meta
-                      </TabsTrigger>
-                      <TabsTrigger value="tiktok_ads" className="text-xs">
-                        <Zap className="w-3 h-3 mr-1" />
-                        TikTok
-                      </TabsTrigger>
-                      <TabsTrigger value="email" className="text-xs">
-                        <Mail className="w-3 h-3 mr-1" />
-                        Email
-                      </TabsTrigger>
-                      <TabsTrigger value="discount" className="text-xs">
-                        <Percent className="w-3 h-3 mr-1" />
-                        Discount
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="meta_ads" className="space-y-3">
-                      <div>
-                        <Label htmlFor="meta-name">Campaign Name</Label>
-                        <Input 
-                          id="meta-name"
-                          value={campaignName}
-                          onChange={(e) => setCampaignName(e.target.value)}
-                          placeholder="Meta Ads Campaign"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="meta-spend">Initial Budget</Label>
-                        <Input 
-                          id="meta-spend"
-                          type="number"
-                          value={campaignSpend}
-                          onChange={(e) => setCampaignSpend(e.target.value)}
-                          placeholder="100"
-                        />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="tiktok_ads" className="space-y-3">
-                      <div>
-                        <Label htmlFor="tiktok-name">Campaign Name</Label>
-                        <Input 
-                          id="tiktok-name"
-                          value={campaignName}
-                          onChange={(e) => setCampaignName(e.target.value)}
-                          placeholder="TikTok Ads Campaign"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="tiktok-spend">Initial Budget</Label>
-                        <Input 
-                          id="tiktok-spend"
-                          type="number"
-                          value={campaignSpend}
-                          onChange={(e) => setCampaignSpend(e.target.value)}
-                          placeholder="100"
-                        />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="email" className="space-y-3">
-                      <div>
-                        <Label htmlFor="email-name">Campaign Name</Label>
-                        <Input 
-                          id="email-name"
-                          value={campaignName}
-                          onChange={(e) => setCampaignName(e.target.value)}
-                          placeholder="Email Campaign"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email-platform">Email Platform</Label>
-                        <Select value={campaignPlatform} onValueChange={setCampaignPlatform}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select platform" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="resend">Resend</SelectItem>
-                            <SelectItem value="mailchimp">Mailchimp</SelectItem>
-                            <SelectItem value="klaviyo">Klaviyo</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="discount" className="space-y-3">
-                      <div>
-                        <Label htmlFor="discount-name">Campaign Name</Label>
-                        <Input 
-                          id="discount-name"
-                          value={campaignName}
-                          onChange={(e) => setCampaignName(e.target.value)}
-                          placeholder="Discount Campaign"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="discount-type">Discount Type</Label>
-                        <Select value={campaignPlatform} onValueChange={setCampaignPlatform}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage">Percentage Off</SelectItem>
-                            <SelectItem value="fixed">Fixed Amount</SelectItem>
-                            <SelectItem value="bogo">Buy One Get One</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                  
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowNewCampaignModal(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateCampaign}>
-                      Create Campaign
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Select onValueChange={(value) => {
+              if (value === 'meta') window.open('https://business.facebook.com/adsmanager', '_blank');
+              else if (value === 'tiktok') window.open('https://ads.tiktok.com', '_blank');
+              else if (value === 'email') alert('Email campaign builder coming soon!');
+              else if (value === 'discount') alert('Discount code generator coming soon!');
+            }}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Create Campaign" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="meta">Meta Ads Manager</SelectItem>
+                <SelectItem value="tiktok">TikTok Ads</SelectItem>
+                <SelectItem value="email">Email Campaign</SelectItem>
+                <SelectItem value="discount">Discount Codes</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

@@ -23,14 +23,11 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
     title: '',
     description: '',
     brand: '',
-    category: '',
+    categories: [] as string[],
     price: '',
     stock: '',
     limited: false,
-    size_type: 'US',
-    materials: '',
-    care_instructions: '',
-    shipping_time: '5-9 days',
+    price_type: 'US',
     availability: 'In Stock'
   });
   
@@ -76,14 +73,26 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
     setLoading(true);
     try {
       const productData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
+        brand: formData.brand,
+        category: formData.categories.join(', '), // Join categories for backwards compatibility
+        categories: formData.categories,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock) || 0,
+        limited: formData.limited,
+        size_type: formData.price_type, // Map price_type to size_type
+        price_type: formData.price_type,
+        availability: formData.availability,
+        materials: '', // Default empty
+        care_instructions: '', // Default empty
+        shipping_time: '5-9 days', // Default
         filters: {
           colors: [],
           sizes: [],
           types: []
-        }
+        },
+        images: images
       };
 
       const result = await addProduct(productData);
@@ -98,14 +107,11 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
           title: '',
           description: '',
           brand: '',
-          category: '',
+          categories: [],
           price: '',
           stock: '',
           limited: false,
-          size_type: 'US',
-          materials: '',
-          care_instructions: '',
-          shipping_time: '5-9 days',
+          price_type: 'US',
           availability: 'In Stock'
         });
         setImages([]);
@@ -146,26 +152,25 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
                 placeholder="Product name"
               />
             </div>
-            <div>
-              <Label htmlFor="brand">Brand *</Label>
-              <Input
-                id="brand"
-                value={formData.brand}
-                onChange={(e) => handleInputChange('brand', e.target.value)}
-                placeholder="Brand name"
-              />
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                placeholder="e.g., Sneakers"
-              />
+              <Label htmlFor="brand">Brand *</Label>
+              <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select brand" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Nike">Nike</SelectItem>
+                  <SelectItem value="Jordan">Jordan</SelectItem>
+                  <SelectItem value="Adidas">Adidas</SelectItem>
+                  <SelectItem value="Rick Owens">Rick Owens</SelectItem>
+                  <SelectItem value="Maison Margiela">Maison Margiela</SelectItem>
+                  <SelectItem value="Travis Scott">Travis Scott</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="price">Price *</Label>
@@ -176,6 +181,28 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
                 onChange={(e) => handleInputChange('price', e.target.value)}
                 placeholder="0.00"
               />
+            </div>
+          </div>
+
+          <div>
+            <Label>Categories (Multi-select)</Label>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {['Sneakers', 'High-tops', 'Low-tops', 'Basketball', 'Running', 'Casual', 'Limited Edition', 'Collaborations'].map((cat) => (
+                <div key={cat} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={cat}
+                    checked={formData.categories.includes(cat)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        handleInputChange('categories', [...formData.categories, cat]);
+                      } else {
+                        handleInputChange('categories', formData.categories.filter(c => c !== cat));
+                      }
+                    }}
+                  />
+                  <Label htmlFor={cat} className="text-sm">{cat}</Label>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -193,36 +220,34 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
           {/* Inventory & Settings */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="stock">Stock Quantity</Label>
+              <Label htmlFor="stock">Stock Quantity (Optional)</Label>
               <Input
                 id="stock"
                 type="number"
                 value={formData.stock}
                 onChange={(e) => handleInputChange('stock', e.target.value)}
-                placeholder="0"
+                placeholder="Leave blank for unlimited"
               />
             </div>
             <div>
-              <Label htmlFor="size_type">Size Type</Label>
-              <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
-                <SelectTrigger>
+              <Label htmlFor="price_type">Price Type</Label>
+              <Select value={formData.price_type} onValueChange={(value) => handleInputChange('price_type', value)}>
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="US">US</SelectItem>
                   <SelectItem value="EU">EU</SelectItem>
-                  <SelectItem value="UK">UK</SelectItem>
-                  <SelectItem value="ONE_SIZE">One Size</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="availability">Availability</Label>
               <Select value={formData.availability} onValueChange={(value) => handleInputChange('availability', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="In Stock">In Stock</SelectItem>
                   <SelectItem value="Low Stock">Low Stock</SelectItem>
                   <SelectItem value="Out of Stock">Out of Stock</SelectItem>
@@ -232,38 +257,6 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
             </div>
           </div>
 
-          {/* Product Details */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="materials">Materials</Label>
-              <Input
-                id="materials"
-                value={formData.materials}
-                onChange={(e) => handleInputChange('materials', e.target.value)}
-                placeholder="e.g., Leather, Canvas"
-              />
-            </div>
-            <div>
-              <Label htmlFor="shipping_time">Shipping Time</Label>
-              <Input
-                id="shipping_time"
-                value={formData.shipping_time}
-                onChange={(e) => handleInputChange('shipping_time', e.target.value)}
-                placeholder="5-9 days"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="care_instructions">Care Instructions</Label>
-            <Textarea
-              id="care_instructions"
-              value={formData.care_instructions}
-              onChange={(e) => handleInputChange('care_instructions', e.target.value)}
-              placeholder="Care and maintenance instructions"
-              rows={2}
-            />
-          </div>
 
           {/* Limited Edition Toggle */}
           <div className="flex items-center space-x-2">

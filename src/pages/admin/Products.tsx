@@ -103,13 +103,64 @@ export default function Products() {
           </Card>
         </div>
 
-        <Tabs defaultValue="top-performers" className="w-full">
+        <Tabs defaultValue="all-products" className="w-full">
           <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsTrigger value="all-products">All Products</TabsTrigger>
             <TabsTrigger value="top-performers">Top Performers</TabsTrigger>
             <TabsTrigger value="low-performers">Needs Attention</TabsTrigger>
-            <TabsTrigger value="inventory">Inventory</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
+
+          {/* All Products Tab */}
+          <TabsContent value="all-products" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>All Products</CardTitle>
+                  <CardDescription>Complete product catalog with editing capabilities</CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input placeholder="Search products..." className="pl-10 w-64" />
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filter
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center space-x-4">
+                          <Skeleton className="h-12 w-12 rounded-lg" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-48" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-8">
+                          <div className="text-right space-y-1">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-3 w-12" />
+                          </div>
+                          <Skeleton className="h-8 w-20" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No products found
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Top Performers Tab */}
           <TabsContent value="top-performers" className="space-y-6">
@@ -189,33 +240,6 @@ export default function Products() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="inventory" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                  <span>Stock Alerts</span>
-                </CardTitle>
-                <CardDescription>Products running low on inventory</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-red-200 bg-red-50">
-                        <Skeleton className="h-4 w-48" />
-                        <Skeleton className="h-8 w-16" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No stock alerts
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
             <Card>

@@ -255,19 +255,19 @@ export default function Users() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-8">
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Credits</p>
-                            <p className="font-bold">{user.credits}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Referrals</p>
-                            <p className="font-bold">{user.referrals_count}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Commission</p>
-                            <p className="font-bold">{(user.commission_rate * 100).toFixed(0)}%</p>
-                          </div>
+                         <div className="flex items-center space-x-8">
+                           <div className="text-right">
+                             <p className="text-sm text-muted-foreground">Total Orders</p>
+                             <p className="font-bold">0</p>
+                           </div>
+                           <div className="text-right">
+                             <p className="text-sm text-muted-foreground">Total Spent</p>
+                             <p className="font-bold">$0</p>
+                           </div>
+                           <div className="text-right">
+                             <p className="text-sm text-muted-foreground">Credits</p>
+                             <p className="font-bold">{user.credits}</p>
+                           </div>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button 
@@ -300,15 +300,27 @@ export default function Users() {
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                <div>
-                                  <Label htmlFor="coupon-code">Coupon Code</Label>
-                                  <Input
-                                    id="coupon-code"
-                                    value={newCouponCode}
-                                    onChange={(e) => setNewCouponCode(e.target.value)}
-                                    placeholder="Enter coupon code"
-                                  />
-                                </div>
+                                 {newRole === 'creator' && (
+                                   <div>
+                                     <Label htmlFor="coupon-code">Coupon Code</Label>
+                                     <Input
+                                       id="coupon-code"
+                                       value={newCouponCode}
+                                       onChange={(e) => setNewCouponCode(e.target.value)}
+                                       placeholder="Enter coupon code"
+                                     />
+                                   </div>
+                                 )}
+                                 <div className="flex items-center space-x-2">
+                                   <Button variant="outline" size="sm" onClick={() => alert('Credit management coming soon!')}>
+                                     Add Credits
+                                   </Button>
+                                   {!user.is_creator && (
+                                     <Button variant="outline" size="sm" onClick={() => setNewRole('creator')}>
+                                       Make Creator
+                                     </Button>
+                                   )}
+                                 </div>
                                 <div className="flex justify-end gap-2">
                                   <Button variant="outline" onClick={() => setSelectedUser(null)}>
                                     Cancel

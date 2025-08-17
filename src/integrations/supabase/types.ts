@@ -59,6 +59,30 @@ export type Database = {
         }
         Relationships: []
       }
+      cart: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       checklist_items: {
         Row: {
           completed: boolean | null
@@ -498,36 +522,54 @@ export type Database = {
         Row: {
           commission_amount_at_purchase: number | null
           coupon_code: string | null
+          coupon_discount: number | null
           created_at: string
           creator_id: string | null
+          credits_used: number | null
           currency: string
+          estimated_delivery: string | null
           id: string
           order_total: number
+          payment_method: string | null
+          shipping_address: Json | null
           status: string
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           commission_amount_at_purchase?: number | null
           coupon_code?: string | null
+          coupon_discount?: number | null
           created_at?: string
           creator_id?: string | null
+          credits_used?: number | null
           currency?: string
+          estimated_delivery?: string | null
           id?: string
           order_total: number
+          payment_method?: string | null
+          shipping_address?: Json | null
           status?: string
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           commission_amount_at_purchase?: number | null
           coupon_code?: string | null
+          coupon_discount?: number | null
           created_at?: string
           creator_id?: string | null
+          credits_used?: number | null
           currency?: string
+          estimated_delivery?: string | null
           id?: string
           order_total?: number
+          payment_method?: string | null
+          shipping_address?: Json | null
           status?: string
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -859,14 +901,18 @@ export type Database = {
           availability: string | null
           brand: string
           care_instructions: string | null
+          categories: string[] | null
           category: string
           created_at: string | null
           description: string | null
           filters: Json | null
           id: string
+          images: string[] | null
+          is_limited: boolean | null
           limited: boolean | null
           materials: string | null
           price: number
+          price_type: string | null
           shipping_time: string | null
           size_type: string | null
           stock: number | null
@@ -877,14 +923,18 @@ export type Database = {
           availability?: string | null
           brand: string
           care_instructions?: string | null
+          categories?: string[] | null
           category: string
           created_at?: string | null
           description?: string | null
           filters?: Json | null
           id?: string
+          images?: string[] | null
+          is_limited?: boolean | null
           limited?: boolean | null
           materials?: string | null
           price: number
+          price_type?: string | null
           shipping_time?: string | null
           size_type?: string | null
           stock?: number | null
@@ -895,14 +945,18 @@ export type Database = {
           availability?: string | null
           brand?: string
           care_instructions?: string | null
+          categories?: string[] | null
           category?: string
           created_at?: string | null
           description?: string | null
           filters?: Json | null
           id?: string
+          images?: string[] | null
+          is_limited?: boolean | null
           limited?: boolean | null
           materials?: string | null
           price?: number
+          price_type?: string | null
           shipping_time?: string | null
           size_type?: string | null
           stock?: number | null
