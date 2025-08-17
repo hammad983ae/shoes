@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users as UsersIcon,
   Search,
@@ -15,22 +20,48 @@ import {
   UserCheck,
   Star,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Edit,
+  MoreHorizontal
 } from "lucide-react";
+import { useUsers } from "@/hooks/useUsers";
 
 export default function Users() {
-  const [loading] = useState(true);
+  const { loading, users, summary, updateUserRole, setCouponCode } = useUsers();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [newRole, setNewRole] = useState('');
+  const [newCouponCode, setNewCouponCode] = useState('');
 
-  const usersData = {
-    summary: {
-      totalUsers: 0,
-      activeUsers: 0,
-      creators: 0,
-      newThisMonth: 0,
-      avgLTV: 0
-    }
+  const handleInviteCreator = async () => {
+    // Find user by email or show invite flow
+    console.log('Inviting creator:', inviteEmail);
+    setShowInviteModal(false);
+    setInviteEmail('');
   };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+    
+    if (newRole) {
+      await updateUserRole(selectedUser.user_id, newRole, newRole === 'creator');
+    }
+    
+    if (newCouponCode) {
+      await setCouponCode(selectedUser.user_id, newCouponCode);
+    }
+    
+    setSelectedUser(null);
+    setNewRole('');
+    setNewCouponCode('');
+  };
+
+  const filteredUsers = users.filter(user => 
+    user.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <DashboardLayout currentPage="users">
@@ -48,10 +79,39 @@ export default function Users() {
               <Download className="w-4 h-4 mr-2" />
               Export Users
             </Button>
-            <Button size="sm">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Invite Creator
-            </Button>
+            <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Invite Creator
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Invite Creator</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="invite-email">Email Address</Label>
+                    <Input
+                      id="invite-email"
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="creator@example.com"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setShowInviteModal(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleInviteCreator}>
+                      Send Invite
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -63,7 +123,7 @@ export default function Users() {
                 <UsersIcon className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Users</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{usersData.summary.totalUsers}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.totalUsers}</p>}
                 </div>
               </div>
             </CardContent>
@@ -74,7 +134,7 @@ export default function Users() {
                 <UserCheck className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Active Users</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{usersData.summary.activeUsers}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.activeUsers}</p>}
                 </div>
               </div>
             </CardContent>
@@ -85,7 +145,7 @@ export default function Users() {
                 <Star className="h-4 w-4 text-purple-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Creators</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{usersData.summary.creators}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.creators}</p>}
                 </div>
               </div>
             </CardContent>
@@ -96,7 +156,7 @@ export default function Users() {
                 <TrendingUp className="h-4 w-4 text-orange-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">New This Month</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{usersData.summary.newThisMonth}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.newThisMonth}</p>}
                 </div>
               </div>
             </CardContent>
@@ -107,7 +167,7 @@ export default function Users() {
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Avg LTV</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">$0</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">${summary.avgLTV}</p>}
                 </div>
               </div>
             </CardContent>
@@ -170,6 +230,97 @@ export default function Users() {
                             <Skeleton className="h-8 w-8 rounded" />
                             <Skeleton className="h-8 w-8 rounded" />
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : filteredUsers.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage src={user.avatar_url || ''} />
+                            <AvatarFallback>{user.display_name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{user.display_name}</p>
+                            <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant={user.is_creator ? 'default' : 'secondary'}>
+                                {user.is_creator ? 'Creator' : 'User'}
+                              </Badge>
+                              {user.coupon_code && (
+                                <Badge variant="outline">{user.coupon_code}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-8">
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Credits</p>
+                            <p className="font-bold">{user.credits}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Referrals</p>
+                            <p className="font-bold">{user.referrals_count}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Commission</p>
+                            <p className="font-bold">{(user.commission_rate * 100).toFixed(0)}%</p>
+                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setNewRole(user.role);
+                                  setNewCouponCode(user.coupon_code || '');
+                                }}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit User: {user.display_name}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="user-role">Role</Label>
+                                  <Select value={newRole} onValueChange={setNewRole}>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="user">User</SelectItem>
+                                      <SelectItem value="creator">Creator</SelectItem>
+                                      <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label htmlFor="coupon-code">Coupon Code</Label>
+                                  <Input
+                                    id="coupon-code"
+                                    value={newCouponCode}
+                                    onChange={(e) => setNewCouponCode(e.target.value)}
+                                    placeholder="Enter coupon code"
+                                  />
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" onClick={() => setSelectedUser(null)}>
+                                    Cancel
+                                  </Button>
+                                  <Button onClick={handleUpdateUser}>
+                                    Save Changes
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
                     ))}

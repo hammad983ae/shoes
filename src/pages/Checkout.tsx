@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCheckout } from '@/hooks/useCheckout';
 
 export default function Checkout() {
   const { items, clearCart } = useCart();

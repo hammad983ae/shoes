@@ -4,6 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
   DollarSign,
@@ -11,11 +16,45 @@ import {
   Target,
   Plus,
   Filter,
-  Download
+  Download,
+  Facebook,
+  Zap,
+  Mail,
+  Percent
 } from "lucide-react";
+import { useCampaigns } from "@/hooks/useCampaigns";
 
 export default function Marketing() {
-  const [loading] = useState(true);
+  const { loading, campaigns, summary, createCampaign } = useCampaigns();
+  const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
+  const [campaignType, setCampaignType] = useState<'meta_ads' | 'tiktok_ads' | 'email' | 'discount'>('meta_ads');
+  const [campaignName, setCampaignName] = useState('');
+  const [campaignPlatform, setCampaignPlatform] = useState('');
+  const [campaignSpend, setCampaignSpend] = useState('');
+
+  const handleCreateCampaign = async () => {
+    if (!campaignName.trim()) return;
+    
+    const campaignData = {
+      type: campaignType,
+      platform: campaignPlatform || campaignType.replace('_', ' '),
+      name: campaignName,
+      spend: parseFloat(campaignSpend) || 0,
+      revenue: 0,
+      roas: 0,
+      clicks: 0,
+      conversions: 0,
+      status: 'active' as const
+    };
+    
+    const result = await createCampaign(campaignData);
+    if (result.success) {
+      setShowNewCampaignModal(false);
+      setCampaignName('');
+      setCampaignPlatform('');
+      setCampaignSpend('');
+    }
+  };
 
   return (
     <DashboardLayout currentPage="marketing">
@@ -33,10 +72,144 @@ export default function Marketing() {
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              New Campaign
-            </Button>
+            <Dialog open={showNewCampaignModal} onOpenChange={setShowNewCampaignModal}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Campaign
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Create New Campaign</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Tabs value={campaignType} onValueChange={(v) => setCampaignType(v as any)}>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="meta_ads" className="text-xs">
+                        <Facebook className="w-3 h-3 mr-1" />
+                        Meta
+                      </TabsTrigger>
+                      <TabsTrigger value="tiktok_ads" className="text-xs">
+                        <Zap className="w-3 h-3 mr-1" />
+                        TikTok
+                      </TabsTrigger>
+                      <TabsTrigger value="email" className="text-xs">
+                        <Mail className="w-3 h-3 mr-1" />
+                        Email
+                      </TabsTrigger>
+                      <TabsTrigger value="discount" className="text-xs">
+                        <Percent className="w-3 h-3 mr-1" />
+                        Discount
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="meta_ads" className="space-y-3">
+                      <div>
+                        <Label htmlFor="meta-name">Campaign Name</Label>
+                        <Input 
+                          id="meta-name"
+                          value={campaignName}
+                          onChange={(e) => setCampaignName(e.target.value)}
+                          placeholder="Meta Ads Campaign"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="meta-spend">Initial Budget</Label>
+                        <Input 
+                          id="meta-spend"
+                          type="number"
+                          value={campaignSpend}
+                          onChange={(e) => setCampaignSpend(e.target.value)}
+                          placeholder="100"
+                        />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="tiktok_ads" className="space-y-3">
+                      <div>
+                        <Label htmlFor="tiktok-name">Campaign Name</Label>
+                        <Input 
+                          id="tiktok-name"
+                          value={campaignName}
+                          onChange={(e) => setCampaignName(e.target.value)}
+                          placeholder="TikTok Ads Campaign"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tiktok-spend">Initial Budget</Label>
+                        <Input 
+                          id="tiktok-spend"
+                          type="number"
+                          value={campaignSpend}
+                          onChange={(e) => setCampaignSpend(e.target.value)}
+                          placeholder="100"
+                        />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="email" className="space-y-3">
+                      <div>
+                        <Label htmlFor="email-name">Campaign Name</Label>
+                        <Input 
+                          id="email-name"
+                          value={campaignName}
+                          onChange={(e) => setCampaignName(e.target.value)}
+                          placeholder="Email Campaign"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email-platform">Email Platform</Label>
+                        <Select value={campaignPlatform} onValueChange={setCampaignPlatform}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="resend">Resend</SelectItem>
+                            <SelectItem value="mailchimp">Mailchimp</SelectItem>
+                            <SelectItem value="klaviyo">Klaviyo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="discount" className="space-y-3">
+                      <div>
+                        <Label htmlFor="discount-name">Campaign Name</Label>
+                        <Input 
+                          id="discount-name"
+                          value={campaignName}
+                          onChange={(e) => setCampaignName(e.target.value)}
+                          placeholder="Discount Campaign"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="discount-type">Discount Type</Label>
+                        <Select value={campaignPlatform} onValueChange={setCampaignPlatform}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="percentage">Percentage Off</SelectItem>
+                            <SelectItem value="fixed">Fixed Amount</SelectItem>
+                            <SelectItem value="bogo">Buy One Get One</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                  
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setShowNewCampaignModal(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCreateCampaign}>
+                      Create Campaign
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -48,8 +221,8 @@ export default function Marketing() {
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total ROAS</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0x</p>}
-                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.totalROAS.toFixed(2)}x</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">{campaigns.length} campaigns</p>}
                 </div>
               </div>
             </CardContent>
@@ -60,8 +233,8 @@ export default function Marketing() {
                 <Target className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Ad Spend</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">$0</p>}
-                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
+                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">${summary.totalSpend.toLocaleString()}</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">Total budget</p>}
                 </div>
               </div>
             </CardContent>
@@ -72,8 +245,8 @@ export default function Marketing() {
                 <Eye className="h-4 w-4 text-purple-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Impressions</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0</p>}
-                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.totalImpressions.toLocaleString()}</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">Est. views</p>}
                 </div>
               </div>
             </CardContent>
@@ -84,8 +257,8 @@ export default function Marketing() {
                 <TrendingUp className="h-4 w-4 text-orange-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Conversion Rate</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">0%</p>}
-                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">No data</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{summary.totalConversionRate.toFixed(1)}%</p>}
+                  {loading ? <Skeleton className="h-3 w-8" /> : <p className="text-xs text-muted-foreground">Avg rate</p>}
                 </div>
               </div>
             </CardContent>
@@ -140,6 +313,56 @@ export default function Marketing() {
                             <Skeleton className="h-5 w-16" />
                           </div>
                         ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : campaigns.length > 0 ? (
+                campaigns.map((campaign) => (
+                  <Card key={campaign.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            {campaign.type === 'meta_ads' && <Facebook className="h-5 w-5 text-primary" />}
+                            {campaign.type === 'tiktok_ads' && <Zap className="h-5 w-5 text-primary" />}
+                            {campaign.type === 'email' && <Mail className="h-5 w-5 text-primary" />}
+                            {campaign.type === 'discount' && <Percent className="h-5 w-5 text-primary" />}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">{campaign.name}</h3>
+                            <p className="text-muted-foreground">{campaign.platform}</p>
+                            <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
+                              {campaign.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-6 gap-4 mt-6">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Spend</p>
+                          <p className="font-bold">${campaign.spend}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Revenue</p>
+                          <p className="font-bold">${campaign.revenue}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">ROAS</p>
+                          <p className="font-bold">{campaign.roas.toFixed(2)}x</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Clicks</p>
+                          <p className="font-bold">{campaign.clicks}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Conversions</p>
+                          <p className="font-bold">{campaign.conversions}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Type</p>
+                          <p className="font-bold capitalize">{campaign.type.replace('_', ' ')}</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

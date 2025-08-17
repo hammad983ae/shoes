@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Copy,
   TrendingUp,
@@ -22,36 +23,31 @@ import {
   Trophy,
   Camera,
   Link as LinkIcon,
+  Plus,
+  X,
+  Check,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCreatorDashboard } from "@/hooks/useCreatorDashboard";
 
 export default function CreatorDashboard() {
+  const { 
+    loading, 
+    profile, 
+    stats, 
+    credits, 
+    creditsHistory, 
+    payoutHistory, 
+    recentVideos, 
+    checklistItems,
+    addChecklistItem,
+    toggleChecklistItem,
+    deleteChecklistItem
+  } = useCreatorDashboard();
+  
   const [copiedCode, setCopiedCode] = useState(false);
   const [newGoal, setNewGoal] = useState("");
-  const [checklistItems, setChecklistItems] = useState<Array<{id: number; text: string; completed: boolean}>>([]);
-  const [loading] = useState(true);
-  
-  // Real data - connected to APIs
-  const creator = {
-    name: loading ? "" : "",
-    profileImage: "/placeholder.svg",
-    tier: loading ? 1 : 1,
-    couponCode: loading ? "" : "",
-    commissionRate: loading ? 0 : 0,
-    followers: loading ? 0 : 0
-  };
-
-  const stats = {
-    totalOrders: 0,
-    averageOrderValue: 0,
-    customersAcquired: 0,
-    totalCommission: 0,
-    totalSalesDriven: 0
-  };
-
-  const credits = {
-    balance: 0
-  };
 
   const tierThresholds: Record<number, { min: number; max: number; commission: number }> = {
     1: { min: 0, max: 5000, commission: 10 },
@@ -67,42 +63,32 @@ export default function CreatorDashboard() {
     return { tier: "Bronze", rate: 20 };
   };
 
-  const currentCreditTier = getCreditTier(creator.followers);
-  const progressToNext = (stats.totalSalesDriven / tierThresholds[creator.tier].max) * 100;
+  const currentCreditTier = getCreditTier(profile.followers);
+  const progressToNext = (stats.totalSalesDriven / tierThresholds[profile.tier].max) * 100;
 
-  const addGoal = () => {
+  const addGoal = async () => {
     if (newGoal.trim()) {
-      const newItem = {
-        id: Math.max(...checklistItems.map(item => item.id), 0) + 1,
-        text: newGoal.trim(),
-        completed: false
-      };
-      setChecklistItems([...checklistItems, newItem]);
+      await addChecklistItem(newGoal.trim());
       setNewGoal("");
     }
   };
 
-  const deleteGoal = (id: number) => {
-    setChecklistItems(checklistItems.filter(item => item.id !== id));
+  const deleteGoal = async (id: string) => {
+    await deleteChecklistItem(id);
   };
 
-  const toggleGoal = (id: number) => {
-    setChecklistItems(checklistItems.map(item =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    ));
+  const toggleGoal = async (id: string) => {
+    const item = checklistItems.find(item => item.id === parseInt(id));
+    if (item) {
+      await toggleChecklistItem(id, !item.completed);
+    }
   };
 
   const copyCode = () => {
-    navigator.clipboard.writeText(creator.couponCode);
+    navigator.clipboard.writeText(profile.couponCode);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
   };
-
-  const creditsHistory: Array<{date: string; action: string; credits: number; type: string}> = [];
-
-  const payoutHistory: Array<{date: string; amount: number; method: string; status: string}> = [];
-
-  const recentVideos: Array<{title: string; platform: string; views: number; likes: number; comments: number}> = [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,14 +109,14 @@ export default function CreatorDashboard() {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16 border-2 border-primary/30">
-                  <AvatarImage src={creator.profileImage} alt={creator.name} />
-                  <AvatarFallback className="bg-primary/20 text-primary">JM</AvatarFallback>
+                  <AvatarImage src={profile.profileImage} alt={profile.name} />
+                  <AvatarFallback className="bg-primary/20 text-primary">{profile.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                  <div>
                    {loading ? (
                      <Skeleton className="h-8 w-48 mb-2" />
                    ) : (
-                     <h2 className="text-2xl font-bold text-foreground">{creator.name || "Creator"}</h2>
+                     <h2 className="text-2xl font-bold text-foreground">{profile.name || "Creator"}</h2>
                    )}
                    <div className="flex items-center gap-2 mt-1">
                      {loading ? (
@@ -141,9 +127,9 @@ export default function CreatorDashboard() {
                      ) : (
                        <>
                          <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                           Tier {creator.tier}
+                           Tier {profile.tier}
                          </Badge>
-                         <span className="text-muted-foreground">{creator.commissionRate}% Commission</span>
+                         <span className="text-muted-foreground">{profile.commissionRate}% Commission</span>
                        </>
                      )}
                    </div>
@@ -155,20 +141,20 @@ export default function CreatorDashboard() {
                  <div className="flex items-center gap-2">
                    {loading ? (
                      <Skeleton className="h-10 w-24" />
-                   ) : (
-                     <code className="bg-muted px-4 py-2 rounded-lg text-xl font-mono font-bold text-foreground">
-                       {creator.couponCode || "N/A"}
-                     </code>
-                   )}
-                   <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={copyCode}
-                     className="border-primary/30 hover:bg-primary/10"
-                     disabled={loading || !creator.couponCode}
-                   >
-                     {copiedCode ? "Copied!" : <Copy className="h-4 w-4" />}
-                   </Button>
+                    ) : (
+                      <code className="bg-muted px-4 py-2 rounded-lg text-xl font-mono font-bold text-foreground">
+                        {profile.couponCode || "N/A"}
+                      </code>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyCode}
+                      className="border-primary/30 hover:bg-primary/10"
+                      disabled={loading || !profile.couponCode}
+                    >
+                      {copiedCode ? "Copied!" : <Copy className="h-4 w-4" />}
+                    </Button>
                  </div>
               </div>
             </div>
@@ -257,27 +243,27 @@ export default function CreatorDashboard() {
                      </div>
                      <Skeleton className="h-3 w-full" />
                    </>
-                 ) : (
-                   <>
-                     <div className="flex justify-between text-sm mb-2">
-                       <span>Sales Driven: ${stats.totalSalesDriven.toLocaleString()}</span>
-                       <span>Next Tier: ${tierThresholds[creator.tier].max.toLocaleString()}</span>
-                     </div>
-                     <Progress value={progressToNext} className="h-3" />
-                   </>
-                 )}
+                     ) : (
+                       <>
+                         <div className="flex justify-between text-sm mb-2">
+                           <span>Sales Driven: ${stats.totalSalesDriven.toLocaleString()}</span>
+                           <span>Next Tier: ${tierThresholds[profile.tier].max.toLocaleString()}</span>
+                         </div>
+                         <Progress value={progressToNext} className="h-3" />
+                       </>
+                     )}
                </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 {Object.entries(tierThresholds).map(([tier, data]) => (
                   <div
                     key={tier}
-                    className={cn(
-                      "p-4 rounded-lg border-2",
-                      creator.tier === parseInt(tier)
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-muted/50"
-                    )}
+                     className={cn(
+                       "p-4 rounded-lg border-2",
+                       profile.tier === parseInt(tier)
+                         ? "border-primary bg-primary/5"
+                         : "border-border bg-muted/50"
+                     )}
                   >
                     <div className="text-center">
                       <h3 className="font-bold">Tier {tier}</h3>
@@ -365,13 +351,13 @@ export default function CreatorDashboard() {
                        <Skeleton className="h-4 w-24 mx-auto mb-2" />
                        <Skeleton className="h-6 w-20 mx-auto" />
                      </>
-                   ) : (
-                     <>
-                       <p className="text-2xl font-bold text-foreground">{creator.followers.toLocaleString()}</p>
-                       <p className="text-sm text-muted-foreground">TikTok Followers</p>
-                       <Badge className="mt-2 bg-primary text-primary-foreground">${currentCreditTier.rate}/video</Badge>
-                     </>
-                   )}
+                     ) : (
+                       <>
+                         <p className="text-2xl font-bold text-foreground">{profile.followers.toLocaleString()}</p>
+                         <p className="text-sm text-muted-foreground">TikTok Followers</p>
+                         <Badge className="mt-2 bg-primary text-primary-foreground">${currentCreditTier.rate}/video</Badge>
+                       </>
+                     )}
                  </div>
                 
                 <p className="text-sm text-center text-muted-foreground">

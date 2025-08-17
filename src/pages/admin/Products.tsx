@@ -34,7 +34,7 @@ export default function Products() {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => setShowAddModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>
@@ -240,6 +240,11 @@ export default function Products() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <AddProductModal 
+        isOpen={showAddModal} 
+        onClose={() => setShowAddModal(false)}
+      />
     </DashboardLayout>
   );
 }

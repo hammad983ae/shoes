@@ -18,29 +18,10 @@ import {
 
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Data state - will be replaced with real API calls
-const ordersData = {
-  summary: {
-    total: 0,
-    pending: 0,
-    processing: 0,
-    shipped: 0,
-    delivered: 0,
-    returned: 0
-  },
-  recentOrders: [],
-  fulfillmentStats: {
-    avgProcessingTime: "0 days",
-    avgShippingTime: "0 days",
-    onTimeDelivery: 0,
-    returnRate: 0
-  },
-  lowStockAlerts: []
-};
+import { useOrders } from "@/hooks/useOrders";
 
 export default function Orders() {
-  const [loading] = useState(true);
+  const { loading, orders, summary, fulfillmentStats, createOrder } = useOrders();
   
   return (
     <DashboardLayout currentPage="orders">
@@ -72,7 +53,7 @@ export default function Orders() {
                 <div className="w-2 h-2 bg-gray-500 rounded-full" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Orders</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">0</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.total}</p>}
                 </div>
               </div>
             </CardContent>
@@ -83,7 +64,7 @@ export default function Orders() {
                 <Clock className="h-4 w-4 text-yellow-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-xl font-bold">{ordersData.summary.pending}</p>
+                  <p className="text-xl font-bold">{summary.pending}</p>
                 </div>
               </div>
             </CardContent>
@@ -94,7 +75,7 @@ export default function Orders() {
                 <Package className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Processing</p>
-                  <p className="text-xl font-bold">{ordersData.summary.processing}</p>
+                  <p className="text-xl font-bold">{summary.processing}</p>
                 </div>
               </div>
             </CardContent>
@@ -105,7 +86,7 @@ export default function Orders() {
                 <Truck className="h-4 w-4 text-purple-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Shipped</p>
-                  <p className="text-xl font-bold">{ordersData.summary.shipped}</p>
+                  <p className="text-xl font-bold">{summary.shipped}</p>
                 </div>
               </div>
             </CardContent>
@@ -116,7 +97,7 @@ export default function Orders() {
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Delivered</p>
-                  <p className="text-xl font-bold">{ordersData.summary.delivered}</p>
+                  <p className="text-xl font-bold">{summary.delivered}</p>
                 </div>
               </div>
             </CardContent>
@@ -127,7 +108,7 @@ export default function Orders() {
                 <XCircle className="h-4 w-4 text-red-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Returned</p>
-                  <p className="text-xl font-bold">{ordersData.summary.returned}</p>
+                  <p className="text-xl font-bold">{summary.returned}</p>
                 </div>
               </div>
             </CardContent>
@@ -196,7 +177,7 @@ export default function Orders() {
                         </div>
                       </div>
                     ))
-                  ) : ordersData.recentOrders.length === 0 ? (
+                  ) : orders.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       No orders found
                     </div>
@@ -219,19 +200,19 @@ export default function Orders() {
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Avg. Processing Time</span>
-                      <span className="text-2xl font-bold">{ordersData.fulfillmentStats.avgProcessingTime}</span>
+                      <span className="text-2xl font-bold">{fulfillmentStats.avgProcessingTime}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Avg. Shipping Time</span>
-                      <span className="text-2xl font-bold">{ordersData.fulfillmentStats.avgShippingTime}</span>
+                      <span className="text-2xl font-bold">{fulfillmentStats.avgShippingTime}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">On-Time Delivery</span>
-                      <span className="text-2xl font-bold text-green-600">{ordersData.fulfillmentStats.onTimeDelivery}%</span>
+                      <span className="text-2xl font-bold text-green-600">{fulfillmentStats.onTimeDelivery}%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Return Rate</span>
-                      <span className="text-2xl font-bold text-orange-600">{ordersData.fulfillmentStats.returnRate}%</span>
+                      <span className="text-2xl font-bold text-orange-600">{fulfillmentStats.returnRate}%</span>
                     </div>
                   </div>
                 </CardContent>
@@ -253,7 +234,7 @@ export default function Orders() {
                           <p className="text-sm text-muted-foreground">Awaiting payment confirmation</p>
                         </div>
                       </div>
-                      <Badge variant="secondary">{ordersData.summary.pending}</Badge>
+                      <Badge variant="secondary">{summary.pending}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
                       <div className="flex items-center space-x-3">
@@ -263,7 +244,7 @@ export default function Orders() {
                           <p className="text-sm text-muted-foreground">Being prepared for shipment</p>
                         </div>
                       </div>
-                      <Badge variant="secondary">{ordersData.summary.processing}</Badge>
+                      <Badge variant="secondary">{summary.processing}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
                       <div className="flex items-center space-x-3">
@@ -273,7 +254,7 @@ export default function Orders() {
                           <p className="text-sm text-muted-foreground">Out for delivery</p>
                         </div>
                       </div>
-                      <Badge variant="secondary">{ordersData.summary.shipped}</Badge>
+                      <Badge variant="secondary">{summary.shipped}</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -312,11 +293,11 @@ export default function Orders() {
                         </div>
                       </div>
                     ))
-                  ) : ordersData.lowStockAlerts.length === 0 ? (
+                  ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       No stock alerts
                     </div>
-                  ) : null}
+                  )}
                 </div>
               </CardContent>
             </Card>

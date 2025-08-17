@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isFirstProductView } from '@/utils/authUtils';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { Sneaker } from '@/types/global';
+import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 
 import maison1 from '@/assets/Product Images/Mason Margiela Gum Sole Sneakers/Maison Margiela Gum Sole Product IMG 1.png';
 import maison2 from '@/assets/Product Images/Mason Margiela Gum Sole Sneakers/Maison Margiela Gum Sole Product IMG 2.png';
@@ -173,6 +174,7 @@ interface SneakerCatalogProps {
 }
 
 const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
+  const { products: dynamicProducts, loading: productsLoading } = useDynamicProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name-asc'); // Default to alphabetical order
@@ -186,6 +188,9 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const { getFavoriteProducts } = useFavorites();
   const { user } = useAuth();
+  
+  // Use dynamic products if available, fallback to static catalog
+  const catalogProducts = dynamicProducts.length > 0 ? dynamicProducts : sneakerCatalog;
 
   const handleViewProduct = (sneaker: Sneaker) => {
     console.log('handleViewProduct called for:', sneaker.name);
@@ -209,7 +214,7 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
 
   const filteredAndSortedSneakers = (() => {
     // Filter sneakers
-    let filtered = (sneakerCatalog as any[]).filter((sneaker: any) => {
+    let filtered = (catalogProducts as any[]).filter((sneaker: any) => {
       const matchesSearch = sneaker.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || sneaker.category === selectedCategory;
       const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(sneaker.brand);
