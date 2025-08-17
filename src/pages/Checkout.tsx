@@ -4,15 +4,21 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, Tag, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
-  const [appliedDiscount] = useState(0);
-  const [discountType] = useState<'credits' | 'coupon' | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [creditsToUse, setCreditsToUse] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState<'credits' | 'coupon' | null>(null);
+  const [userCredits, setUserCredits] = useState(0);
+  const [validCoupon, setValidCoupon] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
@@ -29,8 +35,88 @@ export default function Checkout() {
         setPaymentError('Payment system failed to load. Please refresh the page.');
       }
     };
+    
+    const fetchUserCredits = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: credits } = await supabase
+          .from('user_credits')
+          .select('current_balance')
+          .eq('user_id', user.id)
+          .single();
+        setUserCredits(credits?.current_balance || 0);
+      }
+    };
+    
     initChiron();
+    fetchUserCredits();
   }, []);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast({ title: "Error", description: "Please enter a coupon code", variant: "destructive" });
+      return;
+    }
+
+    // Check if coupon exists and is valid
+    const { data: coupon } = await supabase
+      .from('profiles')
+      .select('coupon_code, is_creator')
+      .eq('coupon_code', couponCode.toUpperCase())
+      .eq('is_creator', true)
+      .single();
+
+    if (!coupon) {
+      toast({ title: "Error", description: "Invalid coupon code", variant: "destructive" });
+      return;
+    }
+
+    if (discountType === 'credits') {
+      toast({ title: "Error", description: "Cannot use both coupon and credits", variant: "destructive" });
+      return;
+    }
+
+    const discount = subtotal * 0.15; // 15% off
+    setAppliedDiscount(discount);
+    setDiscountType('coupon');
+    setValidCoupon(couponCode.toUpperCase());
+    toast({ title: "Success", description: "15% coupon discount applied!" });
+  };
+
+  const applyCredits = () => {
+    const creditsNum = parseInt(creditsToUse) || 0;
+    if (creditsNum <= 0) {
+      toast({ title: "Error", description: "Please enter a valid number of credits", variant: "destructive" });
+      return;
+    }
+
+    if (creditsNum > userCredits) {
+      toast({ title: "Error", description: "Not enough credits available", variant: "destructive" });
+      return;
+    }
+
+    if (discountType === 'coupon') {
+      toast({ title: "Error", description: "Cannot use both coupon and credits", variant: "destructive" });
+      return;
+    }
+
+    const maxCreditsForOrder = Math.floor(subtotal * 100); // Max credits = order value
+    const creditsToApply = Math.min(creditsNum, maxCreditsForOrder);
+    const discount = creditsToApply / 100; // 100 credits = $1
+
+    setAppliedDiscount(discount);
+    setDiscountType('credits');
+    toast({ title: "Success", description: `${creditsToApply} credits applied (${discount.toFixed(2)})!` });
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(0);
+    setDiscountType(null);
+    setCouponCode('');
+    setCreditsToUse('');
+    setValidCoupon(null);
+    toast({ title: "Removed", description: "Discount removed" });
+  };
 
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''));
@@ -116,14 +202,46 @@ export default function Checkout() {
           setPaymentError(error.errorMessage || 'Payment was declined. Please check your card details and try again.');
           setSubmitting(false);
         },
-        onApproval: (response: any) => {
+        onApproval: async (response: any) => {
           console.log('Payment approved:', response);
-          setPaymentSuccess('Payment succeeded!');
-          setSubmitting(false);
-          clearCart();
-          setTimeout(() => {
-            navigate('/');
-          }, 2000);
+          
+          // Create order in database
+          try {
+            if (!user?.id) throw new Error('User not authenticated');
+            const { error: orderError } = await supabase.from('orders').insert({
+              user_id: user.id,
+              order_total: total,
+              coupon_code: validCoupon,
+              coupon_discount: discountType === 'coupon' ? appliedDiscount : 0,
+              credits_used: discountType === 'credits' ? Math.floor(appliedDiscount * 100) : 0,
+              status: 'paid',
+              payment_method: 'card',
+              estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            });
+
+            if (orderError) throw orderError;
+
+            // Deduct credits if used
+            if (discountType === 'credits' && user) {
+              await supabase
+                .from('user_credits')
+                .update({ 
+                  current_balance: userCredits - Math.floor(appliedDiscount * 100),
+                  total_spent: Math.floor(appliedDiscount * 100)
+                })
+                .eq('user_id', user.id);
+            }
+
+            setPaymentSuccess('Payment succeeded!');
+            setSubmitting(false);
+            clearCart();
+            setTimeout(() => {
+              navigate('/order-confirmation');
+            }, 2000);
+          } catch (error) {
+            console.error('Error saving order:', error);
+            toast({ title: "Warning", description: "Payment processed but order saving failed", variant: "destructive" });
+          }
         }
       };
 
@@ -230,6 +348,69 @@ export default function Checkout() {
                     <span>Total:</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
+                </div>
+                
+                {/* Coupon & Credits Section */}
+                <div className="mt-6 p-4 bg-muted/30 rounded-lg space-y-4">
+                  <h4 className="font-medium">Discounts</h4>
+                  
+                  {/* Coupon Code */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Coupon Code</label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        placeholder="Enter coupon code"
+                        disabled={discountType === 'credits'}
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={applyCoupon}
+                        disabled={discountType === 'credits'}
+                      >
+                        <Tag className="w-4 h-4 mr-1" />
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Credits */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Use Credits (Available: {userCredits})
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={creditsToUse}
+                        onChange={(e) => setCreditsToUse(e.target.value)}
+                        placeholder="Credits to use"
+                        type="number"
+                        max={userCredits}
+                        disabled={discountType === 'coupon'}
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={applyCredits}
+                        disabled={discountType === 'coupon'}
+                      >
+                        <CreditCard className="w-4 h-4 mr-1" />
+                        Apply
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">100 credits = $1.00</p>
+                  </div>
+
+                  {appliedDiscount > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
+                      <span className="text-sm text-green-700">
+                        {discountType === 'coupon' ? `Coupon "${validCoupon}"` : 'Credits'} applied: -${appliedDiscount.toFixed(2)}
+                      </span>
+                      <Button variant="ghost" size="sm" onClick={removeDiscount}>
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
