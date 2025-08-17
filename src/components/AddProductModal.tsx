@@ -187,7 +187,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
           <div>
             <Label>Categories (Multi-select)</Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
-              {['Sneakers', 'High-tops', 'Low-tops', 'Basketball', 'Running', 'Casual', 'Limited Edition', 'Collaborations'].map((cat) => (
+              {['Sneakers', 'High-tops', 'Low-tops', 'Basketball', 'Running', 'Casual', 'Collaborations'].map((cat) => (
                 <div key={cat} className="flex items-center space-x-2">
                   <Checkbox
                     id={cat}

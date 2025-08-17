@@ -60,10 +60,8 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
   const allLinks = [...links, ...dashboardLinks];
 
-  const currentPath = window.location.pathname;
-  const filteredLinks = currentPath === '/feed' 
-    ? allLinks.filter(link => link.href !== '/socials')
-    : allLinks;
+  // Always show all links - removing the filter that hides Socials on /feed
+  const filteredLinks = allLinks;
 
   const handleSignOut = async () => {
     await signOut();

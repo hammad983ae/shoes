@@ -321,7 +321,7 @@ const Cart = () => {
                     {appliedCredits > 0 ? (
                       <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                         <span className="text-green-700 font-medium">
-                          {appliedCredits} credits applied ($${(appliedCredits / 100).toFixed(2)})
+                          {appliedCredits} credits applied (${(appliedCredits / 100).toFixed(2)})
                         </span>
                         <Button 
                           variant="outline" 
@@ -425,7 +425,7 @@ const Cart = () => {
               Current Balance: <span className="font-semibold">{credits} credits</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              Order Total: <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              Order Total: <span className="font-semibold">${Math.max(0, subtotal - (creditsToApply / 100)).toFixed(2)}</span>
             </div>
             <Input
               type="number"

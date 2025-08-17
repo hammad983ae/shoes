@@ -112,9 +112,12 @@ export const useCartPersistence = () => {
   // Listen for auth state changes to load cart
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          loadCartFromDatabase();
+          // Defer loading cart to avoid auth state callback issues
+          setTimeout(() => {
+            loadCartFromDatabase();
+          }, 100);
         } else if (event === 'SIGNED_OUT') {
           clearCart();
         }
@@ -122,7 +125,14 @@ export const useCartPersistence = () => {
     );
 
     // Load cart on initial load if user is already logged in
-    loadCartFromDatabase();
+    const checkInitialAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        loadCartFromDatabase();
+      }
+    };
+    
+    checkInitialAuth();
 
     return () => subscription.unsubscribe();
   }, []);

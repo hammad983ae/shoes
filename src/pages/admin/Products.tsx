@@ -14,11 +14,12 @@ import {
   Plus,
   Package,
   AlertTriangle,
-  DollarSign
+  DollarSign,
+  Edit
 } from "lucide-react";
 
 export default function Products() {
-  const { loading, summary } = useProducts();
+  const { loading, products, summary } = useProducts();
   const [showAddModal, setShowAddModal] = useState(false);
 
   return (
@@ -153,9 +154,57 @@ export default function Products() {
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) : products.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No products found
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {products.map((product) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/5">
+                        <div className="flex items-center space-x-4">
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                            {product.media?.[0]?.url ? (
+                              <img 
+                                src={product.media[0].url} 
+                                alt={product.title}
+                                className="h-12 w-12 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <h3 className="font-medium">{product.title}</h3>
+                            <p className="text-sm text-muted-foreground">{product.brand}</p>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                product.stock > 10 ? 'bg-green-100 text-green-700' :
+                                product.stock > 0 ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {product.availability}
+                              </span>
+                              {product.limited && (
+                                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                                  Limited
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-8">
+                          <div className="text-right space-y-1">
+                            <p className="font-medium">${product.price}</p>
+                            <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
