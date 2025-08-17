@@ -31,7 +31,7 @@ const Cart = () => {
     return sum + (price * item.quantity);
   }, 0);
 
-  const creditsDiscount = appliedCredits;
+  const creditsDiscount = appliedCredits / 100; // Convert credits to dollars (100 credits = $1)
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalDiscount = creditsDiscount + couponDiscount;
   const discountedSubtotal = Math.max(0, subtotal - totalDiscount);
@@ -103,13 +103,16 @@ const Cart = () => {
   }
 
   const handleCreditsSubmit = () => {
-    if (creditsToApply > 0 && creditsToApply <= credits) {
-      setAppliedCredits(creditsToApply);
+    const maxCreditsForOrder = Math.floor(subtotal * 100); // Max credits = subtotal in cents
+    const creditsToUse = Math.min(creditsToApply, Math.min(credits, maxCreditsForOrder));
+    
+    if (creditsToUse > 0 && creditsToUse <= credits) {
+      setAppliedCredits(creditsToUse);
       setAppliedCoupon(null); // Remove coupon if applying credits
       setShowCreditsModal(false);
       toast({
         title: "Credits Applied",
-        description: `Applied ${creditsToApply} credits to your order.`,
+        description: `Applied ${creditsToUse} credits ($${(creditsToUse / 100).toFixed(2)}) to your order.`,
       });
     }
   };
@@ -162,7 +165,13 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    // Pass discount data to checkout
+    const checkoutData = {
+      appliedCredits,
+      appliedCoupon,
+      totalDiscount
+    };
+    navigate('/checkout', { state: checkoutData });
   };
   
   if (items.length === 0) {
@@ -279,8 +288,8 @@ const Cart = () => {
                 </div>
                 {appliedCredits > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Credits Applied:</span>
-                    <span>-${appliedCredits.toFixed(2)}</span>
+                    <span>Credits Applied ({appliedCredits} credits):</span>
+                    <span>-${(appliedCredits / 100).toFixed(2)}</span>
                   </div>
                 )}
                 {appliedCoupon && (
@@ -312,7 +321,7 @@ const Cart = () => {
                     {appliedCredits > 0 ? (
                       <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                         <span className="text-green-700 font-medium">
-                          {appliedCredits} credits applied
+                          {appliedCredits} credits applied ($${(appliedCredits / 100).toFixed(2)})
                         </span>
                         <Button 
                           variant="outline" 

@@ -21,12 +21,23 @@ export const useCartPersistence = () => {
           return;
         }
 
+        // Prepare items for database storage - ensure all fields are properly formatted
+        const itemsForDb = items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          size: item.size,
+          quantity: item.quantity,
+          size_type: item.size_type
+        }));
+
         // Upsert cart data
         await supabase
           .from('cart')
           .upsert({
             user_id: user.id,
-            items: JSON.stringify(items),
+            items: JSON.stringify(itemsForDb),
             updated_at: new Date().toISOString()
           }, { 
             onConflict: 'user_id' 
@@ -36,8 +47,8 @@ export const useCartPersistence = () => {
       }
     };
 
-    // Debounce the save operation
-    const timeoutId = setTimeout(saveCartToDatabase, 1000);
+    // Only save if user is authenticated and items exist
+    const timeoutId = setTimeout(saveCartToDatabase, 500);
     return () => clearTimeout(timeoutId);
   }, [items]);
 
@@ -55,15 +66,42 @@ export const useCartPersistence = () => {
 
       if (error || !cartData?.items) return;
 
-      // Clear current cart and add items from database
-      clearCart();
+      // Parse cart items
       const cartItems = typeof cartData.items === 'string' 
         ? JSON.parse(cartData.items) 
         : cartData.items;
       
-      if (Array.isArray(cartItems)) {
+      if (Array.isArray(cartItems) && cartItems.length > 0) {
+        // Clear current cart first
+        clearCart();
+        
+        // Add each item from database to cart
         cartItems.forEach((item: any) => {
-          addItem(item);
+          // Ensure the item has all required fields
+          if (item.id && item.name && item.price && item.size) {
+            addItem({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              image: item.image || '',
+              size: item.size,
+              size_type: item.size_type || 'US'
+            });
+            
+            // Add additional quantities if needed
+            if (item.quantity > 1) {
+              for (let i = 1; i < item.quantity; i++) {
+                addItem({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  image: item.image || '',
+                  size: item.size,
+                  size_type: item.size_type || 'US'
+                });
+              }
+            }
+          }
         });
       }
     } catch (error) {

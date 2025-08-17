@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check, Tag, CreditCard } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
@@ -13,12 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Checkout() {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
-  const [couponCode, setCouponCode] = useState('');
-  const [creditsToUse, setCreditsToUse] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [discountType, setDiscountType] = useState<'credits' | 'coupon' | null>(null);
-  const [userCredits, setUserCredits] = useState(0);
-  const [validCoupon, setValidCoupon] = useState<string | null>(null);
+  const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
@@ -26,6 +21,11 @@ export default function Checkout() {
   const [paymentSuccess, setPaymentSuccess] = useState('');
   const [chironLoaded, setChironLoaded] = useState(false);
   const paymentFormRef = useRef<HTMLFormElement>(null);
+  
+  // Get discount data from cart page
+  const cartDiscountData = location.state || {};
+  const appliedCredits = cartDiscountData.appliedCredits || 0;
+  const appliedCoupon = cartDiscountData.appliedCoupon || null;
 
   useEffect(() => {
     const initChiron = async () => {
@@ -38,96 +38,22 @@ export default function Checkout() {
       }
     };
     
-    const fetchUserCredits = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: credits } = await supabase
-          .from('user_credits')
-          .select('current_balance')
-          .eq('user_id', user.id)
-          .single();
-        setUserCredits(credits?.current_balance || 0);
-      }
-    };
-    
     initChiron();
-    fetchUserCredits();
   }, []);
 
-  const applyCoupon = async () => {
-    if (!couponCode.trim()) {
-      toast({ title: "Error", description: "Please enter a coupon code", variant: "destructive" });
-      return;
-    }
-
-    // Check if coupon exists and is valid
-    const { data: coupon } = await supabase
-      .from('profiles')
-      .select('coupon_code, is_creator')
-      .eq('coupon_code', couponCode.toUpperCase())
-      .eq('is_creator', true)
-      .single();
-
-    if (!coupon) {
-      toast({ title: "Error", description: "Invalid coupon code", variant: "destructive" });
-      return;
-    }
-
-    if (discountType === 'credits') {
-      toast({ title: "Error", description: "Cannot use both coupon and credits", variant: "destructive" });
-      return;
-    }
-
-    const discount = subtotal * 0.15; // 15% off
-    setAppliedDiscount(discount);
-    setDiscountType('coupon');
-    setValidCoupon(couponCode.toUpperCase());
-    toast({ title: "Success", description: "15% coupon discount applied!" });
-  };
-
-  const applyCredits = () => {
-    const creditsNum = parseInt(creditsToUse) || 0;
-    if (creditsNum <= 0) {
-      toast({ title: "Error", description: "Please enter a valid number of credits", variant: "destructive" });
-      return;
-    }
-
-    if (creditsNum > userCredits) {
-      toast({ title: "Error", description: "Not enough credits available", variant: "destructive" });
-      return;
-    }
-
-    if (discountType === 'coupon') {
-      toast({ title: "Error", description: "Cannot use both coupon and credits", variant: "destructive" });
-      return;
-    }
-
-    const maxCreditsForOrder = Math.floor(subtotal * 100); // Max credits = order value
-    const creditsToApply = Math.min(creditsNum, maxCreditsForOrder);
-    const discount = creditsToApply / 100; // 100 credits = $1
-
-    setAppliedDiscount(discount);
-    setDiscountType('credits');
-    toast({ title: "Success", description: `${creditsToApply} credits applied (${discount.toFixed(2)})!` });
-  };
-
-  const removeDiscount = () => {
-    setAppliedDiscount(0);
-    setDiscountType(null);
-    setCouponCode('');
-    setCreditsToUse('');
-    setValidCoupon(null);
-    toast({ title: "Removed", description: "Discount removed" });
-  };
-
+  // Calculate order totals with discounts from cart
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''));
     return sum + (price * item.quantity);
   }, 0);
 
-  const discount = appliedDiscount;
-  const tax = (subtotal - discount) * 0.0875; // 8.75% tax
-  const total = subtotal - discount + tax;
+  const creditsDiscount = appliedCredits / 100; // Convert credits to dollars
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const discount = creditsDiscount + couponDiscount;
+  const discountedSubtotal = Math.max(0, subtotal - discount);
+  const tax = discountedSubtotal * 0.0875; // 8.75% tax
+  const total = Math.max(0, discountedSubtotal + tax);
+
 
   // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
@@ -181,6 +107,12 @@ export default function Checkout() {
     }
     
     try {
+      // Skip payment processing if total is $0
+      if (total <= 0) {
+        await handleZeroDollarOrder();
+        return;
+      }
+
       // Generate payment token from backend
       const { data: tokenData, error } = await supabase.functions.invoke('create-payment-token', {
         body: {
@@ -213,9 +145,9 @@ export default function Checkout() {
             const { error: orderError } = await supabase.from('orders').insert({
               user_id: user.id,
               order_total: total,
-              coupon_code: validCoupon,
-              coupon_discount: discountType === 'coupon' ? appliedDiscount : 0,
-              credits_used: discountType === 'credits' ? Math.floor(appliedDiscount * 100) : 0,
+              coupon_code: appliedCoupon?.code || null,
+              coupon_discount: couponDiscount,
+              credits_used: appliedCredits,
               status: 'paid',
               payment_method: 'card',
               estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -224,14 +156,22 @@ export default function Checkout() {
             if (orderError) throw orderError;
 
             // Deduct credits if used
-            if (discountType === 'credits' && user) {
-              await supabase
+            if (appliedCredits > 0 && user) {
+              const { data: userCreditsData } = await supabase
                 .from('user_credits')
-                .update({ 
-                  current_balance: userCredits - Math.floor(appliedDiscount * 100),
-                  total_spent: Math.floor(appliedDiscount * 100)
-                })
-                .eq('user_id', user.id);
+                .select('current_balance, total_spent')
+                .eq('user_id', user.id)
+                .single();
+
+              if (userCreditsData && userCreditsData.current_balance !== null) {
+                await supabase
+                  .from('user_credits')
+                  .update({ 
+                    current_balance: userCreditsData.current_balance - appliedCredits,
+                    total_spent: (userCreditsData.total_spent || 0) + appliedCredits
+                  })
+                  .eq('user_id', user.id);
+              }
             }
 
             setPaymentSuccess('Payment succeeded!');
@@ -271,6 +211,56 @@ export default function Checkout() {
     } catch (error: any) {
       console.error('Payment initialization error:', error);
       setPaymentError(error.message || 'Failed to process payment');
+      setSubmitting(false);
+    }
+  };
+
+  // Handle $0 orders
+  const handleZeroDollarOrder = async () => {
+    try {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      const { error: orderError } = await supabase.from('orders').insert({
+        user_id: user.id,
+        order_total: 0,
+        coupon_code: appliedCoupon?.code || null,
+        coupon_discount: couponDiscount,
+        credits_used: appliedCredits,
+        status: 'paid',
+        payment_method: 'credits',
+        estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
+
+      if (orderError) throw orderError;
+
+      // Deduct credits if used
+      if (appliedCredits > 0) {
+        const { data: userCreditsData } = await supabase
+          .from('user_credits')
+          .select('current_balance, total_spent')
+          .eq('user_id', user.id)
+          .single();
+
+        if (userCreditsData && userCreditsData.current_balance !== null) {
+          await supabase
+            .from('user_credits')
+            .update({ 
+              current_balance: userCreditsData.current_balance - appliedCredits,
+              total_spent: (userCreditsData.total_spent || 0) + appliedCredits
+            })
+            .eq('user_id', user.id);
+        }
+      }
+
+      setPaymentSuccess('Order placed successfully!');
+      setSubmitting(false);
+      clearCart();
+      setTimeout(() => {
+        navigate('/order-confirmation');
+      }, 2000);
+    } catch (error) {
+      console.error('Error processing free order:', error);
+      setPaymentError('Failed to process order');
       setSubmitting(false);
     }
   };
@@ -336,10 +326,16 @@ export default function Checkout() {
                     <span>Subtotal:</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
-                  {discount > 0 && (
+                  {appliedCredits > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>{discountType === 'credits' ? 'Credits Applied' : 'Coupon Discount'}:</span>
-                      <span>-${discount.toFixed(2)}</span>
+                      <span>Credits Applied ({appliedCredits} credits):</span>
+                      <span>-${creditsDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Coupon ({appliedCoupon.code}):</span>
+                      <span>-${couponDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
@@ -352,157 +348,138 @@ export default function Checkout() {
                   </div>
                 </div>
                 
-                {/* Coupon & Credits Section */}
-                <div className="mt-6 p-4 bg-muted/30 rounded-lg space-y-4">
-                  <h4 className="font-medium">Discounts</h4>
-                  
-                  {/* Coupon Code */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Coupon Code</label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="Enter coupon code"
-                        disabled={discountType === 'credits'}
-                      />
-                      <Button 
-                        variant="outline" 
-                        onClick={applyCoupon}
-                        disabled={discountType === 'credits'}
-                      >
-                        <Tag className="w-4 h-4 mr-1" />
-                        Apply
-                      </Button>
-                    </div>
+                {/* Applied Discounts Display */}
+                {(appliedCredits > 0 || appliedCoupon) && (
+                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                    <h4 className="font-medium text-green-700">Applied Discounts</h4>
+                    {appliedCredits > 0 && (
+                      <div className="text-sm text-green-600">
+                        ✓ {appliedCredits} credits applied ($${creditsDiscount.toFixed(2)} off)
+                      </div>
+                    )}
+                    {appliedCoupon && (
+                      <div className="text-sm text-green-600">
+                        ✓ Coupon "{appliedCoupon.code}" applied ($${couponDiscount.toFixed(2)} off)
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Discounts were applied on the cart page. Go back to cart to modify.
+                    </p>
                   </div>
-
-                  {/* Credits */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Use Credits (Available: {userCredits})
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={creditsToUse}
-                        onChange={(e) => setCreditsToUse(e.target.value)}
-                        placeholder="Credits to use"
-                        type="number"
-                        max={userCredits}
-                        disabled={discountType === 'coupon'}
-                      />
-                      <Button 
-                        variant="outline" 
-                        onClick={applyCredits}
-                        disabled={discountType === 'coupon'}
-                      >
-                        <CreditCard className="w-4 h-4 mr-1" />
-                        Apply
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">100 credits = $1.00</p>
-                  </div>
-
-                  {appliedDiscount > 0 && (
-                    <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
-                      <span className="text-sm text-green-700">
-                        {discountType === 'coupon' ? `Coupon "${validCoupon}"` : 'Credits'} applied: -${appliedDiscount.toFixed(2)}
-                      </span>
-                      <Button variant="ghost" size="sm" onClick={removeDiscount}>
-                        Remove
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             </div>
 
             {/* Right Side - Payment Form */}
             <div>
-              <form ref={paymentFormRef} onSubmit={handleChironPayment} className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="Email"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
-                  <div className="space-y-3">
-                    <Input name="address" placeholder="Address" required />
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input name="city" placeholder="City" required />
-                      <Input name="state" placeholder="State" required />
-                    </div>
-                    <Input name="zip" placeholder="Postal code" required />
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Payment</h3>
-                  <div className="space-y-3">
-                    <Input 
-                      name="card-number" 
-                      placeholder="Card number" 
-                      maxLength={19}
-                      onChange={(e) => {
-                        // Format card number with spaces
-                        let value = e.target.value.replace(/\s+/g, '');
-                        if (value.length > 0) {
-                          value = value.match(new RegExp('.{1,4}', 'g'))?.join(' ') || value;
-                        }
-                        e.target.value = value;
-                      }}
-                      required 
+              {total > 0 ? (
+                <form ref={paymentFormRef} onSubmit={handleChironPayment} className="space-y-4">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      required
                     />
-                    <div className="grid grid-cols-3 gap-3">
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
+                    <div className="space-y-3">
+                      <Input name="address" placeholder="Address" required />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input name="city" placeholder="City" required />
+                        <Input name="state" placeholder="State" required />
+                      </div>
+                      <Input name="zip" placeholder="Postal code" required />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Payment</h3>
+                    <div className="space-y-3">
                       <Input 
-                        name="expiry" 
-                        placeholder="MM / YY" 
-                        maxLength={5}
+                        name="card-number" 
+                        placeholder="Card number" 
+                        maxLength={19}
                         onChange={(e) => {
-                          // Format expiry date
-                          let value = e.target.value.replace(/\D/g, '');
-                          if (value.length > 2) {
-                            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                          // Format card number with spaces
+                          let value = e.target.value.replace(/\s+/g, '');
+                          if (value.length > 0) {
+                            value = value.match(new RegExp('.{1,4}', 'g'))?.join(' ') || value;
                           }
                           e.target.value = value;
                         }}
                         required 
                       />
-                      <Input 
-                        name="cvc" 
-                        placeholder="Security code" 
-                        maxLength={4}
-                        required 
-                      />
-                      <Input name="card-name" placeholder="Name on card" required />
+                      <div className="grid grid-cols-3 gap-3">
+                        <Input 
+                          name="expiry" 
+                          placeholder="MM / YY" 
+                          maxLength={5}
+                          onChange={(e) => {
+                            // Format expiry date
+                            let value = e.target.value.replace(/\D/g, '');
+                            if (value.length > 2) {
+                              value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                            }
+                            e.target.value = value;
+                          }}
+                          required 
+                        />
+                        <Input 
+                          name="cvc" 
+                          placeholder="Security code" 
+                          maxLength={4}
+                          required 
+                        />
+                        <Input name="card-name" placeholder="Name on card" required />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {paymentError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                    {paymentError}
+                  {paymentError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  <Button 
+                    type="submit" 
+                    className="w-full py-3 text-lg font-semibold"
+                    disabled={submitting || !chironLoaded}
+                  >
+                    {!chironLoaded ? 'Loading payment system...' : submitting ? 'Processing...' : `Complete order • $${total.toFixed(2)}`}
+                  </Button>
+
+                  <div className="text-center text-sm text-muted-foreground">
+                    Powered by Chiron
                   </div>
-                )}
-
-                <Button 
-                  type="submit" 
-                  className="w-full py-3 text-lg font-semibold"
-                  disabled={submitting || !chironLoaded}
-                >
-                  {!chironLoaded ? 'Loading payment system...' : submitting ? 'Processing...' : `Complete order • $${total.toFixed(2)}`}
-                </Button>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  Powered by Chiron
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <h2 className="text-xl font-semibold mb-2 text-green-700">Your order is FREE!</h2>
+                    <p className="text-green-600 mb-4">
+                      Your discounts have covered the full order amount.
+                    </p>
+                    <Button 
+                      onClick={handleZeroDollarOrder}
+                      className="w-full py-3 text-lg font-semibold"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Processing...' : 'Complete Free Order'}
+                    </Button>
+                  </div>
+                  
+                  {paymentError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                      {paymentError}
+                    </div>
+                  )}
                 </div>
-              </form>
+              )}
             </div>
           </div>
         </div>
