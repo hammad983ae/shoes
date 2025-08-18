@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface CartItem {
-  id: number;
+  id: string; // Changed from number to string to support UUIDs
   name: string;
   price: string;
   image: string;
@@ -13,8 +13,8 @@ interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (id: number, size: string | number) => void;
-  updateQuantity: (id: number, size: string | number, quantity: number) => void;
+  removeItem: (id: string, size: string | number) => void;
+  updateQuantity: (id: string, size: string | number, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -59,11 +59,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const removeItem = (id: number, size: string | number) => {
+  const removeItem = (id: string, size: string | number) => {
     setItems(prevItems => prevItems.filter(item => !(item.id === id && item.size === size)));
   };
 
-  const updateQuantity = (id: number, size: string | number, quantity: number) => {
+  const updateQuantity = (id: string, size: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeItem(id, size);
       return;

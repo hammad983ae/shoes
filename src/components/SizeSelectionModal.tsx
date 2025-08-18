@@ -26,7 +26,7 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
   const handleAddToCart = () => {
     if (selectedSize) {
       addItem({
-        id: sneaker.id,
+        id: sneaker.id.toString(),
         name: sneaker.name,
         price: sneaker.price,
         image: sneaker.image,

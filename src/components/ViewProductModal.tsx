@@ -150,7 +150,7 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
     setAddToCartState('loading');
     for (let i = 0; i < parseInt(quantity); i++) {
       addItem({
-        id: sneaker.id,
+        id: sneaker.id.toString(),
         name: sneaker.name,
         price: sneaker.price,
         image: sneaker.images[currentIndex],
@@ -242,11 +242,11 @@ export default function ViewProductModal({ isOpen, onClose, sneaker }: ViewProdu
                   variant="ghost"
                   size="icon"
                   className="absolute top-0 left-0 m-2 bg-background/80 hover:bg-background z-20"
-                  onClick={() => toggleFavorite(sneaker.id)}
+                  onClick={() => toggleFavorite(sneaker.id.toString())}
                 >
                   <Heart
                     className={`w-5 h-5 ${
-                      isFavorite(sneaker.id)
+                      isFavorite(sneaker.id.toString())
                         ? 'fill-red-500 text-red-500'
                         : 'text-muted-foreground'
                     }`}

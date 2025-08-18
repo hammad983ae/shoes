@@ -1,6 +1,6 @@
 // Consolidated global types to prevent conflicts
 export interface Sneaker {
-  id: number;
+  id: number | string;
   name: string;
   price: string;
   originalPrice?: string;

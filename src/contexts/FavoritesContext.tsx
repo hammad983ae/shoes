@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface Sneaker {
-  id: number;
+  id: number | string; // Support both for backward compatibility
   image: string;
   price: string;
   name: string;
@@ -9,16 +9,16 @@ interface Sneaker {
 }
 
 interface FavoritesContextType {
-  favorites: number[];
-  toggleFavorite: (id: number) => void;
-  isFavorite: (id: number) => boolean;
+  favorites: string[]; // Changed to string array
+  toggleFavorite: (id: string) => void; // Changed to string parameter
+  isFavorite: (id: string) => boolean; // Changed to string parameter
   getFavoriteProducts: (products: Sneaker[]) => Sneaker[];
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
-  const [favorites, setFavorites] = useState<number[]>(() => {
+  const [favorites, setFavorites] = useState<string[]>(() => {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
@@ -27,7 +27,7 @@ export const FavoritesProvider = ({ children }: { children: React.ReactNode }) =
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  const toggleFavorite = (id: number) => {
+  const toggleFavorite = (id: string) => {
     setFavorites(prev => 
       prev.includes(id) 
         ? prev.filter(fav => fav !== id)
@@ -35,10 +35,10 @@ export const FavoritesProvider = ({ children }: { children: React.ReactNode }) =
     );
   };
 
-  const isFavorite = (id: number) => favorites.includes(id);
+  const isFavorite = (id: string) => favorites.includes(id);
 
   const getFavoriteProducts = (products: Sneaker[]) => 
-    products.filter(product => favorites.includes(product.id));
+    products.filter(product => favorites.includes(product.id.toString()));
 
   return (
     <FavoritesContext.Provider value={{

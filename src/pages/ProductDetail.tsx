@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Star, Check, Loader2, ArrowLeft } from 'lucide-react';
-import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
+import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 import { useCart } from '@/contexts/CartContext';
 import MainCatalogNavBar from '@/components/MainCatalogNavBar';
 import { useFavorites } from '@/contexts/FavoritesContext';
@@ -29,28 +29,11 @@ interface PostWithProduct {
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { products } = useDynamicProducts();
   
-  // Add placeholder tee to the catalog for testing
-  const placeholderTee: Sneaker = {
-    id: 999,
-    name: 'Test T-Shirt',
-    price: '$1',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center',
-    images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center'],
-    brand: 'Test Brand',
-    category: 'Shirts',
-    description: 'Test item for checkout - $1 price',
-    inStock: true,
-    sizing: 'US',
-    colors: ['black'],
-    type: 'shirt',
-    productDescription: 'A simple test t-shirt to verify the checkout process. Perfect for testing payment flows.',
-    productFeatures: ['100% cotton', 'Comfortable fit', 'Test item only'],
-    productIncludes: ['One t-shirt', 'Test receipt']
-  };
-  
-  const allProducts = [...sneakerCatalog, placeholderTee];
-  const product: Sneaker | undefined = useMemo(() => allProducts.find(s => s.id.toString() === id), [id]);
+  const product: Sneaker | undefined = useMemo(() => 
+    products.find(s => s.id.toString() === id), [id, products]
+  );
 
   const { addItem } = useCart();
   const { isFavorite } = useFavorites();
@@ -158,7 +141,7 @@ const ProductDetail = () => {
     // Add items to cart one by one to ensure proper notification
     for (let i = 0; i < parseInt(quantity); i++) {
       addItem({
-        id: product.id,
+        id: product.id.toString(),
         name: product.name,
         price: product.price,
         image: product.images[currentIndex],
@@ -240,7 +223,7 @@ const ProductDetail = () => {
               size="icon"
               className="absolute top-2 left-2 bg-background/80 hover:bg-background z-20"
             >
-              <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+              <Heart className={`w-5 h-5 ${isFavorite(product.id.toString()) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
             </Button>
           </div>
 

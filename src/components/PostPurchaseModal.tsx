@@ -44,7 +44,7 @@ const PostPurchaseModal = ({ isOpen, onClose, purchasedItems }: PostPurchaseModa
 
   const handleAddProduct = (product: any) => {
     addItem({
-      id: parseInt(product.id.replace('related-', '')),
+      id: product.id.replace('related-', ''),
       name: product.name,
       price: `$${product.price}`,
       image: product.image,

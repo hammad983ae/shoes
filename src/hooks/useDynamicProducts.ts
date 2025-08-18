@@ -21,20 +21,23 @@ export const useDynamicProducts = () => {
       if (error) throw error;
 
       const formattedProducts: Sneaker[] = (data || []).map(product => {
-        const images = (product.product_media || [])
+        const galleryImages = (product.product_media || [])
           .filter(media => media.role === 'gallery')
           .map(media => media.url);
         
         const primaryImage = (product.product_media || [])
-          .find(media => media.role === 'primary')?.url || images[0] || '';
+          .find(media => media.role === 'primary')?.url || '';
+
+        // Combine all images: primary first, then gallery images
+        const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
 
         return {
-          id: parseInt(product.id),
+          id: product.id, // Keep as UUID string, don't convert to int
           name: product.title,
           price: `$${product.price}`,
           slashed_price: product.slashed_price || undefined,
-          image: primaryImage,
-          images: images,
+          image: primaryImage || galleryImages[0] || '',
+          images: allImages,
           brand: product.brand,
           category: product.category,
           description: product.description || '',
