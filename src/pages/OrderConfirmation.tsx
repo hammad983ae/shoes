@@ -107,10 +107,10 @@ export default function OrderConfirmation() {
                 Thank you for your purchase. Your order has been confirmed and is being processed.
               </p>
               <div className="flex justify-center gap-4">
-                <Button onClick={() => navigate('/profile/orders')}>
+                <Button onClick={() => navigate('/order-history')}>
                   View All Orders
                 </Button>
-                <Button variant="outline" onClick={() => navigate('/')}>
+                <Button variant="outline" onClick={() => navigate('/catalog')}>
                   Continue Shopping
                 </Button>
               </div>

@@ -119,8 +119,8 @@ export const useCartPersistence = () => {
             loadCartFromDatabase();
           }, 100);
         } else if (event === 'SIGNED_OUT') {
-          // Don't clear cart on logout - keep it for when user signs back in
-          // The cart will be reloaded from database when they log back in
+          // Don't clear cart on logout - keep it locally
+          // The cart will be synced when they log back in
         }
       }
     );
