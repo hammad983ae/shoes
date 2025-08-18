@@ -293,6 +293,54 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_invites: {
+        Row: {
+          coupon_code: string
+          created_at: string | null
+          display_name: string | null
+          email: string
+          followers: number | null
+          id: string
+          invite_token: string
+          notes: string | null
+          starting_credits: number | null
+          status: string | null
+          tier: string | null
+          tiktok_username: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          coupon_code: string
+          created_at?: string | null
+          display_name?: string | null
+          email: string
+          followers?: number | null
+          id?: string
+          invite_token: string
+          notes?: string | null
+          starting_credits?: number | null
+          status?: string | null
+          tier?: string | null
+          tiktok_username?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          coupon_code?: string
+          created_at?: string | null
+          display_name?: string | null
+          email?: string
+          followers?: number | null
+          id?: string
+          invite_token?: string
+          notes?: string | null
+          starting_credits?: number | null
+          status?: string | null
+          tier?: string | null
+          tiktok_username?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       creator_metrics_monthly: {
         Row: {
           aov: number | null
@@ -605,11 +653,13 @@ export type Database = {
           credits_used: number | null
           currency: string
           estimated_delivery: string | null
+          fulfillment_notes: string | null
           id: string
           order_images: string[] | null
           order_total: number
           payment_method: string | null
           product_details: Json | null
+          quality_check_image: string | null
           shipping_address: Json | null
           status: string
           tracking_number: string | null
@@ -625,11 +675,13 @@ export type Database = {
           credits_used?: number | null
           currency?: string
           estimated_delivery?: string | null
+          fulfillment_notes?: string | null
           id?: string
           order_images?: string[] | null
           order_total: number
           payment_method?: string | null
           product_details?: Json | null
+          quality_check_image?: string | null
           shipping_address?: Json | null
           status?: string
           tracking_number?: string | null
@@ -645,11 +697,13 @@ export type Database = {
           credits_used?: number | null
           currency?: string
           estimated_delivery?: string | null
+          fulfillment_notes?: string | null
           id?: string
           order_images?: string[] | null
           order_total?: number
           payment_method?: string | null
           product_details?: Json | null
+          quality_check_image?: string | null
           shipping_address?: Json | null
           status?: string
           tracking_number?: string | null
@@ -1062,6 +1116,7 @@ export type Database = {
           filters: Json | null
           id: string
           images: string[] | null
+          infinite_stock: boolean | null
           is_limited: boolean | null
           limited: boolean | null
           materials: string | null
@@ -1084,6 +1139,7 @@ export type Database = {
           filters?: Json | null
           id?: string
           images?: string[] | null
+          infinite_stock?: boolean | null
           is_limited?: boolean | null
           limited?: boolean | null
           materials?: string | null
@@ -1106,6 +1162,7 @@ export type Database = {
           filters?: Json | null
           id?: string
           images?: string[] | null
+          infinite_stock?: boolean | null
           is_limited?: boolean | null
           limited?: boolean | null
           materials?: string | null
@@ -1122,6 +1179,8 @@ export type Database = {
       profiles: {
         Row: {
           accepted_terms: boolean | null
+          account_status: string | null
+          admin_notes: string | null
           avatar_url: string | null
           bio: string | null
           commission_rate: number | null
@@ -1132,6 +1191,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_creator: boolean
+          last_login_at: string | null
           month_revenue_cached: number | null
           month_updated_at: string | null
           referral_code: string | null
@@ -1141,11 +1201,14 @@ export type Database = {
           tiktok_followers: number | null
           tiktok_username: string | null
           tiktok_verified: boolean | null
+          total_spent: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           accepted_terms?: boolean | null
+          account_status?: string | null
+          admin_notes?: string | null
           avatar_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -1156,6 +1219,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_creator?: boolean
+          last_login_at?: string | null
           month_revenue_cached?: number | null
           month_updated_at?: string | null
           referral_code?: string | null
@@ -1165,11 +1229,14 @@ export type Database = {
           tiktok_followers?: number | null
           tiktok_username?: string | null
           tiktok_verified?: boolean | null
+          total_spent?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           accepted_terms?: boolean | null
+          account_status?: string | null
+          admin_notes?: string | null
           avatar_url?: string | null
           bio?: string | null
           commission_rate?: number | null
@@ -1180,6 +1247,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_creator?: boolean
+          last_login_at?: string | null
           month_revenue_cached?: number | null
           month_updated_at?: string | null
           referral_code?: string | null
@@ -1189,6 +1257,7 @@ export type Database = {
           tiktok_followers?: number | null
           tiktok_username?: string | null
           tiktok_verified?: boolean | null
+          total_spent?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -1313,6 +1382,36 @@ export type Database = {
         Update: {
           created_at?: string | null
           date?: string | null
+          id?: string
+          metric_type?: string
+          metric_value?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      site_analytics_realtime: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          hour: number | null
+          id: string
+          metric_type: string
+          metric_value: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          hour?: number | null
+          id?: string
+          metric_type: string
+          metric_value?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          hour?: number | null
           id?: string
           metric_type?: string
           metric_value?: number | null
