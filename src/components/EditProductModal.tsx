@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, X } from "lucide-react";
+import { X, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,13 +15,18 @@ interface Product {
   title: string;
   description?: string;
   brand: string;
-  categories: string[];
+  category: string;
   price: number;
   stock: number;
   limited: boolean;
+  infinite_stock: boolean;
   size_type: string;
   availability: string;
-  images: string[];
+  media?: Array<{
+    id: string;
+    url: string;
+    role: string;
+  }>;
 }
 
 interface EditProductModalProps {
@@ -38,33 +43,38 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     title: '',
     description: '',
     brand: '',
-    categories: [] as string[],
-    price: '',
-    stock: '',
+    category: '',
+    price: 0,
+    stock: 0,
     limited: false,
+    infinite_stock: false,
     size_type: 'US',
     availability: 'In Stock'
   });
   
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<Array<{ file?: File; url: string; role: string }>>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (product) {
+    if (product && isOpen) {
       setFormData({
         title: product.title,
         description: product.description || '',
         brand: product.brand,
-        categories: product.categories || [],
-        price: product.price.toString(),
-        stock: product.stock.toString(),
+        category: product.category,
+        price: product.price,
+        stock: product.stock,
         limited: product.limited,
+        infinite_stock: product.infinite_stock || false,
         size_type: product.size_type,
-        availability: product.availability
+        availability: product.infinite_stock ? 'In Stock' : product.availability
       });
-      setImages(product.images || []);
+      setImages(product.media?.map(media => ({
+        url: media.url,
+        role: media.role
+      })) || []);
     }
-  }, [product]);
+  }, [product, isOpen]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -74,18 +84,11 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            setImages(prev => [...prev, e.target!.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      setImages(prev => [...prev, { file, url, role: 'gallery' }]);
+    });
   };
 
   const removeImage = (index: number) => {
@@ -104,25 +107,58 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Update product
+      const { error: productError } = await supabase
         .from('products')
         .update({
           title: formData.title,
           description: formData.description,
           brand: formData.brand,
-          category: formData.categories.join(', '),
-          categories: formData.categories,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock) || 0,
+          category: formData.category,
+          price: formData.price,
+          stock: formData.stock,
           limited: formData.limited,
+          infinite_stock: formData.infinite_stock,
           size_type: formData.size_type,
-          availability: formData.availability,
-          images: images,
+          availability: formData.infinite_stock ? 'In Stock' : formData.availability,
           updated_at: new Date().toISOString()
         })
         .eq('id', product.id);
 
-      if (error) throw error;
+      if (productError) throw productError;
+
+      // Handle new image uploads
+      const newImages = images.filter(img => img.file);
+      if (newImages.length > 0) {
+        for (const image of newImages) {
+          if (image.file) {
+            const fileExt = image.file.name.split('.').pop();
+            const fileName = `${product.id}/${Date.now()}.${fileExt}`;
+            
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+              .from('products')
+              .upload(fileName, image.file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('products')
+              .getPublicUrl(fileName);
+
+            // Add to product_media table
+            const { error: mediaError } = await supabase
+              .from('product_media')
+              .insert({
+                product_id: product.id,
+                url: publicUrl,
+                role: image.role
+              });
+
+            if (mediaError) throw mediaError;
+          }
+        }
+      }
 
       toast({
         title: "Success",
@@ -142,16 +178,28 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     }
   };
 
+  if (!product) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Product</DialogTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>Edit Product</DialogTitle>
+              <DialogDescription>
+                Update product information and settings
+              </DialogDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Basic Information */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="title">Product Title *</Label>
               <Input
@@ -161,57 +209,57 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 placeholder="Product name"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="brand">Brand *</Label>
               <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background border shadow-sm">
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
+                <SelectContent className="bg-background border shadow-lg z-[100] max-h-60 overflow-y-auto">
                   <SelectItem value="Nike">Nike</SelectItem>
                   <SelectItem value="Jordan">Jordan</SelectItem>
                   <SelectItem value="Adidas">Adidas</SelectItem>
                   <SelectItem value="Rick Owens">Rick Owens</SelectItem>
                   <SelectItem value="Maison Margiela">Maison Margiela</SelectItem>
                   <SelectItem value="Travis Scott">Travis Scott</SelectItem>
+                  <SelectItem value="Yeezy">Yeezy</SelectItem>
+                  <SelectItem value="New Balance">New Balance</SelectItem>
+                  <SelectItem value="Converse">Converse</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="price">Price *</Label>
+              <Label htmlFor="price">Price ($) *</Label>
               <Input
                 id="price"
                 type="number"
+                step="0.01"
                 value={formData.price}
-                onChange={(e) => handleInputChange('price', e.target.value)}
+                onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
               />
             </div>
-          </div>
-
-          <div>
-            <Label>Categories (Multi-select)</Label>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {['Sneakers', 'High-tops', 'Low-tops', 'Basketball', 'Running', 'Casual', 'Collaborations'].map((cat) => (
-                <div key={cat} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={cat}
-                    checked={formData.categories.includes(cat)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        handleInputChange('categories', [...formData.categories, cat]);
-                      } else {
-                        handleInputChange('categories', formData.categories.filter(c => c !== cat));
-                      }
-                    }}
-                  />
-                  <Label htmlFor={cat} className="text-sm">{cat}</Label>
-                </div>
-              ))}
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                <SelectTrigger className="bg-background border shadow-sm">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-lg z-[100] max-h-60 overflow-y-auto">
+                  <SelectItem value="High-Top">High-Top</SelectItem>
+                  <SelectItem value="Low-Top">Low-Top</SelectItem>
+                  <SelectItem value="Mid-Top">Mid-Top</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Running">Running</SelectItem>
+                  <SelectItem value="Casual">Casual</SelectItem>
+                  <SelectItem value="Designer">Designer</SelectItem>
+                  <SelectItem value="Limited Edition">Limited Edition</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -226,93 +274,114 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             />
           </div>
 
-          {/* Inventory & Settings */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Stock & Settings */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="stock">Stock Quantity</Label>
               <Input
                 id="stock"
                 type="number"
                 value={formData.stock}
-                onChange={(e) => handleInputChange('stock', e.target.value)}
+                onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
                 placeholder="0"
+                disabled={formData.infinite_stock}
               />
             </div>
             <div>
               <Label htmlFor="size_type">Size Type</Label>
               <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
-                <SelectTrigger className="bg-background">
+                <SelectTrigger className="bg-background border shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
+                <SelectContent className="bg-background border shadow-lg z-[100]">
                   <SelectItem value="US">US</SelectItem>
                   <SelectItem value="EU">EU</SelectItem>
+                  <SelectItem value="UK">UK</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="availability">Availability</Label>
-              <Select value={formData.availability} onValueChange={(value) => handleInputChange('availability', value)}>
-                <SelectTrigger className="bg-background">
+              <Select 
+                value={formData.availability} 
+                onValueChange={(value) => handleInputChange('availability', value)}
+                disabled={formData.infinite_stock}
+              >
+                <SelectTrigger className="bg-background border shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
+                <SelectContent className="bg-background border shadow-lg z-[100]">
                   <SelectItem value="In Stock">In Stock</SelectItem>
                   <SelectItem value="Low Stock">Low Stock</SelectItem>
                   <SelectItem value="Out of Stock">Out of Stock</SelectItem>
                   <SelectItem value="Pre-Order">Pre-Order</SelectItem>
+                  <SelectItem value="Very Limited">Very Limited</SelectItem>
+                  <SelectItem value="Extremely Limited">Extremely Limited</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Limited Edition Toggle */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="limited"
-              checked={formData.limited}
-              onCheckedChange={(checked) => handleInputChange('limited', checked)}
-            />
-            <Label htmlFor="limited">Limited Edition</Label>
+          {/* Checkboxes */}
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="limited"
+                checked={formData.limited}
+                onCheckedChange={(checked) => handleInputChange('limited', checked)}
+              />
+              <Label htmlFor="limited">Limited Edition</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="infinite_stock"
+                checked={formData.infinite_stock}
+                onCheckedChange={(checked) => handleInputChange('infinite_stock', checked)}
+              />
+              <Label htmlFor="infinite_stock">Infinite Stock</Label>
+            </div>
           </div>
 
           {/* Image Management */}
           <div>
             <Label>Product Images</Label>
-            <div className="mt-2">
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload images or drag and drop
-                  </p>
+            <div className="mt-2 space-y-4">
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">PNG, JPG or JPEG</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
                 </label>
               </div>
-              
+
+              {/* Image Preview */}
               {images.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {images.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img 
-                        src={image} 
+                    <div key={index} className="relative group">
+                      <img
+                        src={image.url}
                         alt={`Product ${index + 1}`}
-                        className="w-full h-20 object-cover rounded border"
+                        className="w-full h-24 object-cover rounded-lg border"
                       />
                       <Button
-                        variant="destructive"
                         size="sm"
-                        className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                        variant="destructive"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
                         onClick={() => removeImage(index)}
                       >
-                        <X className="w-3 h-3" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   ))}
@@ -322,12 +391,12 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "Updating..." : "Save Changes"}
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
