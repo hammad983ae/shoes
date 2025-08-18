@@ -10,6 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DetailedUserEditModal } from "@/components/DetailedUserEditModal";
+import { AddCreatorModal } from "@/components/AddCreatorModal";
+import { InviteCreatorModal } from "@/components/InviteCreatorModal";
+import { useUsers } from "@/hooks/useUsers";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Users as UsersIcon,
   Search,
@@ -23,16 +29,46 @@ import {
   DollarSign,
   Edit,
 } from "lucide-react";
-import { useUsers } from "@/hooks/useUsers";
 
 export default function Users() {
-  const { loading, users, summary, updateUserRole, setCouponCode } = useUsers();
+  const { loading, users, summary, updateUserRole, setCouponCode, refetch } = useUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [showAddCreatorModal, setShowAddCreatorModal] = useState(false);
+  const [showDetailedEditModal, setShowDetailedEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [newRole, setNewRole] = useState('');
-  const [newCouponCode, setNewCouponCode] = useState('');
+  const { toast } = useToast();
+
+  const handleExportUsers = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('export-csv', {
+        body: { type: 'users' }
+      });
+      
+      if (data) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Export successful",
+          description: "Users exported to CSV file",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export users",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleInviteCreator = async () => {
     // Find user by email or show invite flow
@@ -74,43 +110,14 @@ export default function Users() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportUsers}>
               <Download className="w-4 h-4 mr-2" />
               Export Users
             </Button>
-            <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Invite Creator
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Invite Creator</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="invite-email">Email Address</Label>
-                    <Input
-                      id="invite-email"
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="creator@example.com"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowInviteModal(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleInviteCreator}>
-                      Send Invite
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button size="sm" onClick={() => setShowInviteModal(true)}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Invite Creator
+            </Button>
           </div>
         </div>
 
@@ -268,70 +275,16 @@ export default function Users() {
                              <p className="text-sm text-muted-foreground">Credits</p>
                              <p className="font-bold">{user.credits}</p>
                            </div>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setNewRole(user.role);
-                                  setNewCouponCode(user.coupon_code || '');
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Edit User: {user.display_name}</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="user-role">Role</Label>
-                                  <Select value={newRole} onValueChange={setNewRole}>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="user">User</SelectItem>
-                                      <SelectItem value="creator">Creator</SelectItem>
-                                      <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                 {newRole === 'creator' && (
-                                   <div>
-                                     <Label htmlFor="coupon-code">Coupon Code</Label>
-                                     <Input
-                                       id="coupon-code"
-                                       value={newCouponCode}
-                                       onChange={(e) => setNewCouponCode(e.target.value)}
-                                       placeholder="Enter coupon code"
-                                     />
-                                   </div>
-                                 )}
-                                 <div className="flex items-center space-x-2">
-                                   <Button variant="outline" size="sm" onClick={() => alert('Credit management coming soon!')}>
-                                     Add Credits
-                                   </Button>
-                                   {!user.is_creator && (
-                                     <Button variant="outline" size="sm" onClick={() => setNewRole('creator')}>
-                                       Make Creator
-                                     </Button>
-                                   )}
-                                 </div>
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="outline" onClick={() => setSelectedUser(null)}>
-                                    Cancel
-                                  </Button>
-                                  <Button onClick={handleUpdateUser}>
-                                    Save Changes
-                                  </Button>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                           <Button 
+                             variant="outline" 
+                             size="sm"
+                             onClick={() => {
+                               setSelectedUser(user);
+                               setShowDetailedEditModal(true);
+                             }}
+                           >
+                             <Edit className="w-4 h-4" />
+                           </Button>
                         </div>
                       </div>
                     ))}
@@ -352,7 +305,7 @@ export default function Users() {
                 <h3 className="text-lg font-semibold">Creator Management</h3>
                 <p className="text-muted-foreground">Manage creator partnerships and performance</p>
               </div>
-              <Button>
+              <Button onClick={() => setShowAddCreatorModal(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Creator
               </Button>
@@ -453,6 +406,37 @@ export default function Users() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <DetailedUserEditModal
+        isOpen={showDetailedEditModal}
+        onClose={() => setShowDetailedEditModal(false)}
+        user={selectedUser}
+        onUpdate={(userId, updates) => {
+          // Handle user updates
+          refetch();
+        }}
+      />
+
+      <AddCreatorModal
+        isOpen={showAddCreatorModal}
+        onClose={() => setShowAddCreatorModal(false)}
+        onCreatorAdded={() => {
+          refetch();
+          setShowAddCreatorModal(false);
+        }}
+      />
+
+      <InviteCreatorModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onInviteSent={() => {
+          setShowInviteModal(false);
+          toast({
+            title: "Invite sent",
+            description: "Creator invite has been sent successfully",
+          });
+        }}
+      />
     </DashboardLayout>
   );
 }

@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,23 +7,64 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   TrendingUp,
   DollarSign,
   Eye,
   Target,
-  
   Filter,
   Download,
   Facebook,
   Zap,
   Mail,
-  Percent
+  Percent,
+  Search
 } from "lucide-react";
-import { useCampaigns } from "@/hooks/useCampaigns";
 
 export default function Marketing() {
   const { loading, campaigns, summary } = useCampaigns();
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
+
+  const handleExportCampaigns = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('export-csv', {
+        body: { type: 'campaigns' }
+      });
+      
+      if (data) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'campaigns_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Export successful",
+          description: "Campaigns exported to CSV file",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export campaigns",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredCampaigns = campaigns.filter(campaign => 
+    campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    campaign.platform?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <DashboardLayout currentPage="marketing">
@@ -36,7 +78,7 @@ export default function Marketing() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportCampaigns}>
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
@@ -127,10 +169,21 @@ export default function Marketing() {
                 <h3 className="text-lg font-semibold">Active Campaigns</h3>
                 <p className="text-muted-foreground">Manage and monitor your advertising campaigns</p>
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search campaigns..." 
+                    className="pl-10 w-64"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button variant="outline" size="sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -163,8 +216,8 @@ export default function Marketing() {
                     </CardContent>
                   </Card>
                 ))
-              ) : campaigns.length > 0 ? (
-                campaigns.map((campaign) => (
+              ) : filteredCampaigns.length > 0 ? (
+                filteredCampaigns.map((campaign) => (
                   <Card key={campaign.id}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">

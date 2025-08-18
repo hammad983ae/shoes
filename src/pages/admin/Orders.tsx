@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { OrderDetailsModal } from "@/components/OrderDetailsModal";
+import { useOrders } from "@/hooks/useOrders";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search,
   Filter,
@@ -13,14 +19,76 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from "lucide-react";
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { useOrders } from "@/hooks/useOrders";
-
 export default function Orders() {
-  const { loading, orders, summary, fulfillmentStats } = useOrders();
+  const { loading, orders, summary, fulfillmentStats, refetch } = useOrders();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const { toast } = useToast();
+
+  const handleExportOrders = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('export-csv', {
+        body: { type: 'orders' }
+      });
+      
+      if (data) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'orders_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Export successful",
+          description: "Orders exported to CSV file",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export orders",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Order updated",
+        description: `Order status changed to ${status}`,
+      });
+      
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "Failed to update order status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredOrders = orders.filter(order => 
+    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.customer_name && order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
   
   return (
     <DashboardLayout currentPage="orders">
@@ -34,7 +102,7 @@ export default function Orders() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportOrders}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
@@ -303,6 +371,16 @@ export default function Orders() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <OrderDetailsModal
+        isOpen={showOrderDetails}
+        onClose={() => setShowOrderDetails(false)}
+        order={selectedOrder}
+        onUpdate={(orderId, updates) => {
+          // Handle order updates
+          refetch();
+        }}
+      />
     </DashboardLayout>
   );
 }

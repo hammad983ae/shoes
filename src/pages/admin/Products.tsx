@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AddProductModal } from "@/components/AddProductModal";
 import { EditProductModal } from "@/components/EditProductModal";
 import { useProducts } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Package, 
   TrendingUp, 
@@ -18,7 +21,8 @@ import {
   Filter,
   Download,
   Plus,
-  Edit
+  Edit,
+  RotateCcw as Sync
 } from "lucide-react";
 
 export default function Products() {
@@ -27,6 +31,87 @@ export default function Products() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const { toast } = useToast();
+
+  const handleSyncProducts = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-products');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Products synced",
+        description: data.message,
+      });
+      
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Sync failed",
+        description: "Failed to sync products from hardcoded data",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleExportProducts = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('export-csv', {
+        body: { type: 'products' }
+      });
+      
+      if (data) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'products_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Export successful",
+          description: "Products exported to CSV file",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export products",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleInfiniteStock = async (productId: string, infiniteStock: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ infinite_stock: infiniteStock })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Product updated",
+        description: `Infinite stock ${infiniteStock ? 'enabled' : 'disabled'}`,
+      });
+      
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
@@ -65,9 +150,18 @@ export default function Products() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportProducts}>
               <Download className="w-4 h-4 mr-2" />
               Export
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSyncProducts}
+              disabled={syncing}
+            >
+              <Sync className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync Products'}
             </Button>
             <Button size="sm" onClick={() => setShowAddModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -191,11 +285,16 @@ export default function Products() {
                   <div className="space-y-4">
                     {filteredProducts.map((product) => (
                       <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-muted/50">
-                        <img 
-                          src={(product as any).images?.[0] || '/placeholder.png'}
-                          alt={product.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
+                        <div className="relative">
+                          <img 
+                            src={(product as any).media?.[0]?.url || (product as any).images?.[0] || '/placeholder.png'}
+                            alt={product.title}
+                            className="w-16 h-16 object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.png';
+                            }}
+                          />
+                        </div>
                         <div className="flex-1">
                           <h3 className="font-medium">{product.title}</h3>
                           <p className="text-sm text-muted-foreground">{product.brand}</p>
@@ -204,11 +303,23 @@ export default function Products() {
                               {product.availability}
                             </Badge>
                             {product.limited && <Badge variant="outline">Limited</Badge>}
+                            {product.infinite_stock && <Badge variant="secondary">∞ Stock</Badge>}
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right space-y-2">
                           <p className="font-medium">${product.price}</p>
-                          <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Stock: {product.infinite_stock ? '∞' : product.stock}
+                          </p>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={product.infinite_stock}
+                              onCheckedChange={(checked) => 
+                                handleToggleInfiniteStock(product.id, checked as boolean)
+                              }
+                            />
+                            <label className="text-xs text-muted-foreground">∞ Stock</label>
+                          </div>
                         </div>
                         <Button 
                           variant="outline" 
