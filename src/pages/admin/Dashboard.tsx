@@ -1,16 +1,20 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NotificationsModal } from "@/components/NotificationsModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp, 
   Users, 
   Eye,
   AlertTriangle,
   Clock,
+  Download,
   MoreHorizontal
 } from "lucide-react";
 
@@ -78,6 +82,35 @@ function KPIGrid({ loading = true, stats }: { loading?: boolean; stats?: any }) 
 
 export default function Dashboard() {
   const { loading, stats, recentOrders, alerts } = useAdminDashboard();
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const navigate = useNavigate();
+
+  // Mock notifications for the modal
+  const notifications = [
+    { id: "1", title: "Low Stock Alert", message: "Rick Owens Geobaskets are running low in stock", time: "2 hours ago", type: "warning" as const, read: false },
+    { id: "2", title: "New Order", message: "Order #1234 has been placed", time: "5 hours ago", type: "info" as const, read: true },
+    { id: "3", title: "Payment Failed", message: "Payment failed for order #1233", time: "1 day ago", type: "error" as const, read: false },
+  ];
+
+  const handleExportReport = () => {
+    // Generate CSV export
+    const csvData = [
+      ['Metric', 'Value', 'Date'],
+      ['Revenue', stats?.revenue || 0, new Date().toISOString().split('T')[0]],
+      ['Orders', stats?.orders || 0, new Date().toISOString().split('T')[0]],
+      ['AOV', stats?.averageOrderValue || 0, new Date().toISOString().split('T')[0]],
+      ['Conversion Rate', stats?.conversionRate || 0, new Date().toISOString().split('T')[0]]
+    ];
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
   
   return (
     <DashboardLayout currentPage="dashboard">
@@ -91,10 +124,11 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportReport}>
+              <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => navigate('/admin/analytics')}>
               View Analytics
             </Button>
           </div>
@@ -102,11 +136,12 @@ export default function Dashboard() {
 
         {/* Time Period Tabs */}
         <Tabs defaultValue="today" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
+          <TabsList className="grid w-full max-w-lg grid-cols-5">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="7d">7 Days</TabsTrigger>
             <TabsTrigger value="30d">30 Days</TabsTrigger>
             <TabsTrigger value="90d">90 Days</TabsTrigger>
+            <TabsTrigger value="all">All Time</TabsTrigger>
           </TabsList>
 
           <TabsContent value="today" className="space-y-6">
@@ -122,6 +157,10 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="90d" className="space-y-6">
+            <KPIGrid loading={loading} stats={stats} />
+          </TabsContent>
+
+          <TabsContent value="all" className="space-y-6">
             <KPIGrid loading={loading} stats={stats} />
           </TabsContent>
         </Tabs>
@@ -185,7 +224,7 @@ export default function Dashboard() {
                   ))
                 )}
               </div>
-              <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = '/admin/orders'}>
+              <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/admin/orders')}>
                 View All Orders
               </Button>
             </CardContent>
@@ -218,19 +257,19 @@ export default function Dashboard() {
                     No alerts to display
                   </div>
                 ) : (
-                  alerts.map((alert, index) => (
-                    <div key={index} className="flex space-x-3 p-3 rounded-lg border">
-                      <div className="flex-shrink-0 w-2 h-2 rounded-full mt-2 bg-muted" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{alert.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{alert.message}</p>
-                        <p className="text-xs text-muted-foreground mt-2">{alert.time}</p>
-                      </div>
+                alerts.slice(0, 3).map((alert, index) => (
+                  <div key={index} className="flex space-x-3 p-3 rounded-lg border">
+                    <div className="flex-shrink-0 w-2 h-2 rounded-full mt-2 bg-muted" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{alert.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground mt-2">{alert.time}</p>
                     </div>
-                  ))
+                  </div>
+                ))
                 )}
               </div>
-              <Button variant="outline" className="w-full mt-4">
+              <Button variant="outline" className="w-full mt-4" onClick={() => setShowNotificationsModal(true)}>
                 View All Notifications
               </Button>
             </CardContent>
@@ -285,6 +324,13 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+
+      <NotificationsModal 
+        isOpen={showNotificationsModal}
+        onClose={() => setShowNotificationsModal(false)}
+        notifications={notifications}
+        loading={loading}
+      />
     </DashboardLayout>
   );
 }
