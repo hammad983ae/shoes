@@ -4,6 +4,7 @@ export interface Sneaker {
   name: string;
   price: string;
   originalPrice?: string;
+  slashed_price?: number;
   image?: string; // Made optional since we use images array
   images: string[];
   brand: string;

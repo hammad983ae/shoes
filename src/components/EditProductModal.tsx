@@ -17,6 +17,7 @@ interface Product {
   brand: string;
   category: string;
   price: number;
+  slashed_price?: number;
   stock: number;
   limited: boolean;
   infinite_stock: boolean;
@@ -45,6 +46,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     brand: '',
     category: '',
     price: 0,
+    slashed_price: 0,
     stock: 0,
     limited: false,
     infinite_stock: false,
@@ -63,6 +65,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
         brand: product.brand,
         category: product.category,
         price: product.price,
+        slashed_price: product.slashed_price || 0,
         stock: product.stock,
         limited: product.limited,
         infinite_stock: product.infinite_stock || false,
@@ -116,6 +119,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           brand: formData.brand,
           category: formData.category,
           price: formData.price,
+          slashed_price: formData.slashed_price || null,
           stock: formData.stock,
           limited: formData.limited,
           infinite_stock: formData.infinite_stock,
@@ -244,6 +248,21 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
               />
             </div>
             <div>
+              <Label htmlFor="slashed_price">Slashed Price ($)</Label>
+              <Input
+                id="slashed_price"
+                type="number"
+                step="0.01"
+                value={formData.slashed_price}
+                onChange={(e) => handleInputChange('slashed_price', parseFloat(e.target.value) || 0)}
+                placeholder="0.00"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Higher price to show crossed out</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="category">Category</Label>
               <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
                 <SelectTrigger className="bg-background border shadow-sm">
@@ -261,6 +280,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 </SelectContent>
               </Select>
             </div>
+            <div></div>
           </div>
 
           <div>

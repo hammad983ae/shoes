@@ -1124,6 +1124,7 @@ export type Database = {
           price_type: string | null
           shipping_time: string | null
           size_type: string | null
+          slashed_price: number | null
           stock: number | null
           title: string
           updated_at: string | null
@@ -1147,6 +1148,7 @@ export type Database = {
           price_type?: string | null
           shipping_time?: string | null
           size_type?: string | null
+          slashed_price?: number | null
           stock?: number | null
           title: string
           updated_at?: string | null
@@ -1170,6 +1172,7 @@ export type Database = {
           price_type?: string | null
           shipping_time?: string | null
           size_type?: string | null
+          slashed_price?: number | null
           stock?: number | null
           title?: string
           updated_at?: string | null
@@ -1859,6 +1862,16 @@ export type Database = {
         Returns: {
           commission_rate: number
           tier: string
+        }[]
+      }
+      calculate_top_performers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          product_id: string
+          product_title: string
+          revenue: number
+          total_sales: number
+          units_sold: number
         }[]
       }
       delete_user_account: {

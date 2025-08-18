@@ -32,6 +32,7 @@ export const useDynamicProducts = () => {
           id: parseInt(product.id),
           name: product.title,
           price: `$${product.price}`,
+          slashed_price: product.slashed_price || undefined,
           image: primaryImage,
           images: images,
           brand: product.brand,

@@ -131,9 +131,16 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
               {sneaker.brand || 'Premium'}
             </span>
           </div>
-          <p className="text-base sm:text-lg font-bold text-primary mb-2 group-hover:font-extrabold transition-all">
-            {sneaker.price}
-          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <p className="text-base sm:text-lg font-bold text-primary group-hover:font-extrabold transition-all">
+              {sneaker.price}
+            </p>
+            {sneaker.slashed_price && (
+              <p className="text-sm text-muted-foreground line-through">
+                ${sneaker.slashed_price}
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

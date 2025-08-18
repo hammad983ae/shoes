@@ -25,6 +25,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
     brand: '',
     categories: [] as string[],
     price: '',
+    slashed_price: '',
     stock: '',
     limited: false,
     price_type: 'US',
@@ -79,6 +80,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
         category: formData.categories.join(', '), // Join categories for backwards compatibility
         categories: formData.categories,
         price: parseFloat(formData.price),
+        slashed_price: formData.slashed_price ? parseFloat(formData.slashed_price) : null,
         stock: parseInt(formData.stock) || 0,
         limited: formData.limited,
         size_type: formData.price_type, // Map price_type to size_type
@@ -109,6 +111,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
           brand: '',
           categories: [],
           price: '',
+          slashed_price: '',
           stock: '',
           limited: false,
           price_type: 'US',
@@ -177,11 +180,28 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
               <Input
                 id="price"
                 type="number"
+                step="0.01"
                 value={formData.price}
                 onChange={(e) => handleInputChange('price', e.target.value)}
                 placeholder="0.00"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="slashed_price">Slashed Price (Optional)</Label>
+              <Input
+                id="slashed_price"
+                type="number"
+                step="0.01"
+                value={formData.slashed_price}
+                onChange={(e) => handleInputChange('slashed_price', e.target.value)}
+                placeholder="0.00"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Higher price to show crossed out next to regular price</p>
+            </div>
+            <div></div>
           </div>
 
           <div>
