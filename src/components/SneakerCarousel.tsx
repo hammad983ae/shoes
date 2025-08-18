@@ -3,9 +3,10 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import { useNavigate } from 'react-router-dom';
-import { sneakerCatalog } from '@/components/SneakerCatalog';
+import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 
 const SneakerCarousel = () => {
+  const { products } = useDynamicProducts();
   const navigate = useNavigate();
 
   const handleShopAll = () => {
@@ -37,7 +38,7 @@ const SneakerCarousel = () => {
       {/* Horizontal Scrollable Container */}
       <div className="relative">
         <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80" style={{ touchAction: 'pan-x pan-y' }}>
-          {sneakerCatalog.map((sneaker, index) => (
+          {products.map((sneaker, index) => (
             <div key={sneaker.id} className="flex-shrink-0 snap-center w-48 sm:w-56 md:w-64">
               <ProductCard 
                 sneaker={sneaker} 

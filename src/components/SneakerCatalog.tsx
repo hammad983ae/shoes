@@ -193,8 +193,8 @@ const SneakerCatalog = ({ onBackToHome }: SneakerCatalogProps) => {
   const { getFavoriteProducts } = useFavorites();
   const { user } = useAuth();
   
-  // Use dynamic products if available, fallback to static catalog
-  const catalogProducts = dynamicProducts.length > 0 ? dynamicProducts : sneakerCatalog;
+  // Use only dynamic products from database
+  const catalogProducts = dynamicProducts;
 
   const handleViewProduct = (sneaker: Sneaker) => {
     console.log('handleViewProduct called for:', sneaker.name);
