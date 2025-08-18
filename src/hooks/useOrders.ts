@@ -65,7 +65,6 @@ export const useOrders = () => {
         .from('orders')
         .select(`
           *,
-          profiles(display_name),
           order_items(
             id,
             product_id,
@@ -79,12 +78,21 @@ export const useOrders = () => {
 
       if (error) throw error;
 
+      // Get user profile data separately for orders
+      const userIds = ordersData?.map(order => order.user_id).filter(Boolean) || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
       const formattedOrders: Order[] = (ordersData || []).map(order => ({
         ...order,
         creator_id: order.creator_id || undefined,
         coupon_code: order.coupon_code || undefined,
         commission_amount_at_purchase: order.commission_amount_at_purchase || undefined,
-        customer_name: (order.profiles as any)?.display_name || 'Anonymous',
+        customer_name: profileMap.get(order.user_id)?.display_name || 'Anonymous',
         items: (order.order_items || []).map(item => ({
           ...item,
           size: item.size || undefined,

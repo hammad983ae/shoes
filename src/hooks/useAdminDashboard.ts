@@ -45,12 +45,19 @@ export const useAdminDashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch orders with user data
+      // Fetch orders with user data - fixed query
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select(`
           *,
-          profiles(display_name)
+          order_items(
+            id,
+            product_id,
+            quantity,
+            price_per_item,
+            size,
+            products(title)
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -65,10 +72,19 @@ export const useAdminDashboard = () => {
       const uniqueCustomers = new Set(orders?.map(order => order.user_id) || []);
       const newCustomers = uniqueCustomers.size;
 
+      // Get user profile data separately for orders
+      const userIds = orders?.map(order => order.user_id).filter(Boolean) || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
       // Format recent orders
       const formattedOrders: RecentOrder[] = (orders?.slice(0, 5) || []).map(order => ({
         id: order.id.slice(-8),
-        customer: (order.profiles as any)?.display_name || 'Anonymous',
+        customer: profileMap.get(order.user_id)?.display_name || 'Anonymous',
         amount: Number(order.order_total || 0),
         time: new Date(order.created_at).toLocaleString(),
         status: order.status

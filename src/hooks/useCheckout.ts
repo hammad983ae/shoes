@@ -20,14 +20,28 @@ export const useCheckout = () => {
 
     setLoading(true);
     try {
-      // Create the order
+      // Prepare product details for order
+      const productDetails = cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size,
+        size_type: item.size_type,
+        image: item.image
+      }));
+
+      // Create the order with enhanced data
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
           user_id: user.id,
           order_total: orderTotal,
           coupon_code: couponCode,
-          status: 'pending'
+          status: 'pending',
+          product_details: productDetails,
+          order_images: cartItems.map(item => item.image).filter(Boolean),
+          estimated_delivery: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         }])
         .select()
         .single();
@@ -37,10 +51,10 @@ export const useCheckout = () => {
       // Create order items
       const orderItems = cartItems.map(item => ({
         order_id: order.id,
-        product_id: item.id.toString(), // Convert to string as expected by schema
+        product_id: item.id,
         quantity: item.quantity,
-        price_per_item: parseFloat(item.price.replace('$', '')),
-        size: item.selectedSize
+        price_per_item: typeof item.price === 'string' ? parseFloat(item.price.replace('$', '')) : item.price,
+        size: item.size
       }));
 
       const { error: itemsError } = await supabase
