@@ -2,13 +2,9 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import Sidebar from '@/components/Sidebar'
 import ProductCard from '@/components/ProductCard'
-import ViewProductModal from '@/components/ViewProductModal'
-import SignupIncentiveModal from '@/components/SignupIncentiveModal'
 import MainCatalogNavBar from '@/components/MainCatalogNavBar'
 import RequestNewItemsCard from '@/components/RequestNewItemsCard'
 import { useFavorites } from '@/contexts/FavoritesContext'
-import { useAuth } from '@/contexts/AuthContext'
-import { isFirstProductView } from '@/utils/authUtils'
 import InteractiveParticles from '@/components/InteractiveParticles'
 import { Sneaker } from '@/types/global'
 import { Button } from '@/components/ui/button'
@@ -20,14 +16,10 @@ const FullCatalog = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { getFavoriteProducts } = useFavorites()
-  const { user } = useAuth()
   const { products: dynamicProducts } = useDynamicProducts()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [showFavorites, setShowFavorites] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Sneaker | null>(null)
-  const [showIncentiveModal, setShowIncentiveModal] = useState(false)
-  const [pendingProduct, setPendingProduct] = useState<Sneaker | null>(null)
   const [filters, setFilters] = useState({
     categories: [] as string[],
     brands: [] as string[],
@@ -44,20 +36,10 @@ const FullCatalog = () => {
   }, [searchParams, dynamicProducts])
 
   const handleViewProduct = (product: Sneaker) => {
-    if (isFirstProductView(!!user)) {
-      setPendingProduct(product)
-      setShowIncentiveModal(true)
-    } else {
-      setSelectedProduct(product)
-    }
+    // Navigate to product detail page instead of showing modal
+    navigate(`/product/${product.id}`);
   }
 
-  const handleContinueToProduct = () => {
-    if (pendingProduct) {
-      setSelectedProduct(pendingProduct)
-      setPendingProduct(null)
-    }
-  }
 
   const handleFiltersChange = (newFilters: typeof filters) => {
     setFilters(newFilters)
@@ -132,19 +114,6 @@ const FullCatalog = () => {
         </div>
       </div>
 
-      {selectedProduct && (
-        <ViewProductModal
-          isOpen={!!selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          sneaker={selectedProduct}
-        />
-      )}
-
-      <SignupIncentiveModal
-        isOpen={showIncentiveModal}
-        onClose={() => setShowIncentiveModal(false)}
-        onContinue={handleContinueToProduct}
-      />
     </div>
   )
 }
