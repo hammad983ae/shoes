@@ -482,15 +482,7 @@ export type Database = {
           product_id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "favorites_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       messages: {
         Row: {
@@ -945,6 +937,47 @@ export type Database = {
           product_id?: string
         }
         Relationships: []
+      }
+      product_analytics: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_purchased_at: string | null
+          product_id: string | null
+          purchases_count: number | null
+          revenue: number | null
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          product_id?: string | null
+          purchases_count?: number | null
+          revenue?: number | null
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          product_id?: string | null
+          purchases_count?: number | null
+          revenue?: number | null
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_analytics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_media: {
         Row: {

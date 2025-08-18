@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, X } from "lucide-react";
-import { useProducts } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AddProductModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface Product {
+  id: string;
+  title: string;
+  description?: string;
+  brand: string;
+  categories: string[];
+  price: number;
+  stock: number;
+  limited: boolean;
+  size_type: string;
+  availability: string;
+  images: string[];
 }
 
-export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
-  const { addProduct } = useProducts();
+interface EditProductModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  product: Product | null;
+  onUpdate: () => void;
+}
+
+export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditProductModalProps) {
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -27,12 +42,29 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
     price: '',
     stock: '',
     limited: false,
-    price_type: 'US',
+    size_type: 'US',
     availability: 'In Stock'
   });
   
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        title: product.title,
+        description: product.description || '',
+        brand: product.brand,
+        categories: product.categories || [],
+        price: product.price.toString(),
+        stock: product.stock.toString(),
+        limited: product.limited,
+        size_type: product.size_type,
+        availability: product.availability
+      });
+      setImages(product.images || []);
+    }
+  }, [product]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -61,7 +93,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.price || !formData.brand) {
+    if (!product || !formData.title || !formData.price || !formData.brand) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -72,60 +104,37 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
 
     setLoading(true);
     try {
-      const productData = {
-        title: formData.title,
-        description: formData.description,
-        brand: formData.brand,
-        category: formData.categories.join(', '), // Join categories for backwards compatibility
-        categories: formData.categories,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0,
-        limited: formData.limited,
-        size_type: formData.price_type, // Map price_type to size_type
-        price_type: formData.price_type,
-        availability: formData.availability,
-        materials: '', // Default empty
-        care_instructions: '', // Default empty
-        shipping_time: '5-9 days', // Default
-        filters: {
-          colors: [],
-          sizes: [],
-          types: []
-        },
-        images: images
-      };
+      const { error } = await supabase
+        .from('products')
+        .update({
+          title: formData.title,
+          description: formData.description,
+          brand: formData.brand,
+          category: formData.categories.join(', '),
+          categories: formData.categories,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock) || 0,
+          limited: formData.limited,
+          size_type: formData.size_type,
+          availability: formData.availability,
+          images: images,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', product.id);
 
-      const result = await addProduct(productData);
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Product added successfully"
-        });
-        onClose();
-        // Reset form
-        setFormData({
-          title: '',
-          description: '',
-          brand: '',
-          categories: [],
-          price: '',
-          stock: '',
-          limited: false,
-          price_type: 'US',
-          availability: 'In Stock'
-        });
-        setImages([]);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to add product",
-          variant: "destructive"
-        });
-      }
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Product updated successfully"
+      });
+      onUpdate();
+      onClose();
     } catch (error) {
+      console.error('Error updating product:', error);
       toast({
         title: "Error",
-        description: "Failed to add product",
+        description: "Failed to update product",
         variant: "destructive"
       });
     } finally {
@@ -137,7 +146,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
+          <DialogTitle>Edit Product</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -158,10 +167,10 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
             <div>
               <Label htmlFor="brand">Brand *</Label>
               <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
-                <SelectTrigger className="relative z-50">
+                <SelectTrigger>
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-[9999] relative">
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="Nike">Nike</SelectItem>
                   <SelectItem value="Jordan">Jordan</SelectItem>
                   <SelectItem value="Adidas">Adidas</SelectItem>
@@ -220,22 +229,22 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
           {/* Inventory & Settings */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="stock">Stock Quantity (Optional)</Label>
+              <Label htmlFor="stock">Stock Quantity</Label>
               <Input
                 id="stock"
                 type="number"
                 value={formData.stock}
                 onChange={(e) => handleInputChange('stock', e.target.value)}
-                placeholder="Leave blank for unlimited"
+                placeholder="0"
               />
             </div>
             <div>
               <Label htmlFor="size_type">Size Type</Label>
-              <Select value={formData.price_type} onValueChange={(value) => handleInputChange('price_type', value)}>
-                <SelectTrigger className="bg-background relative z-50">
+              <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-[9999] relative">
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="US">US</SelectItem>
                   <SelectItem value="EU">EU</SelectItem>
                 </SelectContent>
@@ -244,10 +253,10 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
             <div>
               <Label htmlFor="availability">Availability</Label>
               <Select value={formData.availability} onValueChange={(value) => handleInputChange('availability', value)}>
-                <SelectTrigger className="bg-background relative z-50">
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-[9999] relative">
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="In Stock">In Stock</SelectItem>
                   <SelectItem value="Low Stock">Low Stock</SelectItem>
                   <SelectItem value="Out of Stock">Out of Stock</SelectItem>
@@ -256,7 +265,6 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
               </Select>
             </div>
           </div>
-
 
           {/* Limited Edition Toggle */}
           <div className="flex items-center space-x-2">
@@ -268,7 +276,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
             <Label htmlFor="limited">Limited Edition</Label>
           </div>
 
-          {/* Image Upload */}
+          {/* Image Management */}
           <div>
             <Label>Product Images</Label>
             <div className="mt-2">
@@ -319,7 +327,7 @@ export function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "Adding..." : "Add Product"}
+              {loading ? "Updating..." : "Save Changes"}
             </Button>
           </div>
         </div>

@@ -2,25 +2,56 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProducts } from "@/hooks/useProducts";
 import { AddProductModal } from "@/components/AddProductModal";
+import { EditProductModal } from "@/components/EditProductModal";
+import { useProducts } from "@/hooks/useProducts";
 import { 
+  Package, 
+  TrendingUp, 
+  AlertCircle, 
+  DollarSign,
   Search,
   Filter,
   Download,
   Plus,
-  Package,
-  AlertTriangle,
-  DollarSign,
   Edit
 } from "lucide-react";
 
 export default function Products() {
-  const { loading, products, summary } = useProducts();
+  const { loading, products, summary, refetch } = useProducts();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowEditModal(true);
+  };
+
+  const filteredProducts = products.filter(product => 
+    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const topPerformers = products
+    .filter(p => p.stock > 0)
+    .sort((a, b) => b.price - a.price)
+    .slice(0, 10);
+
+  const needsAttention = products.filter(p => 
+    p.stock <= 10 || p.availability === 'Out of Stock'
+  );
+
+  const categoryBreakdown = products.reduce((acc, product) => {
+    const category = product.category || 'Uncategorized';
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <DashboardLayout currentPage="products">
@@ -28,9 +59,9 @@ export default function Products() {
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Products & Inventory</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Products</h1>
             <p className="text-muted-foreground">
-              Manage your product catalog, track performance, and monitor inventory levels
+              Manage your product inventory and catalog
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -48,278 +79,272 @@ export default function Products() {
         {/* Inventory Summary */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Package className="h-4 w-4 text-blue-600" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Products</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.totalProducts}</p>}
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {loading ? <Skeleton className="h-8 w-16" /> : summary.totalProducts}
               </div>
             </CardContent>
           </Card>
+          
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-green-500 rounded-full" />
-                <div>
-                  <p className="text-sm text-muted-foreground">In Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.inStock}</p>}
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">In Stock</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {loading ? <Skeleton className="h-8 w-16" /> : summary.inStock}
               </div>
             </CardContent>
           </Card>
+          
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Low Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.lowStock}</p>}
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">
+                {loading ? <Skeleton className="h-8 w-16" /> : summary.lowStock}
               </div>
             </CardContent>
           </Card>
+          
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded-full" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Out of Stock</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">{summary.outOfStock}</p>}
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {loading ? <Skeleton className="h-8 w-16" /> : summary.outOfStock}
               </div>
             </CardContent>
           </Card>
+          
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Value</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-xl font-bold">$0</p>}
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {loading ? <Skeleton className="h-8 w-20" /> : `$${summary.totalValue.toFixed(2)}`}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="all-products" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
-            <TabsTrigger value="all-products">All Products</TabsTrigger>
-            <TabsTrigger value="top-performers">Top Performers</TabsTrigger>
-            <TabsTrigger value="low-performers">Needs Attention</TabsTrigger>
+        {/* Product Management */}
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-4">
+            <TabsTrigger value="all">All Products</TabsTrigger>
+            <TabsTrigger value="top">Top Performers</TabsTrigger>
+            <TabsTrigger value="attention">Needs Attention</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
 
-          {/* All Products Tab */}
-          <TabsContent value="all-products" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>All Products</CardTitle>
-                  <CardDescription>Complete product catalog with editing capabilities</CardDescription>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search products..." className="pl-10 w-64" />
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 6 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                        <div className="flex items-center space-x-4">
-                          <Skeleton className="h-12 w-12 rounded-lg" />
-                          <div className="space-y-2">
-                            <Skeleton className="h-4 w-48" />
-                            <Skeleton className="h-3 w-24" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-8">
-                          <div className="text-right space-y-1">
-                            <Skeleton className="h-4 w-16" />
-                            <Skeleton className="h-3 w-12" />
-                          </div>
-                          <Skeleton className="h-8 w-20" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : products.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No products found
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {products.map((product) => (
-                      <div key={product.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/5">
-                        <div className="flex items-center space-x-4">
-                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                            {product.media?.[0]?.url ? (
-                              <img 
-                                src={product.media[0].url} 
-                                alt={product.title}
-                                className="h-12 w-12 rounded-lg object-cover"
-                              />
-                            ) : (
-                              <Package className="h-6 w-6 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="space-y-1">
-                            <h3 className="font-medium">{product.title}</h3>
-                            <p className="text-sm text-muted-foreground">{product.brand}</p>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                product.stock > 10 ? 'bg-green-100 text-green-700' :
-                                product.stock > 0 ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
-                              }`}>
-                                {product.availability}
-                              </span>
-                              {product.limited && (
-                                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">
-                                  Limited
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-8">
-                          <div className="text-right space-y-1">
-                            <p className="font-medium">${product.price}</p>
-                            <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Top Performers Tab */}
-          <TabsContent value="top-performers" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Best Selling Products</CardTitle>
-                  <CardDescription>Products driving the most revenue and sales volume</CardDescription>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Search products..." className="pl-10 w-64" />
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                        <div className="flex items-center space-x-4">
-                          <Skeleton className="h-6 w-8 rounded" />
-                          <Skeleton className="h-12 w-12 rounded-lg" />
-                          <div className="space-y-2">
-                            <Skeleton className="h-4 w-48" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-8">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="text-right space-y-1">
-                              <Skeleton className="h-3 w-12" />
-                              <Skeleton className="h-4 w-16" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No products found
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Other tabs with similar structure */}
-          <TabsContent value="low-performers" className="space-y-6">
+          <TabsContent value="all" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Products Needing Attention</CardTitle>
-                <CardDescription>Products with high traffic but low conversion rates</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>All Products</CardTitle>
+                    <CardDescription>Manage your complete product catalog</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-64"
+                      />
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Filter
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="space-y-4">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-orange-200 bg-orange-50">
-                        <Skeleton className="h-4 w-64" />
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
+                        <Skeleton className="w-16 h-16" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-48" />
+                          <Skeleton className="h-3 w-32" />
+                        </div>
                         <Skeleton className="h-8 w-20" />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No products need attention
+                  <div className="space-y-4">
+                    {filteredProducts.map((product) => (
+                      <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-muted/50">
+                        <img 
+                          src={(product as any).images?.[0] || '/placeholder.png'}
+                          alt={product.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-medium">{product.title}</h3>
+                          <p className="text-sm text-muted-foreground">{product.brand}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant={product.availability === 'In Stock' ? 'default' : 'secondary'}>
+                              {product.availability}
+                            </Badge>
+                            {product.limited && <Badge variant="outline">Limited</Badge>}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">${product.price}</p>
+                          <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditProduct(product)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
+          <TabsContent value="top" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Performing Products</CardTitle>
+                <CardDescription>Products with highest value and availability</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topPerformers.map((product, index) => (
+                    <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                        {index + 1}
+                      </div>
+                      <img 
+                        src={(product as any).images?.[0] || '/placeholder.png'}
+                        alt={product.title}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{product.title}</h3>
+                        <p className="text-sm text-muted-foreground">{product.brand}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">${product.price}</p>
+                        <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <TabsContent value="categories" className="space-y-6">
+          <TabsContent value="attention" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Products Needing Attention</CardTitle>
+                <CardDescription>Low stock and out of stock products</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {needsAttention.map((product) => (
+                    <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg bg-red-50">
+                      <AlertCircle className="w-6 h-6 text-red-600" />
+                      <img 
+                        src={(product as any).images?.[0] || '/placeholder.png'}
+                        alt={product.title}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{product.title}</h3>
+                        <p className="text-sm text-muted-foreground">{product.brand}</p>
+                        <Badge variant="destructive" className="mt-1">
+                          {product.stock <= 0 ? 'Out of Stock' : `Low Stock (${product.stock})`}
+                        </Badge>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Update
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Category Performance</CardTitle>
-                <CardDescription>Revenue and product distribution by category</CardDescription>
+                <CardDescription>Product distribution by category</CardDescription>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-6 w-24" />
+                <div className="space-y-4">
+                  {Object.entries(categoryBreakdown).map(([category, count]) => (
+                    <div key={category} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{category}</h3>
+                        <p className="text-sm text-muted-foreground">{count} products</p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No category data available
-                  </div>
-                )}
+                      <div className="text-right">
+                        <div className="w-32 bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full" 
+                            style={{ width: `${(count / products.length) * 100}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {((count / products.length) * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-      
+
       <AddProductModal 
         isOpen={showAddModal} 
-        onClose={() => setShowAddModal(false)}
+        onClose={() => setShowAddModal(false)} 
+      />
+
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        product={editingProduct}
+        onUpdate={() => {
+          refetch();
+          setShowEditModal(false);
+          setEditingProduct(null);
+        }}
       />
     </DashboardLayout>
   );

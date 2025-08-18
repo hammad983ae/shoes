@@ -18,6 +18,8 @@ interface RecentOrder {
   amount: number;
   time: string;
   status: string;
+  productDetails?: any[];
+  shippingAddress?: any;
 }
 
 interface Alert {
@@ -45,7 +47,7 @@ export const useAdminDashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch orders with user data - fixed query
+      // Fetch all orders with comprehensive data
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select(`
@@ -55,24 +57,14 @@ export const useAdminDashboard = () => {
             product_id,
             quantity,
             price_per_item,
-            size,
-            products(title)
+            size
           )
         `)
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
 
-      // Calculate stats
-      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.order_total || 0), 0) || 0;
-      const totalOrders = orders?.length || 0;
-      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-      // Get unique customers
-      const uniqueCustomers = new Set(orders?.map(order => order.user_id) || []);
-      const newCustomers = uniqueCustomers.size;
-
-      // Get user profile data separately for orders
+      // Fetch user profiles for customer names
       const userIds = orders?.map(order => order.user_id).filter(Boolean) || [];
       const { data: profiles } = await supabase
         .from('profiles')
@@ -81,29 +73,49 @@ export const useAdminDashboard = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      // Format recent orders
+      // Calculate comprehensive stats
+      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.order_total || 0), 0) || 0;
+      const totalOrders = orders?.length || 0;
+      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+      // Get unique customers
+      const uniqueCustomers = new Set(orders?.map(order => order.user_id) || []);
+      const newCustomers = uniqueCustomers.size;
+
+      // Calculate returning customers (customers with more than 1 order)
+      const customerOrderCounts = new Map();
+      orders?.forEach(order => {
+        const count = customerOrderCounts.get(order.user_id) || 0;
+        customerOrderCounts.set(order.user_id, count + 1);
+      });
+      const returningCustomers = Array.from(customerOrderCounts.values()).filter(count => count > 1).length;
+
+      // Format recent orders with full details
       const formattedOrders: RecentOrder[] = (orders?.slice(0, 5) || []).map(order => ({
-        id: order.id.slice(-8),
+        id: order.id.slice(-8).toUpperCase(),
         customer: profileMap.get(order.user_id)?.display_name || 'Anonymous',
         amount: Number(order.order_total || 0),
         time: new Date(order.created_at).toLocaleString(),
-        status: order.status
+        status: order.status,
+        productDetails: Array.isArray(order.product_details) ? order.product_details : (order.order_items || []),
+        shippingAddress: order.shipping_address
       }));
 
+      // Set stats
       setStats({
         revenue: totalRevenue,
         orders: totalOrders,
         averageOrderValue: avgOrderValue,
-        conversionRate: 0, // Would need traffic data
+        conversionRate: totalOrders > 0 ? 100 : 0, // Simplified for now
         newCustomers,
-        returningCustomers: 0, // Would need historical data
-        cartAbandonment: 0, // Would need cart data
-        bounceRate: 0 // Would need analytics data
+        returningCustomers,
+        cartAbandonment: 0, // Would need cart analytics
+        bounceRate: 0 // Would need page view analytics
       });
 
       setRecentOrders(formattedOrders);
       
-      // Create alerts for low stock
+      // Create alerts for low stock products
       const { data: products } = await supabase
         .from('products')
         .select('title, stock')
@@ -114,6 +126,16 @@ export const useAdminDashboard = () => {
         message: `${product.title} has only ${product.stock} items left`,
         time: new Date().toLocaleString()
       }));
+
+      // Add alert for orders that need fulfillment
+      const pendingOrders = orders?.filter(order => order.status === 'paid' || order.status === 'pending')?.length || 0;
+      if (pendingOrders > 0) {
+        stockAlerts.push({
+          title: 'Orders Pending Fulfillment',
+          message: `${pendingOrders} orders need to be processed and shipped`,
+          time: new Date().toLocaleString()
+        });
+      }
 
       setAlerts(stockAlerts);
 
