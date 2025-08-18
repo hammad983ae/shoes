@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, User, Package, Gift, FileText, CreditCard, MapPin, Shield } from "lucide-react";
+import { X, User, Package, Gift, FileText, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,8 +42,8 @@ interface CouponUsage {
   id: string;
   coupon_code: string;
   discount_amount: number;
-  order_id: string;
-  created_at: string;
+  order_id: string | null;
+  created_at: string | null;
 }
 
 interface DetailedUserEditModalProps {
@@ -251,10 +251,10 @@ export function DetailedUserEditModal({ isOpen, onClose, user, onUpdate }: Detai
                       <Label className="text-xs text-muted-foreground">Date Joined</Label>
                       <p className="font-medium">{new Date(user.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Last Login</Label>
-                      <p className="font-medium">{user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'}</p>
-                    </div>
+                     <div>
+                       <Label className="text-xs text-muted-foreground">Last Login</Label>
+                       <p className="font-medium">{user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'}</p>
+                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">Auth Method</Label>
                       <p className="font-medium">Email/Password</p>
@@ -390,9 +390,9 @@ export function DetailedUserEditModal({ isOpen, onClose, user, onUpdate }: Detai
                       <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">#{order.id.slice(-8)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(order.created_at).toLocaleDateString()} • {order.items_count} items
-                          </p>
+                           <p className="text-sm text-muted-foreground">
+                             {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'No date'} • {order.items_count} items
+                           </p>
                         </div>
                         <div className="text-right flex items-center space-x-3">
                           <div>
@@ -435,9 +435,9 @@ export function DetailedUserEditModal({ isOpen, onClose, user, onUpdate }: Detai
                       <div key={coupon.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">{coupon.coupon_code}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Used on {new Date(coupon.created_at).toLocaleDateString()}
-                          </p>
+                           <p className="text-sm text-muted-foreground">
+                             Used on {coupon.created_at ? new Date(coupon.created_at).toLocaleDateString() : 'No date'}
+                           </p>
                         </div>
                         <div className="text-right">
                           <p className="font-medium text-green-600">
