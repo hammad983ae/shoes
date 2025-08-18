@@ -3,13 +3,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Upload, Trash2, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface Product {
   id: string;
@@ -58,6 +60,30 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
   
   const [images, setImages] = useState<Array<{ id?: string; file?: File; url: string; role: string; display_order?: number }>>([]);
   const [loading, setLoading] = useState(false);
+
+  // Rich text editor configuration
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['link', 'blockquote', 'code-block'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'list', 'bullet',
+    'align',
+    'link', 'blockquote', 'code-block'
+  ];
 
   useEffect(() => {
     if (product && isOpen) {
@@ -322,14 +348,18 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Product description"
-              rows={3}
-            />
+            <Label htmlFor="description">Product Description</Label>
+            <div className="mt-2">
+              <ReactQuill
+                theme="snow"
+                value={formData.description}
+                onChange={(value) => handleInputChange('description', value)}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Enter a detailed product description with rich formatting..."
+                style={{ height: '200px', marginBottom: '50px' }}
+              />
+            </div>
           </div>
 
           {/* Stock & Settings */}

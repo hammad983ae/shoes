@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Star, Check, Loader2, ArrowLeft } from 'lucide-react';
@@ -287,10 +288,14 @@ return (
               </Button>
             </div>
 
-            {/* Description */}
-            {product.productDescription && (
-              <div className="prose prose-invert text-sm text-muted-foreground mb-4">
-                {product.productDescription}
+            {/* Rich Text Description */}
+            {product.description && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3 text-foreground">Product Description</h3>
+                <div 
+                  className="prose prose-sm max-w-none text-muted-foreground [&_*]:text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+                />
               </div>
             )}
 
