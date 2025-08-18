@@ -1042,6 +1042,7 @@ export type Database = {
       product_media: {
         Row: {
           created_at: string | null
+          display_order: number | null
           id: string
           product_id: string
           role: string | null
@@ -1049,6 +1050,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
           product_id: string
           role?: string | null
@@ -1056,6 +1058,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
           product_id?: string
           role?: string | null

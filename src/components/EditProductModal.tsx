@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Upload, Trash2 } from "lucide-react";
+import { X, Upload, Trash2, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 interface Product {
   id: string;
@@ -27,6 +28,7 @@ interface Product {
     id: string;
     url: string;
     role: string;
+    display_order?: number;
   }>;
 }
 
@@ -54,7 +56,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     availability: 'In Stock'
   });
   
-  const [images, setImages] = useState<Array<{ file?: File; url: string; role: string }>>([]);
+  const [images, setImages] = useState<Array<{ id?: string; file?: File; url: string; role: string; display_order?: number }>>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -72,9 +74,11 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
         size_type: product.size_type,
         availability: product.infinite_stock ? 'In Stock' : product.availability
       });
-      setImages(product.media?.map(media => ({
+      setImages(product.media?.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)).map(media => ({
+        id: media.id,
         url: media.url,
-        role: media.role
+        role: media.role,
+        display_order: media.display_order || 0
       })) || []);
     }
   }, [product, isOpen]);
@@ -96,6 +100,22 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragEnd = (result: any) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(images);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    // Update display_order for all items
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      display_order: index
+    }));
+    
+    setImages(updatedItems);
   };
 
   const handleSubmit = async () => {
@@ -131,13 +151,26 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
       if (productError) throw productError;
 
+      // Update display order for existing images
+      const existingImages = images.filter(img => img.id && !img.file);
+      for (const [index, image] of existingImages.entries()) {
+        if (image.id) {
+          const { error: updateError } = await supabase
+            .from('product_media')
+            .update({ display_order: image.display_order || index })
+            .eq('id', image.id);
+          
+          if (updateError) throw updateError;
+        }
+      }
+
       // Handle new image uploads
       const newImages = images.filter(img => img.file);
       if (newImages.length > 0) {
-        for (const image of newImages) {
+        for (const [index, image] of newImages.entries()) {
           if (image.file) {
             const fileExt = image.file.name.split('.').pop();
-            const fileName = `${product.id}/${Date.now()}.${fileExt}`;
+            const fileName = `${product.id}/${Date.now()}-${index}.${fileExt}`;
             
             // Upload to Supabase Storage
             const { error: uploadError } = await supabase.storage
@@ -150,13 +183,14 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
               .from('products')
               .getPublicUrl(fileName);
 
-            // Add to product_media table
+            // Add to product_media table with proper display order
             const { error: mediaError } = await supabase
               .from('product_media')
               .insert({
                 product_id: product.id,
                 url: publicUrl,
-                role: image.role
+                role: image.role,
+                display_order: image.display_order || (existingImages.length + index)
               });
 
             if (mediaError) throw mediaError;
@@ -385,26 +419,63 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 </label>
               </div>
 
-              {/* Image Preview */}
+              {/* Image Preview with Drag and Drop */}
               {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={image.url}
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border"
-                      />
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                        onClick={() => removeImage(index)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Drag images to reorder them. First image will be the main product image.
+                  </p>
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="images" direction="horizontal">
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                        >
+                          {images.map((image, index) => (
+                            <Draggable key={`${image.id || index}`} draggableId={`${image.id || index}`} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`relative group ${snapshot.isDragging ? 'z-50' : ''}`}
+                                >
+                                  <div className="relative">
+                                    <img
+                                      src={image.url}
+                                      alt={`Product ${index + 1}`}
+                                      className="w-full h-24 object-cover rounded-lg border"
+                                    />
+                                    {index === 0 && (
+                                      <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-1 rounded">
+                                        Main
+                                      </div>
+                                    )}
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      className="absolute top-1 left-1/2 transform -translate-x-1/2 bg-black/60 text-white rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+                                    >
+                                      <GripVertical className="h-3 w-3" />
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                      onClick={() => removeImage(index)}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </div>
               )}
             </div>

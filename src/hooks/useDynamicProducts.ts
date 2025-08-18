@@ -14,21 +14,25 @@ export const useDynamicProducts = () => {
         .from('products')
         .select(`
           *,
-          product_media(id, url, role)
+          product_media(id, url, role, display_order)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       const formattedProducts: Sneaker[] = (data || []).map(product => {
-        const galleryImages = (product.product_media || [])
+        // Sort all media by display_order to maintain consistent ordering
+        const sortedMedia = (product.product_media || [])
+          .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        
+        const galleryImages = sortedMedia
           .filter(media => media.role === 'gallery')
           .map(media => media.url);
         
-        const primaryImage = (product.product_media || [])
+        const primaryImage = sortedMedia
           .find(media => media.role === 'primary')?.url || '';
 
-        // Combine all images: primary first, then gallery images
+        // Combine all images: primary first, then gallery images in display order
         const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
 
         return {
