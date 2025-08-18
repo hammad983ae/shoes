@@ -150,22 +150,34 @@ export type Database = {
           code: string
           created_at: string | null
           creator_id: string
+          discount_percentage: number | null
           id: string
+          is_active: boolean | null
+          max_usage: number | null
           updated_at: string | null
+          usage_count: number | null
         }
         Insert: {
           code: string
           created_at?: string | null
           creator_id: string
+          discount_percentage?: number | null
           id?: string
+          is_active?: boolean | null
+          max_usage?: number | null
           updated_at?: string | null
+          usage_count?: number | null
         }
         Update: {
           code?: string
           created_at?: string | null
           creator_id?: string
+          discount_percentage?: number | null
           id?: string
+          is_active?: boolean | null
+          max_usage?: number | null
           updated_at?: string | null
+          usage_count?: number | null
         }
         Relationships: [
           {
@@ -174,6 +186,44 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      coupon_usage: {
+        Row: {
+          coupon_code: string
+          created_at: string | null
+          discount_amount: number
+          discount_percentage: number
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_code: string
+          created_at?: string | null
+          discount_amount?: number
+          discount_percentage?: number
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string
+          created_at?: string | null
+          discount_amount?: number
+          discount_percentage?: number
+          id?: string
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usage_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -413,6 +463,35 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           created_at: string
@@ -529,8 +608,10 @@ export type Database = {
           currency: string
           estimated_delivery: string | null
           id: string
+          order_images: string[] | null
           order_total: number
           payment_method: string | null
+          product_details: Json | null
           shipping_address: Json | null
           status: string
           tracking_number: string | null
@@ -547,8 +628,10 @@ export type Database = {
           currency?: string
           estimated_delivery?: string | null
           id?: string
+          order_images?: string[] | null
           order_total: number
           payment_method?: string | null
+          product_details?: Json | null
           shipping_address?: Json | null
           status?: string
           tracking_number?: string | null
@@ -565,12 +648,44 @@ export type Database = {
           currency?: string
           estimated_delivery?: string | null
           id?: string
+          order_images?: string[] | null
           order_total?: number
           payment_method?: string | null
+          product_details?: Json | null
           shipping_address?: Json | null
           status?: string
           tracking_number?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          card_brand: string
+          card_last_four: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          card_brand: string
+          card_last_four: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          card_brand?: string
+          card_last_four?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -984,6 +1099,9 @@ export type Database = {
           referrals_count: number | null
           referred_by: string | null
           role: string
+          tiktok_followers: number | null
+          tiktok_username: string | null
+          tiktok_verified: boolean | null
           updated_at: string
           user_id: string
         }
@@ -1005,6 +1123,9 @@ export type Database = {
           referrals_count?: number | null
           referred_by?: string | null
           role?: string
+          tiktok_followers?: number | null
+          tiktok_username?: string | null
+          tiktok_verified?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -1026,6 +1147,9 @@ export type Database = {
           referrals_count?: number | null
           referred_by?: string | null
           role?: string
+          tiktok_followers?: number | null
+          tiktok_username?: string | null
+          tiktok_verified?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -1476,6 +1600,47 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          credits_added: number
+          id: string
+          payment_method_id: string | null
+          status: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          credits_added: number
+          id?: string
+          payment_method_id?: string | null
+          status?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          credits_added?: number
+          id?: string
+          payment_method_id?: string | null
+          status?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
           },
         ]
       }
