@@ -9,7 +9,6 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 
 import { 
-  Filter,
   Download,
   TrendingUp,
   Users,
@@ -76,10 +75,6 @@ export default function Analytics() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderDetailsModal } from "@/components/OrderDetailsModal";
+import { CreateOrderModal } from "@/components/CreateOrderModal";
 import { useOrders } from "@/hooks/useOrders";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,8 +26,9 @@ import {
 export default function Orders() {
   const { loading, orders, summary, fulfillmentStats, refetch } = useOrders();
   
-  const [selectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
   const { toast } = useToast();
 
   const handleExportOrders = async () => {
@@ -77,7 +79,7 @@ export default function Orders() {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => setShowCreateOrder(true)}>
               Create Order
             </Button>
           </div>
@@ -219,7 +221,50 @@ export default function Orders() {
                     <div className="text-center py-8 text-muted-foreground">
                       No orders found
                     </div>
-                  ) : null}
+                  ) : (
+                    orders.map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                          <div>
+                            <p className="font-medium">#{order.id.slice(-6)}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+                            <p className="text-sm text-muted-foreground">{order.user_id}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-8">
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Total</p>
+                            <p className="font-medium">${order.order_total}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Items</p>
+                            <p className="font-medium">{(order as any).order_items?.length || 0}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Status</p>
+                            <Badge variant={order.status === 'paid' ? 'default' : 'secondary'}>
+                              {order.status}
+                            </Badge>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Delivery</p>
+                            <p className="font-medium">{(order as any).estimated_delivery ? new Date((order as any).estimated_delivery).toLocaleDateString() : 'TBD'}</p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowOrderDetails(true);
+                            }}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -351,6 +396,12 @@ export default function Orders() {
           // Handle order updates
           refetch();
         }}
+      />
+
+      <CreateOrderModal
+        isOpen={showCreateOrder}
+        onClose={() => setShowCreateOrder(false)}
+        onOrderCreated={() => refetch()}
       />
     </DashboardLayout>
   );

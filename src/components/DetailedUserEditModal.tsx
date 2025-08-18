@@ -177,7 +177,7 @@ export function DetailedUserEditModal({ isOpen, onClose, user, onUpdate }: Detai
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Total Spent</Label>
-                  <p className="font-medium">${user.total_spent.toFixed(2)}</p>
+                  <p className="font-medium">${(user.total_spent || 0).toFixed(2)}</p>
                 </div>
               </div>
             </div>
