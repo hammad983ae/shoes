@@ -28,12 +28,12 @@ interface PostWithProduct {
 }
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams(); // Changed from id to slug
   const navigate = useNavigate();
   const { products } = useDynamicProducts();
   
   const product: Sneaker | undefined = useMemo(() => 
-    products.find(s => s.id.toString() === id), [id, products]
+    products.find(s => s.slug === slug), [slug, products]
   );
 
   const { addItem } = useCart();

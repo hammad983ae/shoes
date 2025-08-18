@@ -57,7 +57,7 @@ import RouteGuard from "./components/RouteGuard";
                      <Route path="/" element={<Index />} />
                      <Route path="/catalog" element={<Catalog />} />
                      <Route path="/full-catalog" element={<FullCatalog />} />
-                     <Route path="/product/:id" element={<ProductDetail />} />
+                     <Route path="/product/:slug" element={<ProductDetail />} />
                      <Route path="/profile" element={<Profile />} />
                      <Route path="/edit-profile" element={<EditProfile />} />
                      <Route path="/settings" element={<Settings />} />

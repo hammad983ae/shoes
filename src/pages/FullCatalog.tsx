@@ -30,14 +30,14 @@ const FullCatalog = () => {
   useEffect(() => {
     const param = searchParams.get('product')
     if (param) {
-      const found = dynamicProducts.find(p => p.id.toString() === param)
+      const found = dynamicProducts.find(p => p.slug === param || p.id.toString() === param)
       if (found) handleViewProduct(found)
     }
   }, [searchParams, dynamicProducts])
 
   const handleViewProduct = (product: Sneaker) => {
-    // Navigate to product detail page instead of showing modal
-    navigate(`/product/${product.id}`);
+    // Navigate using slug for SEO-friendly URLs
+    navigate(`/product/${product.slug || product.id}`);
   }
 
 

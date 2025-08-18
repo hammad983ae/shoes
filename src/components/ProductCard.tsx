@@ -17,7 +17,8 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
   const navigate = useNavigate();
 
   const handleViewProduct = () => {
-    navigate(`/product/${sneaker.id}`);
+    // Use slug instead of id for SEO-friendly URLs
+    navigate(`/product/${sneaker.slug || sneaker.id}`);
   };
 
   const [currentIndex, setCurrentIndex] = useState(0);

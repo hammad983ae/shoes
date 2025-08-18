@@ -38,7 +38,8 @@ export const useDynamicProducts = () => {
         const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
 
         return {
-          id: product.id, // Keep as UUID string, don't convert to int
+          id: product.id, // Keep UUID for internal operations
+          slug: product.slug || undefined, // Convert null to undefined for TypeScript compatibility
           name: product.title,
           price: `$${product.price}`,
           slashed_price: product.slashed_price || undefined,

@@ -1,6 +1,7 @@
 // Consolidated global types to prevent conflicts
 export interface Sneaker {
   id: number | string;
+  slug?: string; // Add slug field for SEO-friendly URLs
   name: string;
   price: string;
   originalPrice?: string;

@@ -1128,6 +1128,7 @@ export type Database = {
           shipping_time: string | null
           size_type: string | null
           slashed_price: number | null
+          slug: string | null
           stock: number | null
           title: string
           updated_at: string | null
@@ -1152,6 +1153,7 @@ export type Database = {
           shipping_time?: string | null
           size_type?: string | null
           slashed_price?: number | null
+          slug?: string | null
           stock?: number | null
           title: string
           updated_at?: string | null
@@ -1176,6 +1178,7 @@ export type Database = {
           shipping_time?: string | null
           size_type?: string | null
           slashed_price?: number | null
+          slug?: string | null
           stock?: number | null
           title?: string
           updated_at?: string | null
@@ -1887,6 +1890,10 @@ export type Database = {
       }
       generate_referral_code: {
         Args: Record<PropertyKey, never> | { len?: number }
+        Returns: string
+      }
+      generate_slug: {
+        Args: { input_text: string }
         Returns: string
       }
       get_current_user_role: {
