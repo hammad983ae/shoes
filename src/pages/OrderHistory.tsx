@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,8 @@ import {
   Search,
   MapPin,
   DollarSign,
-  Eye
+  Eye,
+  ArrowLeft
 } from 'lucide-react';
 
 interface Order {
@@ -34,6 +36,7 @@ interface Order {
 }
 
 export default function OrderHistory() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,11 +115,22 @@ export default function OrderHistory() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Order History</h1>
-            <p className="text-muted-foreground">
-              Track your orders and view purchase history
-            </p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Order History</h1>
+              <p className="text-muted-foreground">
+                Track your orders and view purchase history
+              </p>
+            </div>
           </div>
         </div>
 
