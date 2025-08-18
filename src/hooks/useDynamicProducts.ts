@@ -25,12 +25,14 @@ export const useDynamicProducts = () => {
         const sortedMedia = (product.product_media || [])
           .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
         
+        // Find primary image first, fallback to first image in order
+        const primaryImage = sortedMedia.find(media => media.role === 'primary')?.url || 
+                           sortedMedia[0]?.url || '';
+        
+        // Get all gallery images in order
         const galleryImages = sortedMedia
           .filter(media => media.role === 'gallery')
           .map(media => media.url);
-        
-        const primaryImage = sortedMedia
-          .find(media => media.role === 'primary')?.url || '';
 
         // Combine all images: primary first, then gallery images in display order
         const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;

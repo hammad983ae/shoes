@@ -109,10 +109,11 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     
-    // Update display_order for all items
+    // Update display_order and role for all items
     const updatedItems = items.map((item, index) => ({
       ...item,
-      display_order: index
+      display_order: index,
+      role: index === 0 ? 'primary' : 'gallery' // First image becomes primary, others become gallery
     }));
     
     setImages(updatedItems);
@@ -151,13 +152,16 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
       if (productError) throw productError;
 
-      // Update display order for existing images
+      // Update display order and role for existing images
       const existingImages = images.filter(img => img.id && !img.file);
       for (const [index, image] of existingImages.entries()) {
         if (image.id) {
           const { error: updateError } = await supabase
             .from('product_media')
-            .update({ display_order: image.display_order || index })
+            .update({ 
+              display_order: image.display_order || index,
+              role: image.role || (index === 0 ? 'primary' : 'gallery')
+            })
             .eq('id', image.id);
           
           if (updateError) throw updateError;
@@ -189,7 +193,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
               .insert({
                 product_id: product.id,
                 url: publicUrl,
-                role: image.role,
+                role: image.role || (index === 0 ? 'primary' : 'gallery'),
                 display_order: image.display_order || (existingImages.length + index)
               });
 
