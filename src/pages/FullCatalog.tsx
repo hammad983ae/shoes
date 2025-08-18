@@ -4,7 +4,7 @@ import Sidebar from '@/components/Sidebar'
 import ProductCard from '@/components/ProductCard'
 import MainCatalogNavBar from '@/components/MainCatalogNavBar'
 import RequestNewItemsCard from '@/components/RequestNewItemsCard'
-import { useFavorites } from '@/contexts/FavoritesContext'
+import { useFavorites } from '@/hooks/useFavorites'
 import InteractiveParticles from '@/components/InteractiveParticles'
 import { Sneaker } from '@/types/global'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import { useDynamicProducts } from '@/hooks/useDynamicProducts'
 const FullCatalog = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { getFavoriteProducts } = useFavorites()
+  const { favorites } = useFavorites()
   const { products: dynamicProducts } = useDynamicProducts()
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -55,7 +55,10 @@ const FullCatalog = () => {
     return matchesSearch && matchesCategory && matchesBrand && matchesColor && matchesPrice
   })
 
-  const visibleProducts = showFavorites ? getFavoriteProducts(filteredProducts as any) : filteredProducts
+  // Update visibleProducts to properly handle favorites
+  const visibleProducts = showFavorites 
+    ? filteredProducts.filter(p => favorites.includes(p.id.toString()))
+    : filteredProducts
 
   return (
     <div className="min-h-screen page-gradient relative">

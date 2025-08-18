@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Star, Check, Loader2, ArrowLeft } from 'lucide-react';
+import { Heart, Star, Check, Loader2, ArrowLeft, Plus } from 'lucide-react';
 import { Sneaker } from '@/types/global';
 import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 import { useCart } from '@/contexts/CartContext';
 import MainCatalogNavBar from '@/components/MainCatalogNavBar';
-import { useFavorites } from '@/contexts/FavoritesContext';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { ReviewWidget } from '@/components/ReviewWidget';
+import { CreateReviewModal } from '@/components/CreateReviewModal';
+import { AllReviewsModal } from '@/components/AllReviewsModal';
 
 interface Review {
   id: string;
@@ -19,25 +23,19 @@ interface Review {
   created_at: string;
 }
 
-interface PostWithProduct {
-  id: string;
-  title: string | null;
-  thumbnail_url: string | null;
-  author_username: string;
-  created_at: string;
-}
 
 const ProductDetail = () => {
   const { slug } = useParams(); // Changed from id to slug
   const navigate = useNavigate();
   const { products } = useDynamicProducts();
+  const { user } = useAuth();
   
   const product: Sneaker | undefined = useMemo(() => 
     products.find(s => s.slug === slug), [slug, products]
   );
 
   const { addItem } = useCart();
-  const { isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
@@ -46,7 +44,11 @@ const ProductDetail = () => {
   const [addToCartState, setAddToCartState] = useState<'idle' | 'loading' | 'success'>('idle');
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [postsWithProduct, setPostsWithProduct] = useState<PostWithProduct[]>([]);
+  const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
+  
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [showCreateReview, setShowCreateReview] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     if (!product) return;
@@ -62,41 +64,67 @@ const ProductDetail = () => {
     canonical.setAttribute('href', window.location.href);
     document.head.appendChild(canonical);
 
-    // Fetch reviews and posts (optional but nice)
-    (async () => {
-      const { data: rData } = await supabase
-        .from('product_reviews')
-        .select('*')
-        .eq('product_id', String(product.id))
-        .order('created_at', { ascending: false });
-      if (rData) setReviews(rData as any);
+    // Fetch reviews and check if user has purchased this product
+    fetchReviewsAndPurchaseStatus();
+  }, [product, user]);
 
-      const { data: linkData } = await supabase
-        .from('posts_products')
-        .select('post_id')
-        .eq('product_id', String(product.id))
-        .limit(4);
-      if (linkData && linkData.length) {
-        const ids = linkData.map((l: any) => l.post_id);
-        const { data: postsData } = await supabase
-          .from('top_posts')
-          .select('id,title,thumbnail_url,author_username,posted_at')
-          .in('id', ids)
-          .order('posted_at', { ascending: false });
-        if (postsData) {
-          setPostsWithProduct(
-            postsData.map((p: any) => ({
-              id: p.id,
-              title: p.title,
-              thumbnail_url: p.thumbnail_url,
-              author_username: p.author_username,
-              created_at: p.posted_at,
-            }))
-          );
+  const fetchReviewsAndPurchaseStatus = async () => {
+    if (!product) return;
+
+    try {
+      // Fetch reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', product.id.toString())
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (reviewsError) throw reviewsError;
+
+      if (reviewsData && reviewsData.length > 0) {
+        setReviews(reviewsData);
+
+        // Fetch user profiles for reviews
+        const userIds = [...new Set(reviewsData.map(review => review.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', userIds);
+
+        if (profilesData) {
+          const profilesMap = profilesData.reduce((acc, profile) => {
+            acc[profile.user_id] = profile;
+            return acc;
+          }, {} as Record<string, any>);
+          setUserProfiles(profilesMap);
         }
       }
-    })();
-  }, [product]);
+
+      // Check if user has purchased this product
+      if (user) {
+        const { data: purchaseData } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'paid')
+          .limit(1);
+
+        if (purchaseData && purchaseData.length > 0) {
+          const { data: orderItemData } = await supabase
+            .from('order_items')
+            .select('id')
+            .eq('product_id', product.id.toString())
+            .in('order_id', purchaseData.map(o => o.id))
+            .limit(1);
+
+          setHasPurchased(!!(orderItemData && orderItemData.length > 0));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching reviews and purchase status:', error);
+    }
+  };
 
   useEffect(() => {
     console.log('Selected Size Updated:', selectedSize);
@@ -232,7 +260,23 @@ const ProductDetail = () => {
           <div className="flex-1">
             {/* Details content here */}
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xl sm:text-2xl font-bold text-primary">{product.price}</p>
+              <div className="flex items-center gap-3">
+                <p className="text-xl sm:text-2xl font-bold text-primary">{product.price}</p>
+                <button
+                  onClick={() => toggleFavorite(product.id.toString())}
+                  className={`transition-colors duration-200 hover:scale-110 ${
+                    isFavorite(product.id.toString()) ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+                  }`}
+                  aria-label={isFavorite(product.id.toString()) ? "Remove from favorites" : "Add to favorites"}
+                >
+                  <Heart 
+                    size={24} 
+                    className={`transition-all duration-200 ${
+                      isFavorite(product.id.toString()) ? "fill-current" : ""
+                    }`} 
+                  />
+                </button>
+              </div>
               <span className="text-xs sm:text-sm text-muted-foreground">{product.stock || 'In Stock'}</span>
             </div>
 
@@ -291,13 +335,57 @@ return (
             {/* Rich Text Description */}
             {product.description && (
               <div className="mb-6">
-                <h3 className="font-semibold mb-3 text-foreground">Product Description</h3>
                 <div 
                   className="prose prose-sm max-w-none text-muted-foreground [&_*]:text-muted-foreground"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
                 />
               </div>
             )}
+
+            {/* Reviews Section */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground">Reviews</h3>
+                <div className="flex gap-2">
+                  {user && hasPurchased && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCreateReview(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Write Review
+                    </Button>
+                  )}
+                  {reviews.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAllReviews(true)}
+                    >
+                      View All ({reviews.length})
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="text-center py-8 bg-muted/30 rounded-lg border border-border/50">
+                  <p className="text-muted-foreground">No reviews yet. Be the first to leave a review!</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-3">
+                  {reviews.slice(0, 3).map((review) => (
+                    <ReviewWidget 
+                      key={review.id} 
+                      review={review} 
+                      userProfile={userProfiles[review.user_id]}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Features */}
             {product.productFeatures && product.productFeatures.length > 0 && (
@@ -322,23 +410,6 @@ return (
                 </ul>
               </div>
             )}
-
-            {/* Posts Featuring */}
-            <div>
-              <h3 className="font-semibold mb-2">Posts featuring this item</h3>
-              {postsWithProduct.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No posts yet.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {postsWithProduct.map(p => (
-                    <div key={p.id} className="bg-background/40 rounded-lg p-3 border border-border">
-                      {p.thumbnail_url && <img src={p.thumbnail_url} alt={p.title || 'Post media'} className="w-full h-24 object-cover rounded mb-2" />}
-                      <div className="text-xs text-muted-foreground truncate">@{p.author_username}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </article>
       </section>
@@ -360,6 +431,20 @@ return (
           }
         })
       }} />
+
+      {/* Review Modals */}
+      <CreateReviewModal
+        isOpen={showCreateReview}
+        onClose={() => setShowCreateReview(false)}
+        productId={product.id.toString()}
+        onReviewCreated={fetchReviewsAndPurchaseStatus}
+      />
+
+      <AllReviewsModal
+        isOpen={showAllReviews}
+        onClose={() => setShowAllReviews(false)}
+        productId={product.id.toString()}
+      />
     </main>
   );
 };
