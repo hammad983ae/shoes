@@ -8,6 +8,7 @@ interface Product {
   brand: string;
   category: string;
   limited: boolean;
+  infinite_stock?: boolean;
   size_type: string;
   price: number;
   stock: number;
@@ -67,6 +68,7 @@ export const useProducts = () => {
         availability: product.availability || 'In Stock',
         stock: product.stock || 0,
         limited: product.limited || false,
+        infinite_stock: product.infinite_stock || false,
         size_type: product.size_type || 'US',
         created_at: product.created_at || '',
         updated_at: product.updated_at || '',

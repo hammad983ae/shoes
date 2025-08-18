@@ -6,14 +6,14 @@ interface CreatorInvite {
   email: string;
   display_name?: string | null;
   coupon_code: string;
-  tier: string;
-  status: string;
-  tiktok_username?: string;
-  followers: number;
-  starting_credits: number;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
+  tier: string | null;
+  status: string | null;
+  tiktok_username?: string | null;
+  followers: number | null;
+  starting_credits: number | null;
+  notes?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   invite_token: string;
 }
 

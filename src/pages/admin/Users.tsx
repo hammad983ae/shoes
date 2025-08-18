@@ -7,9 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DetailedUserEditModal } from "@/components/DetailedUserEditModal";
 import { AddCreatorModal } from "@/components/AddCreatorModal";
 import { InviteCreatorModal } from "@/components/InviteCreatorModal";
@@ -31,7 +28,7 @@ import {
 } from "lucide-react";
 
 export default function Users() {
-  const { loading, users, summary, updateUserRole, setCouponCode, refetch } = useUsers();
+  const { loading, users, summary, refetch } = useUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAddCreatorModal, setShowAddCreatorModal] = useState(false);
@@ -70,28 +67,6 @@ export default function Users() {
     }
   };
 
-  const handleInviteCreator = async () => {
-    // Find user by email or show invite flow
-    console.log('Inviting creator:', inviteEmail);
-    setShowInviteModal(false);
-    setInviteEmail('');
-  };
-
-  const handleUpdateUser = async () => {
-    if (!selectedUser) return;
-    
-    if (newRole) {
-      await updateUserRole(selectedUser.user_id, newRole, newRole === 'creator');
-    }
-    
-    if (newCouponCode) {
-      await setCouponCode(selectedUser.user_id, newCouponCode);
-    }
-    
-    setSelectedUser(null);
-    setNewRole('');
-    setNewCouponCode('');
-  };
 
   const filteredUsers = users.filter(user => 
     user.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -411,7 +386,7 @@ export default function Users() {
         isOpen={showDetailedEditModal}
         onClose={() => setShowDetailedEditModal(false)}
         user={selectedUser}
-        onUpdate={(userId, updates) => {
+        onUpdate={(_userId, _updates) => {
           // Handle user updates
           refetch();
         }}
@@ -420,7 +395,7 @@ export default function Users() {
       <AddCreatorModal
         isOpen={showAddCreatorModal}
         onClose={() => setShowAddCreatorModal(false)}
-        onCreatorAdded={() => {
+        onSuccess={() => {
           refetch();
           setShowAddCreatorModal(false);
         }}
@@ -429,7 +404,7 @@ export default function Users() {
       <InviteCreatorModal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
-        onInviteSent={() => {
+        onSuccess={() => {
           setShowInviteModal(false);
           toast({
             title: "Invite sent",

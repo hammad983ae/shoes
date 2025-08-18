@@ -7,13 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+
 import { 
   Filter,
   Download,
   TrendingUp,
   Users,
-  DollarSign,
   ShoppingCart,
   Eye,
   BarChart3
@@ -23,11 +22,10 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [realtimeData, setRealtimeData] = useState<any>(null);
   const analytics = useAnalytics();
-  const { toast } = useToast();
 
   useEffect(() => {
-    setLoading(analyticsLoading);
-  }, [analyticsLoading]);
+    setLoading(analytics.loading);
+  }, [analytics.loading]);
 
   useEffect(() => {
     const fetchRealtimeData = async () => {

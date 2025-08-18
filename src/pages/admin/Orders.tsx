@@ -19,14 +19,13 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  AlertTriangle,
-  Eye
+  AlertTriangle
 } from "lucide-react";
 
 export default function Orders() {
   const { loading, orders, summary, fulfillmentStats, refetch } = useOrders();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  
+  const [selectedOrder] = useState<any>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const { toast } = useToast();
 
@@ -61,34 +60,6 @@ export default function Orders() {
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Order updated",
-        description: `Order status changed to ${status}`,
-      });
-      
-      refetch();
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: "Failed to update order status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const filteredOrders = orders.filter(order => 
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (order.customer_name && order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
   
   return (
     <DashboardLayout currentPage="orders">
@@ -376,7 +347,7 @@ export default function Orders() {
         isOpen={showOrderDetails}
         onClose={() => setShowOrderDetails(false)}
         order={selectedOrder}
-        onUpdate={(orderId, updates) => {
+        onUpdate={(_orderId, _updates) => {
           // Handle order updates
           refetch();
         }}
