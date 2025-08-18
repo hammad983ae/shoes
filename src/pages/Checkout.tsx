@@ -54,6 +54,7 @@ export default function Checkout() {
   const tax = discountedSubtotal * 0.0875; // 8.75% tax
   const total = Math.max(0, discountedSubtotal + tax);
 
+  // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentError('');
@@ -340,22 +341,19 @@ export default function Checkout() {
           
           {/* Left Side - Checkout Form */}
           <div className="space-y-8">
-            {/* Header */}
-            <div>
-              <h1 className="text-2xl font-bold mb-6">sani</h1>
-            </div>
-
+            <h1 className="text-2xl font-bold">sani</h1>
+            
             {/* Express Checkout */}
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">Express checkout</p>
               <div className="grid grid-cols-3 gap-3">
-                <Button variant="outline" className="h-12 bg-[#5A31F4] hover:bg-[#4A27D4] text-white border-none rounded-md font-medium">
+                <Button className="h-12 bg-[#5A31F4] hover:bg-[#4A27D4] text-white font-medium">
                   Shop Pay
                 </Button>
-                <Button variant="outline" className="h-12 bg-[#FFC439] hover:bg-[#E6A700] text-black border-none rounded-md font-medium">
+                <Button className="h-12 bg-[#FFC439] hover:bg-[#E6A700] text-black font-medium">
                   PayPal
                 </Button>
-                <Button variant="outline" className="h-12 bg-black hover:bg-gray-800 text-white border-none rounded-md font-medium">
+                <Button className="h-12 bg-black hover:bg-gray-800 text-white font-medium">
                   G Pay
                 </Button>
               </div>
@@ -368,22 +366,20 @@ export default function Checkout() {
 
             {total > 0 ? (
               <form ref={paymentFormRef} onSubmit={handleChironPayment} className="space-y-8">
-                {/* Email or Phone */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium">Email or Phone</label>
                     <Button variant="link" className="text-sm p-0 h-auto text-primary">Log in</Button>
                   </div>
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="Email or mobile phone number"
-                    className="h-12 rounded-md"
-                    required
+                  <Input 
+                    name="email" 
+                    type="email" 
+                    placeholder="Email or mobile phone number" 
+                    className="h-12 rounded-md" 
+                    required 
                   />
                 </div>
 
-                {/* Delivery */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Delivery</h3>
                   <div className="space-y-3">
@@ -391,75 +387,25 @@ export default function Checkout() {
                       <option>United States</option>
                     </select>
                     <div className="grid grid-cols-2 gap-3">
-                      <Input 
-                        name="first-name" 
-                        placeholder="First name (optional)" 
-                        className="h-12 rounded-md" 
-                      />
-                      <Input 
-                        name="last-name" 
-                        placeholder="Last name" 
-                        className="h-12 rounded-md" 
-                        required 
-                      />
+                      <Input name="first-name" placeholder="First name (optional)" className="h-12 rounded-md" />
+                      <Input name="last-name" placeholder="Last name" className="h-12 rounded-md" required />
                     </div>
-                    <div className="relative">
-                      <Input 
-                        name="address" 
-                        placeholder="Address" 
-                        className="h-12 rounded-md pr-10" 
-                        required 
-                      />
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1"
-                      >
-                        🔍
-                      </Button>
-                    </div>
-                    <Input 
-                      name="apartment" 
-                      placeholder="Apartment, suite, etc. (optional)" 
-                      className="h-12 rounded-md" 
-                    />
+                    <Input name="address" placeholder="Address" className="h-12 rounded-md" required />
+                    <Input name="apartment" placeholder="Apartment, suite, etc. (optional)" className="h-12 rounded-md" />
                     <div className="grid grid-cols-3 gap-3">
-                      <Input 
-                        name="city" 
-                        placeholder="City" 
-                        className="h-12 rounded-md" 
-                        required 
-                      />
-                      <select 
-                        name="state" 
-                        className="h-12 px-3 rounded-md border border-input bg-background"
-                        required
-                      >
+                      <Input name="city" placeholder="City" className="h-12 rounded-md" required />
+                      <select name="state" className="h-12 px-3 rounded-md border border-input bg-background" required>
                         <option value="">State</option>
                         <option value="RI">Rhode Island</option>
                         <option value="AL">Alabama</option>
-                        <option value="AK">Alaska</option>
-                        <option value="AZ">Arizona</option>
-                        <option value="AR">Arkansas</option>
                         <option value="CA">California</option>
-                        <option value="CO">Colorado</option>
-                        <option value="CT">Connecticut</option>
-                        <option value="DE">Delaware</option>
-                        <option value="FL">Florida</option>
-                        <option value="GA">Georgia</option>
+                        <option value="NY">New York</option>
                       </select>
-                      <Input 
-                        name="zip" 
-                        placeholder="ZIP code" 
-                        className="h-12 rounded-md" 
-                        required 
-                      />
+                      <Input name="zip" placeholder="ZIP code" className="h-12 rounded-md" required />
                     </div>
                   </div>
                 </div>
 
-                {/* Shipping Method */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Shipping method</h3>
                   <div className="space-y-3">
@@ -487,264 +433,203 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* Secure Checkout */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Secure Checkout</h3>
-                  <p className="text-sm text-muted-foreground">
-                    All transactions are secure and encrypted. Your order includes free returns and 
-                    24/7 access to our award-winning customer service.
-                  </p>
-                  
-                  <div className="p-4 border rounded-md">
-                    <div className="flex items-center gap-3 mb-4">
+                  <h3 className="text-lg font-medium">Payment</h3>
+                  <div className="p-4 border rounded-md space-y-4">
+                    <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-primary"></div>
                       </div>
                       <span className="font-medium">Credit card</span>
                       <div className="flex gap-2 ml-auto">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzAwNTFBNSIvPgo8L3N2Zz4K" alt="Visa" className="w-8 h-5" />
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI0VCMDAxQiIvPgo8L3N2Zz4K" alt="Mastercard" className="w-8 h-5" />
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzAwNjZDQyIvPgo8L3N2Zz4K" alt="Discover" className="w-8 h-5" />
+                        <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center">V</div>
+                        <div className="w-8 h-5 bg-red-600 rounded text-white text-xs flex items-center justify-center">M</div>
+                        <div className="w-8 h-5 bg-orange-500 rounded text-white text-xs flex items-center justify-center">D</div>
                         <span className="text-sm text-muted-foreground">+4</span>
                       </div>
                     </div>
                     
-                    <div className="space-y-3">
+                    <Input 
+                      name="card-number" 
+                      placeholder="Card number" 
+                      maxLength={19}
+                      className="h-12 rounded-md"
+                      onChange={(e) => {
+                        // Format card number with spaces
+                        let value = e.target.value.replace(/\s+/g, '');
+                        if (value.length > 0) {
+                          value = value.match(new RegExp('.{1,4}', 'g'))?.join(' ') || value;
+                        }
+                        e.target.value = value;
+                      }}
+                      required 
+                    />
+                    
+                    <div className="grid grid-cols-3 gap-3">
                       <Input 
-                        name="card-number" 
-                        placeholder="Card number" 
-                        maxLength={19}
+                        name="expiry" 
+                        placeholder="MM / YY" 
+                        maxLength={5}
                         className="h-12 rounded-md"
                         onChange={(e) => {
-                          // Format card number with spaces
-                          let value = e.target.value.replace(/\s+/g, '');
-                          if (value.length > 0) {
-                            value = value.match(new RegExp('.{1,4}', 'g'))?.join(' ') || value;
+                          // Format expiry date
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.length > 2) {
+                            value = value.substring(0, 2) + '/' + value.substring(2, 4);
                           }
                           e.target.value = value;
                         }}
                         required 
                       />
-                      <div className="grid grid-cols-3 gap-3">
-                        <Input 
-                          name="expiry" 
-                          placeholder="MM / YY" 
-                          maxLength={5}
-                          className="h-12 rounded-md"
-                          onChange={(e) => {
-                            // Format expiry date
-                            let value = e.target.value.replace(/\D/g, '');
-                            if (value.length > 2) {
-                              value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                            }
-                            e.target.value = value;
-                          }}
-                          required 
-                        />
-                        <Input 
-                          name="cvc" 
-                          placeholder="Security code" 
-                          maxLength={4}
-                          className="h-12 rounded-md"
-                          required 
-                        />
-                        <Input 
-                          name="card-name" 
-                          placeholder="Name on card" 
-                          className="h-12 rounded-md"
-                          required 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* PayPal Option */}
-                  <div className="p-4 border rounded-md">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">PayPal</span>
-                      <span className="text-primary">PayPal</span>
-                    </div>
-                  </div>
-
-                  {/* Remember Me */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Remember me</h3>
-                    <div className="flex items-start gap-3">
-                      <input 
-                        type="checkbox" 
-                        id="save-info" 
-                        className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      <Input 
+                        name="cvc" 
+                        placeholder="Security code" 
+                        maxLength={4}
+                        className="h-12 rounded-md"
+                        required 
                       />
-                      <label htmlFor="save-info" className="text-sm text-muted-foreground">
-                        Save my information for a faster checkout with Shop account
-                      </label>
+                      <Input 
+                        name="card-name" 
+                        placeholder="Name on card" 
+                        className="h-12 rounded-md"
+                        required 
+                      />
                     </div>
-                    <Input 
-                      placeholder="Mobile phone number"
-                      className="h-12 rounded-md"
-                    />
-                  </div>
-
-                  {paymentError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                      {paymentError}
-                    </div>
-                  )}
-
-                  <Button 
-                    type="submit" 
-                    className="w-full h-14 text-lg font-semibold bg-black hover:bg-gray-800 text-white rounded-md"
-                    disabled={submitting || !chironLoaded}
-                  >
-                    {!chironLoaded ? 'Loading payment system...' : submitting ? 'Processing...' : 'Complete Purchase'}
-                  </Button>
-
-                  <p className="text-xs text-muted-foreground text-center">
-                    Your info will be saved to a Shop account. By continuing, you agree to Shop's{' '}
-                    <a href="#" className="underline">Terms of Service</a> and acknowledge the{' '}
-                    <a href="#" className="underline">Privacy Policy</a>.
-                  </p>
-                </div>
-              </form>
-            ) : (
-                <form ref={paymentFormRef} onSubmit={(e) => { e.preventDefault(); handleZeroDollarOrder(); }} className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                    <Input
-                      name="email"
-                      type="email"
-                      placeholder="Email"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
-                    <div className="space-y-3">
-                      <Input name="contact-name" placeholder="Full Name" required />
-                      <Input name="address" placeholder="Address" required />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input name="city" placeholder="City" required />
-                        <Input name="state" placeholder="State" required />
-                      </div>
-                      <Input name="zip" placeholder="Postal code" required />
-                    </div>
-                  </div>
-
-                  <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
-                    <h2 className="text-xl font-semibold mb-2 text-green-700">Your order is FREE!</h2>
-                    <p className="text-green-600 mb-4">
-                      Your discounts have covered the full order amount.
-                    </p>
-                  </div>
-
-                  {paymentError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                      {paymentError}
-                    </div>
-                  )}
-
-                  <Button 
-                    type="submit"
-                    className="w-full py-3 text-lg font-semibold"
-                    disabled={submitting}
-                  >
-                    {submitting ? 'Processing...' : 'Complete Free Order'}
-                  </Button>
-                </form>
-              )}
-            </div>
-
-            {/* Right Side - Order Summary */}
-            <div className="lg:sticky lg:top-8 lg:h-fit">
-              <div className="bg-muted/30 p-6 rounded-lg space-y-6">
-                {/* Order Items */}
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={`${item.id}-${item.size}`} className="flex items-center gap-4">
-                      <div className="relative">
-                        <img 
-                          src={item.image} 
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg border"
-                        />
-                        <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {item.quantity}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-sm">{item.name}</h3>
-                        <p className="text-xs text-muted-foreground">Size: {item.size}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">${parseFloat(item.price.replace('$', '')).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Gift Card Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Input 
-                      placeholder="Gift card" 
-                      className="flex-1 h-10 text-sm"
-                    />
-                    <Button variant="outline" className="text-sm px-4">
-                      Apply
-                    </Button>
                   </div>
                 </div>
 
-                {/* Totals */}
-                <div className="space-y-3 pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal • {items.length} item{items.length > 1 ? 's' : ''}</span>
-                    <span>${subtotal.toFixed(2)}</span>
-                  </div>
-                  
-                  {appliedCredits > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Credits Applied ({appliedCredits} credits)</span>
-                      <span>-${creditsDiscount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {appliedCoupon && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Coupon ({appliedCoupon.code})</span>
-                      <span>-${couponDiscount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span>$14.71</span>
-                  </div>
-                  
-                  <div className="flex justify-between font-semibold text-lg pt-3 border-t">
-                    <span>Total</span>
-                    <span>USD ${total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Applied Discounts Display */}
-                {(appliedCredits > 0 || appliedCoupon) && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-2">
-                    <h4 className="font-medium text-green-700 text-sm">Applied Discounts</h4>
-                    {appliedCredits > 0 && (
-                      <div className="text-xs text-green-600">
-                        ✓ {appliedCredits} credits applied ($${creditsDiscount.toFixed(2)} off)
-                      </div>
-                    )}
-                    {appliedCoupon && (
-                      <div className="text-xs text-green-600">
-                        ✓ Coupon "{appliedCoupon.code}" applied ($${couponDiscount.toFixed(2)} off)
-                      </div>
-                    )}
+                {paymentError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    {paymentError}
                   </div>
                 )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 text-lg font-semibold bg-black hover:bg-gray-800 text-white rounded-md"
+                  disabled={submitting || !chironLoaded}
+                >
+                  {!chironLoaded ? 'Loading payment system...' : submitting ? 'Processing...' : 'Complete Purchase'}
+                </Button>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  Your info will be saved to a Shop account. By continuing, you agree to Shop's{' '}
+                  <a href="#" className="underline">Terms of Service</a> and acknowledge the{' '}
+                  <a href="#" className="underline">Privacy Policy</a>.
+                </p>
+              </form>
+            ) : (
+              <form ref={paymentFormRef} onSubmit={(e) => { e.preventDefault(); handleZeroDollarOrder(); }} className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                  <Input name="email" type="email" placeholder="Email" required />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
+                  <div className="space-y-3">
+                    <Input name="contact-name" placeholder="Full Name" required />
+                    <Input name="address" placeholder="Address" required />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input name="city" placeholder="City" required />
+                      <Input name="state" placeholder="State" required />
+                    </div>
+                    <Input name="zip" placeholder="Postal code" required />
+                  </div>
+                </div>
+
+                <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
+                  <h2 className="text-xl font-semibold mb-2 text-green-700">Your order is FREE!</h2>
+                  <p className="text-green-600 mb-4">
+                    Your discounts have covered the full order amount.
+                  </p>
+                </div>
+
+                <Button type="submit" className="w-full py-3 text-lg font-semibold" disabled={submitting}>
+                  {submitting ? 'Processing...' : 'Complete Free Order'}
+                </Button>
+              </form>
+            )}
+          </div>
+
+          {/* Right Side - Order Summary */}
+          <div className="lg:sticky lg:top-8 lg:h-fit">
+            <div className="bg-muted/30 p-6 rounded-lg space-y-6">
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={`${item.id}-${item.size}`} className="flex items-center gap-4">
+                    <div className="relative">
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-lg border"
+                      />
+                      <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm">{item.name}</h3>
+                      <p className="text-xs text-muted-foreground">Size: {item.size}</p>
+                    </div>
+                    <p className="font-medium">${parseFloat(item.price.replace('$', '')).toFixed(2)}</p>
+                  </div>
+                ))}
               </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Input placeholder="Gift card" className="flex-1 h-10 text-sm" />
+                  <Button variant="outline" className="text-sm px-4">Apply</Button>
+                </div>
+              </div>
+              
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal • {items.length} item{items.length > 1 ? 's' : ''}</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                
+                {appliedCredits > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Credits Applied ({appliedCredits} credits)</span>
+                    <span>-${creditsDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {appliedCoupon && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Coupon ({appliedCoupon.code})</span>
+                    <span>-${couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between text-sm">
+                  <span>Shipping</span>
+                  <span>$14.71</span>
+                </div>
+                
+                <div className="flex justify-between font-semibold text-lg pt-3 border-t">
+                  <span>Total</span>
+                  <span>USD ${(total + 14.71).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {(appliedCredits > 0 || appliedCoupon) && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                  <h4 className="font-medium text-green-700 text-sm">Applied Discounts</h4>
+                  {appliedCredits > 0 && (
+                    <div className="text-xs text-green-600">
+                      ✓ {appliedCredits} credits applied (${creditsDiscount.toFixed(2)} off)
+                    </div>
+                  )}
+                  {appliedCoupon && (
+                    <div className="text-xs text-green-600">
+                      ✓ Coupon "{appliedCoupon.code}" applied (${couponDiscount.toFixed(2)} off)
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
