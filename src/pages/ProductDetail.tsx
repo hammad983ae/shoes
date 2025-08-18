@@ -165,7 +165,7 @@ const ProductDetail = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/catalog')}
+              onClick={() => navigate(-1)}
               className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
             >
               <ArrowLeft className="w-4 h-4" />
