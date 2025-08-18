@@ -154,6 +154,8 @@ export type Database = {
           id: string
           is_active: boolean | null
           max_usage: number | null
+          total_used_amount: number | null
+          total_uses: number | null
           updated_at: string | null
           usage_count: number | null
         }
@@ -165,6 +167,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           max_usage?: number | null
+          total_used_amount?: number | null
+          total_uses?: number | null
           updated_at?: string | null
           usage_count?: number | null
         }
@@ -176,6 +180,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           max_usage?: number | null
+          total_used_amount?: number | null
+          total_uses?: number | null
           updated_at?: string | null
           usage_count?: number | null
         }
@@ -1287,6 +1293,33 @@ export type Database = {
         }
         Relationships: []
       }
+      site_analytics: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          id: string
+          metric_type: string
+          metric_value: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          metric_type: string
+          metric_value?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          metric_type?: string
+          metric_value?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       site_metrics: {
         Row: {
           key: string
@@ -1679,7 +1712,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      unified_credits: {
+        Row: {
+          commission_rate: number | null
+          creator_tier: string | null
+          current_balance: number | null
+          earned_from_referrals: number | null
+          is_creator: boolean | null
+          lifetime_video_credits: number | null
+          total_earned: number | null
+          total_spent: number | null
+          user_id: string | null
+          video_credits_this_month: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_set_coupon_code: {
