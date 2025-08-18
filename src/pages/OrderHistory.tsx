@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/DashboardLayout';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,7 +108,7 @@ export default function OrderHistory() {
   );
 
   return (
-    <DashboardLayout currentPage="orders">
+    <div className="min-h-screen bg-background">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -346,6 +346,6 @@ export default function OrderHistory() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </div>
   );
 }
