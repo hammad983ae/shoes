@@ -114,12 +114,13 @@ export const useCartPersistence = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          // Defer loading cart to avoid auth state callback issues
+          // Load cart when user signs in
           setTimeout(() => {
             loadCartFromDatabase();
           }, 100);
         } else if (event === 'SIGNED_OUT') {
-          clearCart();
+          // Don't clear cart on logout - keep it for when user signs back in
+          // The cart will be reloaded from database when they log back in
         }
       }
     );

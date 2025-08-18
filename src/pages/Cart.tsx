@@ -142,14 +142,15 @@ const Cart = () => {
         return;
       }
       
-      // Apply 10% discount
-      const discount = subtotal * 0.10;
+      // Apply 15% discount based on discount_percentage from database
+      const discountPercentage = data.discount_percentage || 15;
+      const discount = subtotal * (discountPercentage / 100);
       setAppliedCoupon({code: couponCode.toUpperCase(), discount});
       setAppliedCredits(0); // Remove credits if applying coupon
       setCouponCode('');
       toast({
         title: "Coupon Applied",
-        description: `${couponCode.toUpperCase()} applied! 10% discount.`,
+        description: `${couponCode.toUpperCase()} applied! ${discountPercentage}% discount.`,
       });
     } catch (error) {
       toast({

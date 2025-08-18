@@ -1,8 +1,8 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Heart } from 'lucide-react';
-import { useFavorites } from '@/contexts/FavoritesContext';
+import { Eye } from 'lucide-react';
+import { FavoriteButton } from '@/components/FavoriteButton';
 import { useState } from 'react';
 import { Sneaker } from '@/types/global';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,6 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ sneaker, index }: ProductCardProps) => {
-  const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
 
   const handleViewProduct = () => {
@@ -93,18 +92,14 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
           )}
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
-          {/* Heart Icon */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 btn-hover-glow"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite(sneaker.id);
-            }}
-          >
-            <Heart className={`w-4 h-4 ${isFavorite(sneaker.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-          </Button>
+          {/* Favorite Heart Icon */}
+          <div className="absolute top-4 right-4 z-20">
+            <FavoriteButton 
+              productId={sneaker.id.toString()} 
+              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 p-2 rounded-full transition-all duration-300"
+              size={16}
+            />
+          </div>
           {/* View Product Button */}
           <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 z-30">
             <Button

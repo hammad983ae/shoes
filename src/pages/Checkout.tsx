@@ -139,9 +139,32 @@ export default function Checkout() {
         onApproval: async (response: any) => {
           console.log('Payment approved:', response);
           
-          // Create order in database
+          // Create order in database with shipping address
           try {
             if (!user?.id) throw new Error('User not authenticated');
+            
+            // Get form data for shipping address
+            const formData = new FormData(paymentFormRef.current!);
+            const shippingAddress = {
+              email: formData.get('email')?.toString() || '',
+              address: formData.get('address')?.toString() || '',
+              city: formData.get('city')?.toString() || '',
+              state: formData.get('state')?.toString() || '',
+              zipCode: formData.get('zip')?.toString() || '',
+              name: formData.get('card-name')?.toString() || ''
+            };
+
+            // Prepare product details
+            const productDetails = items.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: typeof item.price === 'string' ? parseFloat(item.price.replace('$', '')) : item.price,
+              quantity: item.quantity,
+              size: item.size,
+              size_type: item.size_type,
+              image: item.image
+            }));
+
             const { error: orderError } = await supabase.from('orders').insert({
               user_id: user.id,
               order_total: total,
@@ -149,8 +172,9 @@ export default function Checkout() {
               coupon_discount: couponDiscount,
               credits_used: appliedCredits,
               status: 'paid',
-              payment_method: 'card',
-              estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              shipping_address: shippingAddress,
+              product_details: productDetails,
+              order_images: items.map(item => item.image).filter(Boolean)
             });
 
             if (orderError) throw orderError;
@@ -220,6 +244,17 @@ export default function Checkout() {
     try {
       if (!user?.id) throw new Error('User not authenticated');
       
+      // Prepare product details
+      const productDetails = items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: typeof item.price === 'string' ? parseFloat(item.price.replace('$', '')) : item.price,
+        quantity: item.quantity,
+        size: item.size,
+        size_type: item.size_type,
+        image: item.image
+      }));
+      
       const { error: orderError } = await supabase.from('orders').insert({
         user_id: user.id,
         order_total: 0,
@@ -228,6 +263,8 @@ export default function Checkout() {
         credits_used: appliedCredits,
         status: 'paid',
         payment_method: 'credits',
+        product_details: productDetails,
+        order_images: items.map(item => item.image).filter(Boolean),
         estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       });
 
