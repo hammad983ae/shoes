@@ -244,6 +244,17 @@ export default function Checkout() {
     try {
       if (!user?.id) throw new Error('User not authenticated');
       
+      // Get form data for shipping address
+      const formData = new FormData(paymentFormRef.current!);
+      const shippingAddress = {
+        email: formData.get('email')?.toString() || '',
+        address: formData.get('address')?.toString() || '',
+        city: formData.get('city')?.toString() || '',
+        state: formData.get('state')?.toString() || '',
+        zipCode: formData.get('zip')?.toString() || '',
+        name: formData.get('contact-name')?.toString() || ''
+      };
+      
       // Prepare product details
       const productDetails = items.map(item => ({
         id: item.id,
@@ -263,6 +274,7 @@ export default function Checkout() {
         credits_used: appliedCredits,
         status: 'paid',
         payment_method: 'credits',
+        shipping_address: shippingAddress,
         product_details: productDetails,
         order_images: items.map(item => item.image).filter(Boolean),
         estimated_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -495,27 +507,51 @@ export default function Checkout() {
                   </div>
                 </form>
               ) : (
-                <div className="space-y-4">
+                <form ref={paymentFormRef} onSubmit={(e) => { e.preventDefault(); handleZeroDollarOrder(); }} className="space-y-4">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
+                    <div className="space-y-3">
+                      <Input name="contact-name" placeholder="Full Name" required />
+                      <Input name="address" placeholder="Address" required />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input name="city" placeholder="City" required />
+                        <Input name="state" placeholder="State" required />
+                      </div>
+                      <Input name="zip" placeholder="Postal code" required />
+                    </div>
+                  </div>
+
                   <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
                     <h2 className="text-xl font-semibold mb-2 text-green-700">Your order is FREE!</h2>
                     <p className="text-green-600 mb-4">
                       Your discounts have covered the full order amount.
                     </p>
-                    <Button 
-                      onClick={handleZeroDollarOrder}
-                      className="w-full py-3 text-lg font-semibold"
-                      disabled={submitting}
-                    >
-                      {submitting ? 'Processing...' : 'Complete Free Order'}
-                    </Button>
                   </div>
-                  
+
                   {paymentError && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                       {paymentError}
                     </div>
                   )}
-                </div>
+
+                  <Button 
+                    type="submit"
+                    className="w-full py-3 text-lg font-semibold"
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Processing...' : 'Complete Free Order'}
+                  </Button>
+                </form>
               )}
             </div>
           </div>
