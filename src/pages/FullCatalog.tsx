@@ -6,7 +6,6 @@ import ViewProductModal from '@/components/ViewProductModal'
 import SignupIncentiveModal from '@/components/SignupIncentiveModal'
 import MainCatalogNavBar from '@/components/MainCatalogNavBar'
 import RequestNewItemsCard from '@/components/RequestNewItemsCard'
-import { sneakerCatalog } from '@/components/SneakerCatalog'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { isFirstProductView } from '@/utils/authUtils'
@@ -15,20 +14,14 @@ import { Sneaker } from '@/types/global'
 import { Button } from '@/components/ui/button'
 import { Heart, ArrowLeft } from 'lucide-react'
 import EnhancedFilterPanel from '@/components/EnhancedFilterPanel'
-
-const extendedCatalog: Sneaker[] = sneakerCatalog.map(s => ({ 
-  ...s, 
-  category: 'Shoes',
-  images: s.images || [s.image || ''],
-  brand: s.brand || 'Unknown',
-  image: s.image || (s.images && s.images[0]) || ''
-}))
+import { useDynamicProducts } from '@/hooks/useDynamicProducts'
 
 const FullCatalog = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { getFavoriteProducts } = useFavorites()
   const { user } = useAuth()
+  const { products: dynamicProducts } = useDynamicProducts()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [showFavorites, setShowFavorites] = useState(false)
@@ -45,10 +38,10 @@ const FullCatalog = () => {
   useEffect(() => {
     const param = searchParams.get('product')
     if (param) {
-      const found = extendedCatalog.find(p => p.id.toString() === param)
+      const found = dynamicProducts.find(p => p.id.toString() === param)
       if (found) handleViewProduct(found)
     }
-  }, [searchParams])
+  }, [searchParams, dynamicProducts])
 
   const handleViewProduct = (product: Sneaker) => {
     if (isFirstProductView(!!user)) {
@@ -70,7 +63,7 @@ const FullCatalog = () => {
     setFilters(newFilters)
   }
 
-  const filteredProducts = extendedCatalog.filter(p => {
+  const filteredProducts = dynamicProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = !filters.categories.length || filters.categories.includes(p.category)
     const matchesBrand = !filters.brands.length || filters.brands.includes(p.brand)

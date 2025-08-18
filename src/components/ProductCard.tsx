@@ -13,7 +13,7 @@ interface ProductCardProps {
   onViewProduct?: (sneaker: Sneaker) => void;
 }
 
-const ProductCard = ({ sneaker, index }: ProductCardProps) => {
+const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
   const navigate = useNavigate();
 
   const handleViewProduct = () => {
@@ -105,7 +105,11 @@ const ProductCard = ({ sneaker, index }: ProductCardProps) => {
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                handleViewProduct();
+                if (onViewProduct) {
+                  onViewProduct(sneaker);
+                } else {
+                  handleViewProduct();
+                }
               }}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 btn-hover-glow font-semibold"
             >

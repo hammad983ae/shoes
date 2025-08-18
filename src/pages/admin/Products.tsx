@@ -118,6 +118,7 @@ export default function Products() {
     setShowEditModal(true);
   };
 
+
   const filteredProducts = products.filter(product => 
     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.brand.toLowerCase().includes(searchTerm.toLowerCase())
