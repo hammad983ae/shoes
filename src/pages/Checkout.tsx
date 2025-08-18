@@ -146,12 +146,12 @@ export default function Checkout() {
             // Get form data for shipping address
             const formData = new FormData(paymentFormRef.current!);
             const shippingAddress = {
+              name: formData.get('card-name')?.toString() || '',
               email: formData.get('email')?.toString() || '',
               address: formData.get('address')?.toString() || '',
               city: formData.get('city')?.toString() || '',
               state: formData.get('state')?.toString() || '',
-              zipCode: formData.get('zip')?.toString() || '',
-              name: formData.get('card-name')?.toString() || ''
+              zipCode: formData.get('zip')?.toString() || ''
             };
 
             // Prepare product details
@@ -247,12 +247,12 @@ export default function Checkout() {
       // Get form data for shipping address
       const formData = new FormData(paymentFormRef.current!);
       const shippingAddress = {
+        name: formData.get('contact-name')?.toString() || '',
         email: formData.get('email')?.toString() || '',
         address: formData.get('address')?.toString() || '',
         city: formData.get('city')?.toString() || '',
         state: formData.get('state')?.toString() || '',
-        zipCode: formData.get('zip')?.toString() || '',
-        name: formData.get('contact-name')?.toString() || ''
+        zipCode: formData.get('zip')?.toString() || ''
       };
       
       // Prepare product details
