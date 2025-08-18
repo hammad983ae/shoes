@@ -251,6 +251,11 @@ const ProductDetail = () => {
               variant="ghost"
               size="icon"
               className="absolute top-2 left-2 bg-background/80 hover:bg-background z-20"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(product.id.toString());
+              }}
             >
               <Heart className={`w-5 h-5 ${isFavorite(product.id.toString()) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
             </Button>
@@ -262,20 +267,9 @@ const ProductDetail = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <p className="text-xl sm:text-2xl font-bold text-primary">{product.price}</p>
-                <button
-                  onClick={() => toggleFavorite(product.id.toString())}
-                  className={`transition-colors duration-200 hover:scale-110 ${
-                    isFavorite(product.id.toString()) ? "text-red-500" : "text-muted-foreground hover:text-red-500"
-                  }`}
-                  aria-label={isFavorite(product.id.toString()) ? "Remove from favorites" : "Add to favorites"}
-                >
-                  <Heart 
-                    size={24} 
-                    className={`transition-all duration-200 ${
-                      isFavorite(product.id.toString()) ? "fill-current" : ""
-                    }`} 
-                  />
-                </button>
+                {product.slashed_price && (
+                  <p className="text-lg text-muted-foreground line-through">${product.slashed_price}</p>
+                )}
               </div>
               <span className="text-xs sm:text-sm text-muted-foreground">{product.stock || 'In Stock'}</span>
             </div>
