@@ -10,6 +10,7 @@ export const useDynamicProducts = () => {
     try {
       setLoading(true);
       
+      console.log('Fetching products...');
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -18,7 +19,11 @@ export const useDynamicProducts = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Products query result:', { data, error, count: data?.length });
+      if (error) {
+        console.error('Products fetch error:', error);
+        throw error;
+      }
 
       const formattedProducts: Sneaker[] = (data || []).map(product => {
         // Sort all media by display_order to maintain consistent ordering
