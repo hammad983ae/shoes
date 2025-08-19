@@ -64,15 +64,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setTimeout(async () => {
       try {
-        const { data } = await supabase
+        console.log('Loading profile for user:', user.id);
+        const { data, error } = await supabase
           .from('profiles')
-          .select('role, is_creator')
+          .select('role, is_creator, display_name, avatar_url')
           .eq('user_id', user.id)
-          .single();
-        setUserRole((data?.role as 'user' | 'creator' | 'admin') ?? null);
+          .maybeSingle();
+        
+        console.log('Profile data:', { data, error });
+        
+        if (error) {
+          console.error('Profile query error:', error);
+          return;
+        }
+        
+        setUserRole((data?.role as 'user' | 'creator' | 'admin') ?? 'user');
         setIsCreator(Boolean(data?.is_creator));
       } catch (e) {
         console.error('Failed to load profile role', e);
+        setUserRole('user');
+        setIsCreator(false);
       }
     }, 0);
   }, [user]);
