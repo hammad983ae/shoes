@@ -18,7 +18,9 @@ import {
   MapPin,
   DollarSign,
   Eye,
-  ArrowLeft
+  ArrowLeft,
+  Download,
+  Gift
 } from 'lucide-react';
 import { OrderStatusTracker } from '@/components/OrderStatusTracker';
 
@@ -254,9 +256,17 @@ export default function OrderHistory() {
                           </p>
                         )}
                         {order.tracking_number && (
-                          <p className="text-sm text-blue-600">
-                            Tracking: {order.tracking_number}
-                          </p>
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">UPS Tracking Number</p>
+                            <a 
+                              href={`https://www.ups.com/track?track=yes&trackNums=${order.tracking_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline font-mono"
+                            >
+                              {order.tracking_number}
+                            </a>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -326,28 +336,76 @@ export default function OrderHistory() {
                       <p className="font-medium">{format(new Date(selectedOrder.estimated_delivery), 'MMM dd, yyyy')}</p>
                     </div>
                   )}
-                  <div>
-                    <p className="text-muted-foreground">Tracking Number</p>
-                    <p className="font-medium text-blue-600">
-                      {selectedOrder.tracking_number || 'Not available yet'}
-                    </p>
-                  </div>
+                  {selectedOrder.tracking_number && (
+                    <div>
+                      <p className="text-muted-foreground">UPS Tracking Number</p>
+                      <a 
+                        href={`https://www.ups.com/track?track=yes&trackNums=${selectedOrder.tracking_number}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-blue-600 hover:underline"
+                      >
+                        {selectedOrder.tracking_number}
+                      </a>
+                    </div>
+                  )}
                 </div>
 
-                {/* Quality Check Image */}
+                {/* Quality Check Media */}
                 <div>
                   <h4 className="font-medium mb-2">Quality Check</h4>
                   {selectedOrder.quality_check_image ? (
-                    <div className="border rounded-lg overflow-hidden">
-                      <img 
-                        src={selectedOrder.quality_check_image} 
-                        alt="Quality check"
-                        className="w-full h-48 object-cover"
-                      />
+                    <div className="border rounded-lg overflow-hidden relative">
+                      {selectedOrder.quality_check_image.includes('.mp4') || 
+                       selectedOrder.quality_check_image.includes('.mov') || 
+                       selectedOrder.quality_check_image.includes('.avi') || 
+                       selectedOrder.quality_check_image.includes('.webm') ? (
+                        <video 
+                          src={selectedOrder.quality_check_image} 
+                          controls
+                          className="w-full h-48 object-contain bg-black"
+                        />
+                      ) : (
+                        <img 
+                          src={selectedOrder.quality_check_image} 
+                          alt="Quality check"
+                          className="w-full h-48 object-contain bg-muted"
+                        />
+                      )}
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = selectedOrder.quality_check_image!;
+                            link.download = `quality-check-${selectedOrder.id.slice(-8)}`;
+                            link.click();
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {/* Credits Promotion */}
+                      <div className="p-3 bg-gradient-to-r from-primary/10 to-secondary/10">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Gift className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium">Share & Earn 1000 Credits!</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate('/socials')}
+                          >
+                            Socials
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-muted-foreground text-sm">
-                      Quality check image will appear here once your order is processed
+                      Quality check media will appear here once your order is processed
                     </p>
                   )}
                 </div>
