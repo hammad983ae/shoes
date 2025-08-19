@@ -36,14 +36,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
   const posthog = usePostHog();
 
-  // Use cart persistence hook for Supabase sync - now properly handles loading
-  const { clearCartFromSupabase } = useCartPersistence(items, setItems, setIsLoaded);
-
-  // Expose loading state if needed (for debugging)
-  console.log('Cart loaded:', isLoaded, 'Items count:', items.length);
+  // Use cart persistence hook for Supabase sync
+  const { clearCartFromSupabase } = useCartPersistence(items, setItems);
 
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
