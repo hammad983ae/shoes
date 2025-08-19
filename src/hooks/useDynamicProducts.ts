@@ -59,7 +59,7 @@ export const useDynamicProducts = () => {
           is_limited: product.is_limited || false,
           infinite_stock: product.infinite_stock || false,
           type: product.category?.toLowerCase().includes('high') ? 'high-top' : 'low-top',
-          colors: [], // Could be extracted from filters
+          colors: product.color ? product.color.split(',').map(c => c.trim()).filter(Boolean) : [],
           keywords: [] // Could be extracted from filters
         };
       });
