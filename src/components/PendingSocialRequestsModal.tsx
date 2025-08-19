@@ -148,12 +148,12 @@ const PendingSocialRequestsModal = ({ isOpen, onClose }: PendingSocialRequestsMo
   if (editingRequest) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Review Verification Request</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto flex-1 pr-2">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -192,16 +192,16 @@ const PendingSocialRequestsModal = ({ isOpen, onClose }: PendingSocialRequestsMo
                 {editingRequest.screenshot_url && (
                   <div>
                     <Label>Screenshot</Label>
-                    <div className="border rounded-lg p-4">
+                    <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
                       <img 
                         src={editingRequest.screenshot_url} 
                         alt="Verification screenshot"
-                        className="max-w-full h-auto rounded"
+                        className="max-w-full max-h-80 object-contain rounded mx-auto block"
                       />
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-2"
+                        className="mt-2 w-full"
                         onClick={() => editingRequest.screenshot_url && window.open(editingRequest.screenshot_url, '_blank')}
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
@@ -223,27 +223,27 @@ const PendingSocialRequestsModal = ({ isOpen, onClose }: PendingSocialRequestsMo
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            <div className="flex justify-end space-x-3">
-              <Button variant="outline" onClick={() => setEditingRequest(null)}>
-                Back
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleReject}
-                disabled={processingId === editingRequest.id || !rejectionReason.trim()}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Reject
-              </Button>
-              <Button 
-                onClick={handleApprove}
-                disabled={processingId === editingRequest.id}
-              >
-                <Check className="w-4 h-4 mr-2" />
-                {processingId === editingRequest.id ? "Approving..." : "Approve"}
-              </Button>
-            </div>
+          <div className="flex justify-end space-x-3 pt-4 border-t bg-background">
+            <Button variant="outline" onClick={() => setEditingRequest(null)}>
+              Back
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleReject}
+              disabled={processingId === editingRequest.id || !rejectionReason.trim()}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Reject
+            </Button>
+            <Button 
+              onClick={handleApprove}
+              disabled={processingId === editingRequest.id}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              {processingId === editingRequest.id ? "Approving..." : "Approve"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
