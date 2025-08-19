@@ -39,25 +39,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    // Get initial session immediately
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted && session) {
+          console.log('Initial session found:', session.user.id);
+          setSession(session);
+          setUser(session.user);
+          setLoading(false);
+        } else if (mounted) {
+          console.log('No initial session');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        if (mounted) setLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+        
         console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_OUT') {
+          setUserRole(null);
+          setIsCreator(false);
+          setProfile(null);
+        }
+        
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.id);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Get initial session
+    getInitialSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -77,56 +105,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .from('profiles')
           .select('role, is_creator, display_name, avatar_url, bio, credits')
           .eq('user_id', user.id)
-          .maybeSingle();
+          .single();
         
         console.log('Profile query result:', { data, error });
         
         if (error) {
           console.error('Profile query error:', error);
-          // Set defaults if query fails
-          const defaultProfile = {
+          // Don't create profile here, just use defaults
+          setUserRole('user');
+          setIsCreator(false);
+          setProfile({
             display_name: user.email?.split('@')[0] || 'User',
             role: 'user',
             is_creator: false,
             bio: '',
             credits: 0
-          };
-          setProfile(defaultProfile);
-          setUserRole('user');
-          setIsCreator(false);
+          });
           return;
         }
         
-        if (!data) {
-          console.log('No profile found, using defaults');
-          const defaultProfile = {
-            display_name: user.email?.split('@')[0] || 'User',
-            role: 'user',
-            is_creator: false,
-            bio: '',
-            credits: 0
-          };
-          setProfile(defaultProfile);
-          setUserRole('user');
-          setIsCreator(false);
-        } else {
-          console.log('Profile loaded:', data);
-          setProfile(data);
-          setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
-          setIsCreator(Boolean(data.is_creator));
-        }
+        console.log('Profile loaded successfully:', data);
+        setProfile(data);
+        setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
+        setIsCreator(Boolean(data.is_creator));
       } catch (e) {
         console.error('Failed to load profile:', e);
-        const defaultProfile = {
+        setUserRole('user');
+        setIsCreator(false);
+        setProfile({
           display_name: user.email?.split('@')[0] || 'User',
           role: 'user',
           is_creator: false,
           bio: '',
           credits: 0
-        };
-        setProfile(defaultProfile);
-        setUserRole('user');
-        setIsCreator(false);
+        });
       }
     };
     
