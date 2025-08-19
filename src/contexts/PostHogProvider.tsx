@@ -9,17 +9,26 @@ interface PostHogProviderProps {
 
 export const PostHogProvider = ({ children }: PostHogProviderProps) => {
   useEffect(() => {
-    // Get PostHog API key from environment or use a placeholder for now
-    const apiKey = import.meta.env.VITE_POSTHOG_API_KEY || 'ph_test_key';
-    const host = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
+    // Initialize PostHog with your project key
+    // Replace this with your actual PostHog project API key
+    const apiKey = 'phc_9TV6WdEBoDGXoNjFe0cH7u5qigThlmuFas1nVdQWYm4'; // Replace with your actual key
+    const host = 'https://us.i.posthog.com';
 
-    if (apiKey && apiKey !== 'ph_test_key') {
+    if (apiKey) {
       posthog.init(apiKey, {
         api_host: host,
         person_profiles: 'identified_only',
         capture_pageview: true,
         capture_pageleave: true,
+        loaded: () => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('PostHog loaded successfully');
+          }
+        },
       });
+      
+      // Capture initial page view
+      posthog.capture('page_view', { page: window.location.pathname });
     }
   }, []);
 
