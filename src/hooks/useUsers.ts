@@ -42,17 +42,16 @@ export const useUsers = () => {
     try {
       setLoading(true);
 
-      const { data: usersData, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use the edge function that can access both profiles and auth.users to get emails
+      const { data, error } = await supabase.functions.invoke('admin-users-with-emails');
 
       if (error) throw error;
 
-      const formattedUsers: User[] = (usersData || []).map(user => ({
+      const formattedUsers: User[] = (data?.users || []).map((user: any) => ({
         id: user.id,
-        user_id: user.user_id,
+        user_id: user.id,
         display_name: user.display_name || 'Anonymous',
+        email: user.email || 'No email',
         role: user.role,
         is_creator: user.is_creator,
         creator_tier: user.creator_tier || 'tier1',
@@ -63,7 +62,7 @@ export const useUsers = () => {
         total_spent: user.total_spent || 0,
         last_login_at: user.last_login_at || undefined,
         created_at: user.created_at,
-        updated_at: user.updated_at
+        updated_at: user.created_at
       }));
 
       setUsers(formattedUsers);
