@@ -121,16 +121,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (error) {
           console.error('Profile query error:', error);
-          // Don't create profile here, just use defaults
-          setUserRole('user');
-          setIsCreator(false);
-          setProfile({
-            display_name: user.email?.split('@')[0] || 'User',
-            role: 'user',
-            is_creator: false,
-            bio: '',
-            credits: 0
-          });
+          
+          // Create profile if it doesn't exist
+          if (error.code === 'PGRST116') {
+            console.log('Creating new profile for user');
+            const newProfile = {
+              user_id: user.id,
+              display_name: user.email?.split('@')[0] || 'User',
+              role: 'user',
+              is_creator: false,
+              bio: '',
+              credits: 0
+            };
+            
+            const { data: insertData, error: insertError } = await supabase
+              .from('profiles')
+              .insert(newProfile)
+              .select()
+              .single();
+              
+            if (insertError) {
+              console.error('Failed to create profile:', insertError);
+              setUserRole('user');
+              setIsCreator(false);
+              setProfile(newProfile);
+            } else {
+              console.log('Profile created successfully:', insertData);
+              setProfile(insertData);
+              setUserRole(insertData.role as 'user' | 'creator' | 'admin');
+              setIsCreator(Boolean(insertData.is_creator));
+            }
+          } else {
+            // Use defaults for other errors
+            const defaultProfile = {
+              display_name: user.email?.split('@')[0] || 'User',
+              role: 'user',
+              is_creator: false,
+              bio: '',
+              credits: 0
+            };
+            setUserRole('user');
+            setIsCreator(false);
+            setProfile(defaultProfile);
+          }
           return;
         }
         
@@ -140,15 +173,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsCreator(Boolean(data.is_creator));
       } catch (e) {
         console.error('Failed to load profile:', e);
-        setUserRole('user');
-        setIsCreator(false);
-        setProfile({
+        const defaultProfile = {
           display_name: user.email?.split('@')[0] || 'User',
           role: 'user',
           is_creator: false,
           bio: '',
           credits: 0
-        });
+        };
+        setUserRole('user');
+        setIsCreator(false);
+        setProfile(defaultProfile);
       }
     };
     
