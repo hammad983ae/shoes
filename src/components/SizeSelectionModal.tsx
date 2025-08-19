@@ -81,7 +81,7 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
                   onClick={() => setSelectedSize(size)}
                   className="h-12"
                 >
-                  {size}
+                  {size} EU
                 </Button>
               ))}
             </div>

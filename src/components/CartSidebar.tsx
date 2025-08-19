@@ -100,8 +100,8 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
                           className="border rounded px-2 py-1 text-sm bg-background"
                         >
                           {getSizesForItem().map(size => (
-                            <option key={size} value={size}>
-                              {size}
+                            <option key={size} value={`${size} EU`}>
+                              {size} EU
                             </option>
                           ))}
                         </select>

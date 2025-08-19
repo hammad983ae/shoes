@@ -327,7 +327,7 @@ const ProductDetail = () => {
                     onClick={() => setSelectedSize(size)}
                     className="h-10 text-xs"
                   >
-                    {size}
+                    {size} EU
                   </Button>
                 ))}
               </div>
