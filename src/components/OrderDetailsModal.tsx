@@ -30,6 +30,8 @@ interface Order {
   tracking_number?: string;
   quality_check_image?: string;
   fulfillment_notes?: string;
+  credits_used?: number;
+  coupon_discount?: number;
   shipping_address?: {
     name: string;
     email: string;

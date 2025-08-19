@@ -652,6 +652,7 @@ export type Database = {
           creator_id: string | null
           credits_used: number | null
           currency: string
+          discount_amount: number | null
           estimated_delivery: string | null
           fulfillment_notes: string | null
           id: string
@@ -662,6 +663,7 @@ export type Database = {
           quality_check_image: string | null
           shipping_address: Json | null
           status: string
+          subtotal: number | null
           tracking_number: string | null
           updated_at: string
           user_id: string
@@ -674,6 +676,7 @@ export type Database = {
           creator_id?: string | null
           credits_used?: number | null
           currency?: string
+          discount_amount?: number | null
           estimated_delivery?: string | null
           fulfillment_notes?: string | null
           id?: string
@@ -684,6 +687,7 @@ export type Database = {
           quality_check_image?: string | null
           shipping_address?: Json | null
           status?: string
+          subtotal?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id: string
@@ -696,6 +700,7 @@ export type Database = {
           creator_id?: string | null
           credits_used?: number | null
           currency?: string
+          discount_amount?: number | null
           estimated_delivery?: string | null
           fulfillment_notes?: string | null
           id?: string
@@ -706,6 +711,7 @@ export type Database = {
           quality_check_image?: string | null
           shipping_address?: Json | null
           status?: string
+          subtotal?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string
