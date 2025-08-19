@@ -3,9 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { sneakerCatalog } from '@/components/SneakerCatalog';
 import { Sneaker } from '@/types/global';
 import CartSidebar from '@/components/CartSidebar';
+import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 
 interface MainCatalogNavBarProps {
   searchTerm: string;
@@ -20,15 +20,17 @@ const MainCatalogNavBar = ({
   const [filteredResults, setFilteredResults] = useState<Sneaker[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { products } = useDynamicProducts();
 
   useEffect(() => {
     if (searchTerm.trim()) {
-      const results = sneakerCatalog.filter(sneaker =>
+      const results = products.filter(sneaker =>
         sneaker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         sneaker.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         sneaker.keywords?.some(keyword => 
           keyword.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        ) ||
+        sneaker.category.toLowerCase().includes(searchTerm.toLowerCase())
       ).slice(0, 5);
       
       setFilteredResults(results);
@@ -36,7 +38,7 @@ const MainCatalogNavBar = ({
     } else {
       setShowResults(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm, products]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,7 +68,7 @@ const MainCatalogNavBar = ({
   const handleProductClick = (sneaker: Sneaker) => {
     setShowResults(false);
     setSearchTerm('');
-    navigate(`/product/${sneaker.id}`);
+    navigate(`/product/${sneaker.slug || sneaker.id}`);
   };
 
   const handleShopAll = () => {
@@ -110,7 +112,7 @@ const MainCatalogNavBar = ({
                           className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
                         >
                           <img 
-                            src={sneaker.image} 
+                            src={sneaker.images[0] || sneaker.image} 
                             alt={sneaker.name}
                             className="w-12 h-12 object-cover rounded"
                           />
