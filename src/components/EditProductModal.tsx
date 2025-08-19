@@ -203,15 +203,15 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
       if (productError) throw productError;
 
-      // Update display order and role for existing images
+      // Update display order and role for existing images based on current images array order
       const existingImages = images.filter(img => img.id && !img.file);
-      for (const [index, image] of existingImages.entries()) {
-        if (image.id) {
+      for (const [currentIndex, image] of images.entries()) {
+        if (image.id && !image.file) {
           const { error: updateError } = await supabase
             .from('product_media')
             .update({ 
-              display_order: image.display_order || index,
-              role: image.role || (index === 0 ? 'primary' : 'gallery')
+              display_order: currentIndex,
+              role: currentIndex === 0 ? 'primary' : 'gallery'
             })
             .eq('id', image.id);
           
