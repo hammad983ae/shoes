@@ -170,27 +170,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setIsCreator(false);
+      
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
-        toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Signed out",
-          description: "You've been signed out successfully.",
-        });
-        // Redirect to home page after successful sign out
-        window.location.href = '/';
+        console.error('Sign out error:', error);
       }
-    } catch (error: any) {
+      
       toast({
-        title: "Sign out failed",
-        description: error.message,
-        variant: "destructive",
+        title: "Signed out",
+        description: "You've been signed out successfully.",
       });
+      
+      // Force redirect to home page
+      window.location.href = '/';
+    } catch (error: any) {
+      console.error('Sign out failed:', error);
+      // Force logout anyway
+      localStorage.clear();
+      window.location.href = '/';
     }
   };
 
