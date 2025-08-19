@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   userRole: 'user' | 'creator' | 'admin' | null;
   isCreator: boolean;
+  profile: any; // Add profile to context
   signUp: (email: string, password: string, displayName?: string, referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<'user' | 'creator' | 'admin' | null>(null);
   const [isCreator, setIsCreator] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) {
       setUserRole(null);
       setIsCreator(false);
+      setProfile(null);
       return;
     }
     
@@ -108,6 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
           } else {
             console.log('Setting user role from profile data:', data.role, data.is_creator);
+            setProfile(data);
             setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
             setIsCreator(Boolean(data.is_creator));
           }
@@ -239,6 +243,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     userRole,
     isCreator,
+    profile,
     signUp,
     signIn,
     signOut,

@@ -414,7 +414,7 @@ const Profile = () => {
                   </Avatar>
                   <div className="text-left">
                     <h2 className="text-lg sm:text-xl font-bold text-white">
-                      {profile.display_name || 'Anonymous User'}
+                      {profile?.display_name || user?.email?.split('@')[0] || 'User'}
                     </h2>
                     {profile.bio && (
                       <p className="text-gray-300 text-xs sm:text-sm mt-1">{profile.bio}</p>
