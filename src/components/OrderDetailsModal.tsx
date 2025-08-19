@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Package, User, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import ImageUpload from "./ImageUpload";
@@ -68,6 +69,7 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
   const [trackingNumber, setTrackingNumber] = useState(order?.tracking_number || "");
   const [qualityCheckImage, setQualityCheckImage] = useState(order?.quality_check_image || "");
   const [fulfillmentNotes, setFulfillmentNotes] = useState(order?.fulfillment_notes || "");
+  const [orderStatus, setOrderStatus] = useState(order?.status || "pending");
   const { toast } = useToast();
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
@@ -76,6 +78,7 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
       setTrackingNumber(order.tracking_number || "");
       setQualityCheckImage(order.quality_check_image || "");
       setFulfillmentNotes(order.fulfillment_notes || "");
+      setOrderStatus(order.status || "pending");
       
       // Use items from the order if they exist, otherwise check product_details
       if (order.items && order.items.length > 0) {
@@ -145,7 +148,8 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
         .update({
           tracking_number: trackingNumber,
           quality_check_image: qualityCheckImage,
-          fulfillment_notes: fulfillmentNotes
+          fulfillment_notes: fulfillmentNotes,
+          status: orderStatus
         })
         .eq('id', order.id);
 
@@ -155,7 +159,8 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
         onUpdate(order.id, {
           tracking_number: trackingNumber,
           quality_check_image: qualityCheckImage,
-          fulfillment_notes: fulfillmentNotes
+          fulfillment_notes: fulfillmentNotes,
+          status: orderStatus
         });
       }
 
@@ -206,13 +211,32 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
         <div className="grid gap-6">
           {/* Order Status */}
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div>
-              <h3 className="font-semibold">Order Status</h3>
+            <div className="flex-1">
+              <h3 className="font-semibold mb-2">Order Status</h3>
               <p className="text-sm text-muted-foreground">Created: {new Date(order.created_at).toLocaleDateString()}</p>
+              <div className="mt-3">
+                <Label htmlFor="status">Update Status</Label>
+                <Select value={orderStatus} onValueChange={setOrderStatus}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="shipped">Shipped</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="reviewed">Reviewed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <Badge variant="secondary" className={`${getStatusColor(order.status)} text-white`}>
-              {order.status}
-            </Badge>
+            <div className="text-right">
+              <Badge variant="secondary" className={`${getStatusColor(orderStatus)} text-white`}>
+                {orderStatus}
+              </Badge>
+            </div>
           </div>
 
           {/* Customer Information */}
