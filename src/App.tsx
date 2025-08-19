@@ -42,6 +42,7 @@ import Orders from "./pages/admin/Orders";
 import Products from "./pages/admin/Products";
 import Users from "./pages/admin/Users";
 import AdminNotFound from "./pages/admin/NotFound";
+import HelpCenter from './pages/HelpCenter';
 import RouteGuard from "./components/RouteGuard";
 
 const App = () => (
@@ -66,8 +67,9 @@ const App = () => (
                      <Route path="/wallet" element={<Wallet />} />
                      <Route path="/feed" element={<Feed />} />
                      <Route path="/top-posts" element={<Feed />} />
-                     <Route path="/credits" element={<GetFreeCredits />} />
-                     <Route path="/socials" element={<Socials />} />
+                      <Route path="/credits" element={<GetFreeCredits />} />
+                      <Route path="/socials" element={<Socials />} />
+                      <Route path="/help" element={<HelpCenter />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/checkout" element={<Checkout />} />
                       <Route path="/order-confirmation" element={<OrderConfirmation />} />

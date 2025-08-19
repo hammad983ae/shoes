@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, Home, TrendingUp, Laptop, Settings } from 'lucide-react';
+import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, Home, TrendingUp, Laptop, Settings, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,6 +111,16 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
             </div>
 
             <div className="border-t border-border mt-6 pt-4 space-y-3">
+              {/* Help Center - Mobile */}
+              <Link
+                to="/help"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
+                onClick={() => setIsMobileOpen(false)}
+              >
+                <HelpCircle className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Help Center</span>
+              </Link>
+              
               {user && (
                 <button
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 text-foreground hover:text-destructive transition-all duration-300"
@@ -180,6 +190,21 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
 
           {/* Bottom Section */}
           <div className="border-t border-border/50 mx-2 pt-3 p-3 space-y-3">
+            {/* Help Center Button */}
+            <Link
+              to="/help"
+              className="flex items-center gap-3 p-2 mx-0 rounded-lg hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300 group"
+            >
+              <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+              <span
+                className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+                  isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
+                }`}
+              >
+                Help Center
+              </span>
+            </Link>
+            
             {/* Logout Button - positioned above profile */}
             {user && (
               <button

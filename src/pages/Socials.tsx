@@ -1,74 +1,8 @@
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, MessageCircle, Mail, Music, Youtube, Users, Send } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
-import { useState } from 'react';
-import { submitMessage } from '@/api/messages';
-import { useToast } from '@/hooks/use-toast';
 
 const Socials = () => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-    honeypot: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.message) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      await submitMessage({
-        name: formData.name,
-        email: formData.email,
-        message: formData.message,
-        honeypot: formData.honeypot,
-      });
-      
-      toast({
-        title: "Message Sent!",
-        description: "We've received your message and will get back to you soon.",
-      });
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        message: '',
-        honeypot: ''
-      });
-    } catch (error: any) {
-      console.error('Error submitting contact form:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen page-gradient relative">
@@ -193,80 +127,6 @@ const Socials = () => {
           </div>
         </div>
 
-        {/* Contact Form */}
-        <Card className="mt-12 bg-[#0a0a0a] border-[#FFD700]">
-          <CardHeader>
-            <CardTitle>Get in Touch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Have a Question?</h3>
-                <p className="text-muted-foreground mb-4">
-                  We're here to help! Send us a message and we'll respond as soon as possible.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <span className="text-sm">cralluxmaster@protonmail.com</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4 text-primary" />
-                    <span className="text-sm">DM us on Instagram</span>
-                  </div>
-                </div>
-              </div>
-              
-                             <form onSubmit={handleSubmit} className="space-y-4">
-                 <div>
-                   <label className="block text-sm font-medium mb-2">Name</label>
-                   <input 
-                     type="text" 
-                     name="name"
-                     value={formData.name}
-                     onChange={handleInputChange}
-                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
-                     placeholder="Your name"
-                     required
-                   />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium mb-2">Email</label>
-                   <input 
-                     type="email" 
-                     name="email"
-                     value={formData.email}
-                     onChange={handleInputChange}
-                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none"
-                     placeholder="your@email.com"
-                     required
-                   />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium mb-2">Message</label>
-                   <textarea 
-                     name="message"
-                     value={formData.message}
-                     onChange={handleInputChange}
-                     className="w-full p-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none resize-none"
-                     rows={4}
-                     placeholder="How can we help you?"
-                     required
-                   />
-                  </div>
-                  <input type="text" name="honeypot" value={formData.honeypot} onChange={handleInputChange} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-                  <Button 
-                   type="submit" 
-                   className="w-full btn-hover-glow"
-                   disabled={isSubmitting}
-                 >
-                   <Send className="w-4 h-4 mr-2" />
-                   {isSubmitting ? 'Sending...' : 'Send Message'}
-                 </Button>
-               </form>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
     </div>
