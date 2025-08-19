@@ -32,6 +32,13 @@ interface Order {
   fulfillment_notes?: string;
   credits_used?: number;
   coupon_discount?: number;
+  product_details?: Array<{
+    id?: number;
+    name?: string;
+    quantity?: number;
+    price?: number;
+    size?: string;
+  }>;
   shipping_address?: {
     name: string;
     email: string;
@@ -70,13 +77,23 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
       setQualityCheckImage(order.quality_check_image || "");
       setFulfillmentNotes(order.fulfillment_notes || "");
       
-      // Use items from the order if they exist, otherwise fetch them
+      // Use items from the order if they exist, otherwise check product_details
       if (order.items && order.items.length > 0) {
         const formattedItems: OrderItem[] = order.items.map(item => ({
           id: item.id,
           product_name: item.product_title || 'Unknown Product',
           quantity: item.quantity,
           price_per_item: item.price_per_item,
+          size: item.size
+        }));
+        setOrderItems(formattedItems);
+      } else if (order.product_details && Array.isArray(order.product_details) && order.product_details.length > 0) {
+        // Fallback to product_details JSON field for older orders
+        const formattedItems: OrderItem[] = order.product_details.map((item: any, index: number) => ({
+          id: item.id?.toString() || index.toString(),
+          product_name: item.name || 'Unknown Product',
+          quantity: item.quantity || 1,
+          price_per_item: item.price || 0,
           size: item.size
         }));
         setOrderItems(formattedItems);
