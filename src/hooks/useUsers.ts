@@ -13,6 +13,7 @@ interface User {
   referrals_count: number;
   credits: number;
   coupon_code?: string;
+  total_spent: number;
   created_at: string;
   updated_at: string;
 }
@@ -58,6 +59,7 @@ export const useUsers = () => {
         referrals_count: user.referrals_count || 0,
         credits: user.credits || 0,
         coupon_code: user.coupon_code || undefined,
+        total_spent: user.total_spent || 0,
         created_at: user.created_at,
         updated_at: user.updated_at
       }));

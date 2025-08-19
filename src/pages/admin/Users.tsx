@@ -242,10 +242,10 @@ export default function Users() {
                              <p className="text-sm text-muted-foreground">Total Orders</p>
                              <p className="font-bold">0</p>
                            </div>
-                           <div className="text-right">
-                             <p className="text-sm text-muted-foreground">Total Spent</p>
-                             <p className="font-bold">$0</p>
-                           </div>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground">Total Spent</p>
+                              <p className="font-bold">${user.total_spent.toFixed(2)}</p>
+                            </div>
                            <div className="text-right">
                              <p className="text-sm text-muted-foreground">Credits</p>
                              <p className="font-bold">{user.credits}</p>

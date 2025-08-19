@@ -1978,6 +1978,10 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: boolean
       }
+      sync_user_total_spent: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_creator_metrics: {
         Args: { creator_user_id: string }
         Returns: undefined
