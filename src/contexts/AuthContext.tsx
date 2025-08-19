@@ -39,58 +39,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!user) {
+      console.warn("⚠️ User became null");
+    } else {
+      console.log("✅ User active:", user.email);
+    }
+  }, [user]);
+
+  useEffect(() => {
     let mounted = true;
 
-    // Initialize session first - REQUIRED on app load
+    // CRITICAL: Single initialization - getSession() only runs ONCE on app load
     const initializeAuth = async () => {
       try {
+        console.log("🔄 Initializing auth session...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (mounted) {
-          console.log('Session restored:', session?.user?.id || 'none');
+          console.log("📦 Session on load:", session?.user?.email || 'none');
           setSession(session);
           setUser(session?.user ?? null);
-          
-          // CRITICAL FIX: Always set loading false after session check completes
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error restoring session:', error);
+        console.error('❌ Error restoring session:', error);
         if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    // Set up auth state listener - handles ALL auth events consistently
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      
-      console.log('🔥 Auth state change:', _event, session?.user?.id || 'NO USER', 'Session exists:', !!session);
-      
-      // Always update session and user state for any auth event
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Clear profile state only when session is null
-      if (!session) {
-        setUserRole(null);
-        setIsCreator(false);
-        setProfile(null);
-        console.log('❌ Session cleared, resetting profile state');
-      } else {
-        console.log('✅ Session active, user:', session.user.email);
+    // Set up auth state listener for ALL events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log("🌀 Supabase event:", event);
+        console.log("📦 Session from event:", session?.user?.email || 'none');
+        
+        // ALWAYS update session and user state for ANY auth event
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Clear profile state only when session is null
+        if (!session) {
+          setUserRole(null);
+          setIsCreator(false);
+          setProfile(null);
+          console.log("❌ Session cleared, resetting profile state");
+        } else {
+          console.log("✅ Session active, user:", session.user.email);
+        }
       }
-    });
+    );
 
-    // Initialize session on mount
+    // Initialize session ONCE on mount
     initializeAuth();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Empty deps - run only once!
 
   useEffect(() => {
     if (!user) {
