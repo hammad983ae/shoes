@@ -4,7 +4,8 @@
    import { BrowserRouter, Routes, Route } from "react-router-dom";
    import { CartProvider } from "@/contexts/CartContext";
    import { FavoritesProvider } from "@/contexts/FavoritesContext";
-   import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { PostHogProvider } from "@/contexts/PostHogProvider";
 import Layout from "./components/Layout";
 import GlobalCartProvider from "./components/GlobalCartProvider";
 import CartAddNotification from "./components/CartAddNotification";
@@ -43,9 +44,10 @@ import Users from "./pages/admin/Users";
 import AdminNotFound from "./pages/admin/NotFound";
 import RouteGuard from "./components/RouteGuard";
 
-   const App = () => (
-     <AuthProvider>
-       <CartProvider>
+const App = () => (
+  <PostHogProvider>
+    <AuthProvider>
+      <CartProvider>
          <FavoritesProvider>
            <TooltipProvider>
              <Toaster />
@@ -104,8 +106,9 @@ import RouteGuard from "./components/RouteGuard";
              </BrowserRouter>
            </TooltipProvider>
          </FavoritesProvider>
-       </CartProvider>
-     </AuthProvider>
-   );
+        </CartProvider>
+      </AuthProvider>
+    </PostHogProvider>
+  );
 
    export default App;
