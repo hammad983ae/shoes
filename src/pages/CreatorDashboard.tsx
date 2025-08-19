@@ -526,7 +526,10 @@ export default function CreatorDashboard() {
                   <p className="text-sm text-muted-foreground">• Color Palette</p>
                   <p className="text-sm text-muted-foreground">• Winning Creatives</p>
                 </div>
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={() => window.open('https://drive.google.com/drive/folders/1PUiA8n7489DlJpb9xdBvQNHfpE15xbZc?usp=sharing', '_blank')}
+                >
                   <ChevronRight className="h-4 w-4 mr-2" />
                   Open Vault
                 </Button>
