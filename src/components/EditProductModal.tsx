@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import AddBrandModal from './AddBrandModal';
+import { useDynamicBrands } from '@/hooks/useDynamicBrands';
 
 interface Product {
   id: string;
@@ -44,6 +46,8 @@ interface EditProductModalProps {
 
 export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditProductModalProps) {
   const { toast } = useToast();
+  const { brands, addBrand } = useDynamicBrands();
+  const [showAddBrand, setShowAddBrand] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -126,6 +130,11 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleBrandAdded = (newBrand: string) => {
+    addBrand(newBrand);
+    handleInputChange('brand', newBrand);
   };
 
   const handleCategorySelect = (category: string) => {
@@ -332,17 +341,25 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             </div>
             <div>
               <Label htmlFor="brand">Brand *</Label>
-              <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
+              <Select value={formData.brand} onValueChange={(value) => {
+                if (value === "add-new-brand") {
+                  setShowAddBrand(true);
+                } else {
+                  handleInputChange('brand', value);
+                }
+              }}>
                 <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                  <SelectItem value="Nike" className="text-white hover:bg-gray-700 focus:bg-gray-700">Nike</SelectItem>
-                  <SelectItem value="Rick Owens" className="text-white hover:bg-gray-700 focus:bg-gray-700">Rick Owens</SelectItem>
-                  <SelectItem value="Maison Margiela" className="text-white hover:bg-gray-700 focus:bg-gray-700">Maison Margiela</SelectItem>
-                  <SelectItem value="Jordan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jordan</SelectItem>
-                  <SelectItem value="Adidas" className="text-white hover:bg-gray-700 focus:bg-gray-700">Adidas</SelectItem>
-                  <SelectItem value="Stone Island" className="text-white hover:bg-gray-700 focus:bg-gray-700">Stone Island</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand} value={brand} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                      {brand}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="add-new-brand" className="text-primary hover:bg-gray-700 focus:bg-gray-700 font-medium border-t border-gray-600 mt-1 pt-2">
+                    + Add New Brand
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -643,6 +660,12 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           </div>
         </div>
       </DialogContent>
+      
+      <AddBrandModal 
+        isOpen={showAddBrand} 
+        onClose={() => setShowAddBrand(false)} 
+        onBrandAdded={handleBrandAdded}
+      />
     </Dialog>
   );
 }

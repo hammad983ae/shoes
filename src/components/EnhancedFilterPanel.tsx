@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useDynamicBrands } from '@/hooks/useDynamicBrands';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ const CATEGORIES = [
   'Sweatpants', 'Shorts', 'Sweaters/Knits', 'Hats', 'Accessories', 'Socks'
 ];
 
-const BRANDS = ['Nike', 'Rick Owens', 'Maison Margiela', 'Jordan', 'Adidas', 'Stone Island'];
+
 
 const COLORS = [
   'Black', 'White', 'Grey', 'Silver', 'Charcoal', 'Off-White/Cream',
@@ -34,6 +35,7 @@ const COLORS = [
 ];
 
 const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
+  const { brands } = useDynamicBrands();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -213,7 +215,7 @@ const EnhancedFilterPanel = ({ onFiltersChange }: EnhancedFilterPanelProps) => {
           <div>
             <Label className="text-base font-semibold">Brand</Label>
             <div className="space-y-2 mt-2">
-              {BRANDS.map((brand) => (
+              {brands.map((brand) => (
                 <div key={brand} className="flex items-center space-x-2">
                   <Checkbox
                     id={`brand-${brand}`}
