@@ -56,7 +56,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     stock: 0,
     limited: false,
     infinite_stock: false,
-    size_type: 'US',
+    
     availability: 'In Stock'
   });
   
@@ -103,7 +103,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
         stock: product.stock,
         limited: product.limited,
         infinite_stock: product.infinite_stock || false,
-        size_type: product.size_type,
+        
         availability: product.infinite_stock ? 'In Stock' : product.availability
       });
       setImages(product.media?.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)).map(media => ({
@@ -223,7 +223,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           stock: formData.stock,
           limited: formData.limited,
           infinite_stock: formData.infinite_stock,
-          size_type: formData.size_type,
+          size_type: 'EU', // All products are EU sizing
           availability: formData.infinite_stock ? 'In Stock' : formData.availability,
           updated_at: new Date().toISOString()
         })
@@ -493,7 +493,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           </div>
 
           {/* Stock & Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="stock">Stock Quantity</Label>
               <Input
@@ -504,19 +504,6 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 placeholder="0"
                 disabled={formData.infinite_stock}
               />
-            </div>
-            <div>
-              <Label htmlFor="size_type">Size Type</Label>
-              <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
-                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001]">
-                  <SelectItem value="US" className="text-white hover:bg-gray-700 focus:bg-gray-700">US</SelectItem>
-                  <SelectItem value="EU" className="text-white hover:bg-gray-700 focus:bg-gray-700">EU</SelectItem>
-                  <SelectItem value="UK" className="text-white hover:bg-gray-700 focus:bg-gray-700">UK</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label htmlFor="availability">Availability</Label>

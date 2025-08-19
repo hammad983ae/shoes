@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ReviewWidget } from '@/components/ReviewWidget';
 import { CreateReviewModal } from '@/components/CreateReviewModal';
 import { AllReviewsModal } from '@/components/AllReviewsModal';
+import SizeChartModal from '@/components/SizeChartModal';
 
 interface Review {
   id: string;
@@ -38,7 +39,7 @@ const ProductDetail = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState('1');
   const [searchTerm, setSearchTerm] = useState('');
   const [addToCartState, setAddToCartState] = useState<'idle' | 'loading' | 'success'>('idle');
@@ -49,6 +50,7 @@ const ProductDetail = () => {
   const [hasPurchased, setHasPurchased] = useState(false);
   const [showCreateReview, setShowCreateReview] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   useEffect(() => {
     if (!product) return;
@@ -141,25 +143,7 @@ const ProductDetail = () => {
     );
   }
 
-  const sizes = product.sizing === 'EU'
-    ? [
-        { eu: '39', us: '6' },
-        { eu: '40', us: '6.5' },
-        { eu: '41', us: '7' },
-        { eu: '42', us: '7.5' },
-        { eu: '43', us: '8' },
-        { eu: '44', us: '8.5' },
-        { eu: '45', us: '9' },
-        { eu: '46', us: '9.5' },
-        { eu: '47', us: '10' },
-        { eu: '48', us: '10.5' },
-        { eu: '49', us: '11' },
-        { eu: '50', us: '11.5' },
-        { eu: '51', us: '12' },
-        { eu: '52', us: '12.5' },
-        { eu: '53', us: '13' },
-      ]
-    : ['6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','12.5','13'];
+  const sizes = [37, 38, 39, 40, 41, 42, 43, 44, 45]; // EU sizes only
 
   const quantities = ['1','2','3','4','5'];
 
@@ -174,8 +158,8 @@ const ProductDetail = () => {
         name: product.name,
         price: product.price,
         image: product.images[currentIndex],
-        size: selectedSize, // Keep exact selected size string
-        size_type: product.sizing === 'EU' ? 'EU' : 'US'
+        size: selectedSize,
+        size_type: 'EU' // EU sizing only
       });
     }
     
@@ -334,23 +318,27 @@ const ProductDetail = () => {
 
             {/* Size Selector */}
             <div className="mb-4">
-              <label className="text-sm font-medium text-foreground mb-2 block">Size {product.sizing === 'EU' && <span className="text-muted-foreground text-xs">(EU with US conversion)</span>}</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Size (EU)</label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {sizes.map((s: any) => {
-                  const isEu = product.sizing === 'EU' && typeof s === 'object';
-                  const displayValue = isEu ? `EU ${s.eu} (US ${s.us})` : s;
-const selected = selectedSize === displayValue;
-return (
-  <Button
-    key={displayValue}
-    variant={selected ? 'default' : 'outline'}
-    onClick={() => setSelectedSize(displayValue)}
-    className="h-10 text-xs"
-  >
-    {displayValue}
-  </Button>
-);
-                })}
+                {sizes.map((size) => (
+                  <Button
+                    key={size}
+                    variant={selectedSize === size ? 'default' : 'outline'}
+                    onClick={() => setSelectedSize(size)}
+                    className="h-10 text-xs"
+                  >
+                    {size}
+                  </Button>
+                ))}
+              </div>
+              <div className="mt-2">
+                <Button 
+                  variant="link" 
+                  onClick={() => setShowSizeChart(true)}
+                  className="text-sm text-primary hover:underline p-0 h-auto"
+                >
+                  View EU to US Size Chart
+                </Button>
               </div>
             </div>
 
@@ -480,6 +468,11 @@ return (
         isOpen={showAllReviews}
         onClose={() => setShowAllReviews(false)}
         productId={product.id.toString()}
+      />
+
+      <SizeChartModal 
+        isOpen={showSizeChart} 
+        onClose={() => setShowSizeChart(false)} 
       />
     </main>
   );

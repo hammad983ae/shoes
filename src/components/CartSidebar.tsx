@@ -36,22 +36,9 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
     }, 100);
   };
 
-  const getSizesForItem = (item: any) => {
-    if (item.size_type === 'US') {
-      return [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13];
-    } else if (item.size_type === 'EU') {
-      return [
-        { eu: 39, us: 6 }, { eu: 40, us: 6.5 }, { eu: 41, us: 7 },
-        { eu: 42, us: 7.5 }, { eu: 43, us: 8 }, { eu: 44, us: 8.5 },
-        { eu: 45, us: 9 }, { eu: 46, us: 9.5 }, { eu: 47, us: 10 },
-        { eu: 48, us: 10.5 }, { eu: 49, us: 11 }, { eu: 50, us: 11.5 },
-        { eu: 51, us: 12 }, { eu: 52, us: 12.5 }, { eu: 53, us: 13 }
-      ];
-    } else {
-      console.error('Unknown or missing size type for item:', item);
-      // Fallback to US sizes if size_type is unknown
-      return [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13];
-    }
+  const getSizesForItem = () => {
+    // All products now use EU sizing only
+    return [37, 38, 39, 40, 41, 42, 43, 44, 45];
   };
 
   return (
@@ -112,9 +99,9 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
                           onChange={e => handleSizeChange(item, e.target.value)}
                           className="border rounded px-2 py-1 text-sm bg-background"
                         >
-                          {getSizesForItem(item).map(size => (
-                            <option key={typeof size === 'object' ? size.eu : size} value={typeof size === 'object' ? `EU ${size.eu} (US ${size.us})` : size}>
-                              {typeof size === 'object' ? `EU ${size.eu} (US ${size.us})` : size}
+                          {getSizesForItem().map(size => (
+                            <option key={size} value={size}>
+                              {size}
                             </option>
                           ))}
                         </select>

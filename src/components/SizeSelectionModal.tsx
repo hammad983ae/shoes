@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import CartAnimation from './CartAnimation';
+import SizeChartModal from './SizeChartModal';
 
 interface SizeSelectionModalProps {
   isOpen: boolean;
@@ -19,9 +20,10 @@ interface SizeSelectionModalProps {
 const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelectionModalProps) => {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
   const { addItem } = useCart();
 
-  const sizes = [7, 8, 9, 10, 11, 12, 13];
+  const sizes = [37, 38, 39, 40, 41, 42, 43, 44, 45]; // EU sizes only
 
   const handleAddToCart = () => {
     if (selectedSize) {
@@ -31,7 +33,7 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
         price: sneaker.price,
         image: sneaker.image,
         size: selectedSize,
-        size_type: 'US' // Default to US for size selection modal
+        size_type: 'EU' // EU sizing only
       });
       
       // Start cart animation
@@ -71,7 +73,7 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {sizes.map(size => (
                 <Button
                   key={size}
@@ -82,6 +84,16 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
                   {size}
                 </Button>
               ))}
+            </div>
+
+            <div className="text-center">
+              <Button 
+                variant="link" 
+                onClick={() => setShowSizeChart(true)}
+                className="text-sm text-primary hover:underline"
+              >
+                View EU to US Size Chart
+              </Button>
             </div>
 
             <div className="flex gap-2 pt-4">
@@ -105,6 +117,11 @@ const SizeSelectionModal = ({ isOpen, onClose, sneaker, onAddToCart }: SizeSelec
         startPosition={{ x: window.innerWidth / 2, y: window.innerHeight / 2 }}
         endPosition={{ x: 64, y: 64 }} // Approximate sidebar cart position
         onComplete={handleAnimationComplete}
+      />
+      
+      <SizeChartModal 
+        isOpen={showSizeChart} 
+        onClose={() => setShowSizeChart(false)} 
       />
     </>
   );
