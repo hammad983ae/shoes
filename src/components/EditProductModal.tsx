@@ -58,6 +58,8 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     availability: 'In Stock'
   });
   
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
   const [images, setImages] = useState<Array<{ id?: string; file?: File; url: string; role: string; display_order?: number }>>([]);
   const [loading, setLoading] = useState(false);
 
@@ -106,6 +108,9 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
         role: media.role,
         display_order: media.display_order || 0
       })) || []);
+      
+      // Initialize selected categories from the product's category field
+      setSelectedCategories(product.category ? product.category.split(',').map(cat => cat.trim()).filter(Boolean) : []);
     }
   }, [product, isOpen]);
 
@@ -113,6 +118,26 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleCategorySelect = (category: string) => {
+    if (!selectedCategories.includes(category)) {
+      const newCategories = [...selectedCategories, category];
+      setSelectedCategories(newCategories);
+      setFormData(prev => ({
+        ...prev,
+        category: newCategories.join(', ')
+      }));
+    }
+  };
+
+  const removeCategory = (categoryToRemove: string) => {
+    const newCategories = selectedCategories.filter(cat => cat !== categoryToRemove);
+    setSelectedCategories(newCategories);
+    setFormData(prev => ({
+      ...prev,
+      category: newCategories.join(', ')
     }));
   };
 
@@ -327,22 +352,45 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                  <SelectItem value="High-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">High-Top</SelectItem>
-                  <SelectItem value="Low-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Low-Top</SelectItem>
-                  <SelectItem value="Mid-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mid-Top</SelectItem>
-                  <SelectItem value="Basketball" className="text-white hover:bg-gray-700 focus:bg-gray-700">Basketball</SelectItem>
-                  <SelectItem value="Running" className="text-white hover:bg-gray-700 focus:bg-gray-700">Running</SelectItem>
-                  <SelectItem value="Casual" className="text-white hover:bg-gray-700 focus:bg-gray-700">Casual</SelectItem>
-                  <SelectItem value="Designer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Designer</SelectItem>
-                  <SelectItem value="Limited Edition" className="text-white hover:bg-gray-700 focus:bg-gray-700">Limited Edition</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="category">Categories</Label>
+              <div className="space-y-2">
+                <Select onValueChange={handleCategorySelect}>
+                  <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
+                    <SelectValue placeholder="Select categories" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
+                    <SelectItem value="High-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">High-Top</SelectItem>
+                    <SelectItem value="Low-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Low-Top</SelectItem>
+                    <SelectItem value="Mid-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mid-Top</SelectItem>
+                    <SelectItem value="Basketball" className="text-white hover:bg-gray-700 focus:bg-gray-700">Basketball</SelectItem>
+                    <SelectItem value="Running" className="text-white hover:bg-gray-700 focus:bg-gray-700">Running</SelectItem>
+                    <SelectItem value="Casual" className="text-white hover:bg-gray-700 focus:bg-gray-700">Casual</SelectItem>
+                    <SelectItem value="Designer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Designer</SelectItem>
+                    <SelectItem value="Limited Edition" className="text-white hover:bg-gray-700 focus:bg-gray-700">Limited Edition</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {/* Selected Categories Tags */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedCategories.map((category) => (
+                      <div
+                        key={category}
+                        className="flex items-center gap-1 bg-gray-700 text-white px-2 py-1 rounded-md text-sm"
+                      >
+                        <span>{category}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCategory(category)}
+                          className="text-gray-300 hover:text-white"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div></div>
           </div>
