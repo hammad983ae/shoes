@@ -37,8 +37,8 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
   };
 
   const getSizesForItem = () => {
-    // All products now use EU sizing only
-    return [37, 38, 39, 40, 41, 42, 43, 44, 45];
+    // All products now use EU sizing only - return the exact format we use
+    return ['EU37', 'EU38', 'EU39', 'EU40', 'EU41', 'EU42', 'EU43', 'EU44', 'EU45'];
   };
 
   return (
@@ -100,8 +100,8 @@ const CartSidebar = ({ alignWithStickyNav = false }: CartSidebarProps) => {
                           className="border rounded px-2 py-1 text-sm bg-background"
                         >
                           {getSizesForItem().map(size => (
-                            <option key={size} value={`${size} EU`}>
-                              {size} EU
+                            <option key={size} value={size}>
+                              {size}
                             </option>
                           ))}
                         </select>
