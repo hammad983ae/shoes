@@ -5,13 +5,11 @@ import { Sneaker } from '@/types/global';
 export const useDynamicProducts = () => {
   const [products, setProducts] = useState<Sneaker[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasLoaded, setHasLoaded] = useState(false);
 
   const fetchProducts = async () => {
-    if (hasLoaded) return; // Prevent duplicate fetches
-    
     try {
       setLoading(true);
+      console.log('Fetching products...');
       
       // Query with product_media join to get real photos
       const { data, error } = await supabase
@@ -21,6 +19,8 @@ export const useDynamicProducts = () => {
           product_media(id, url, role, display_order)
         `)
         .order('created_at', { ascending: false });
+
+      console.log('Products query result:', { data, error, count: data?.length });
 
       if (error) {
         console.error('Products query error:', error);
@@ -71,8 +71,8 @@ export const useDynamicProducts = () => {
         };
       });
 
+      console.log('Formatted products:', formattedProducts.length);
       setProducts(formattedProducts);
-      setHasLoaded(true);
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
@@ -88,9 +88,6 @@ export const useDynamicProducts = () => {
   return {
     products,
     loading,
-    refetch: () => {
-      setHasLoaded(false);
-      fetchProducts();
-    }
+    refetch: fetchProducts
   };
 };
