@@ -2004,6 +2004,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_find_user_by_email: {
+        Args: { user_email: string }
+        Returns: {
+          display_name: string
+          email: string
+          user_id: string
+        }[]
+      }
       admin_set_coupon_code: {
         Args: { new_code: string; target_user_id: string }
         Returns: Json
