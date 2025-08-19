@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    console.log('Auth state changed - user:', user?.id, 'userRole:', userRole);
     if (!user) {
       setUserRole(null);
       setIsCreator(false);
@@ -65,14 +66,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     const loadProfile = async () => {
       try {
-        console.log('Loading profile for user:', user.id);
+        console.log('Loading profile for user:', user.id, 'Current role:', userRole);
         const { data, error } = await supabase
           .from('profiles')
           .select('role, is_creator, display_name, avatar_url')
           .eq('user_id', user.id)
           .maybeSingle();
         
-        console.log('Profile data:', { data, error });
+        console.log('Profile data found:', { data, error, hasData: !!data });
         
         if (error) {
           console.error('Profile query error:', error);
@@ -105,10 +106,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUserRole('user');
             setIsCreator(false);
           }
-        } else {
-          setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
-          setIsCreator(Boolean(data.is_creator));
-        }
+          } else {
+            console.log('Setting user role from profile data:', data.role, data.is_creator);
+            setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
+            setIsCreator(Boolean(data.is_creator));
+          }
       } catch (e) {
         console.error('Failed to load profile role', e);
         setUserRole('user');
