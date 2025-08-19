@@ -54,13 +54,15 @@ const Socials = () => {
               </a>
 
               <a 
-                href="#"
-                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border cursor-not-allowed opacity-60"
+                href="https://www.youtube.com/@CralluxSells"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
               >
                 <Youtube className="w-6 h-6 text-red-500" />
                 <div>
                   <p className="font-semibold">YouTube</p>
-                  <p className="text-sm text-muted-foreground">Coming Soon</p>
+                  <p className="text-sm text-muted-foreground">@CralluxSells</p>
                 </div>
               </a>
 
