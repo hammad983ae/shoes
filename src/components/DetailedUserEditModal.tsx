@@ -136,6 +136,7 @@ export function DetailedUserEditModal({ isOpen, onClose, user, onUpdate }: Detai
         role,
         account_status: accountStatus,
         admin_notes: adminNotes,
+        is_creator: role === 'creator', // Set is_creator based on role
       };
 
       // Handle credits adjustment
