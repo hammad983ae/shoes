@@ -634,35 +634,144 @@ export default function Checkout() {
                 </p>
               </form>
             ) : (
-              <form ref={paymentFormRef} onSubmit={(e) => { e.preventDefault(); handleZeroDollarOrder(); }} className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                  <Input name="email" type="email" placeholder="Email" required />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
+              <form ref={paymentFormRef} onSubmit={(e) => { e.preventDefault(); handleZeroDollarOrder(); }} className="space-y-8">
+                {!user ? (
                   <div className="space-y-3">
-                    <Input name="contact-name" placeholder="Full Name" required />
-                    <Input name="address" placeholder="Address" required />
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input name="city" placeholder="City" required />
-                      <Input name="state" placeholder="State" required />
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Email or Phone</label>
+                      <Button 
+                        variant="link" 
+                        className="text-sm p-0 h-auto text-primary"
+                        onClick={() => navigate('/signin')}
+                        type="button"
+                      >
+                        Log in
+                      </Button>
                     </div>
-                    <Input name="zip" placeholder="Postal code" required />
+                    <Input 
+                      name="email" 
+                      type="email" 
+                      placeholder="Email or mobile phone number" 
+                      className="h-12 rounded-md" 
+                      required 
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-medium">Contact</h3>
+                    <div className="flex items-center gap-3 p-4 border rounded-md bg-muted/50">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={userProfile?.avatar_url} />
+                        <AvatarFallback>{userProfile?.display_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{userProfile?.display_name || 'User'}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-green-600">
+                        <Check className="h-4 w-4" />
+                        <span>Purchasing profile</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Delivery</h3>
+                  <div className="space-y-3">
+                    <select name="country" className="w-full h-12 px-3 rounded-md border border-input bg-background" required>
+                      <option value="">Country</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input name="first-name" placeholder="First name (optional)" className="h-12 rounded-md" />
+                      <Input name="last-name" placeholder="Last name" className="h-12 rounded-md" required />
+                    </div>
+                    <Input name="address" placeholder="Address" className="h-12 rounded-md" required />
+                    <Input name="apartment" placeholder="Apartment, suite, etc. (optional)" className="h-12 rounded-md" />
+                    <div className="grid grid-cols-3 gap-3">
+                      <Input name="city" placeholder="City" className="h-12 rounded-md" required />
+                      <select name="state" className="h-12 px-3 rounded-md border border-input bg-background" required>
+                        <option value="">State</option>
+                        <option value="RI">Rhode Island</option>
+                        <option value="AL">Alabama</option>
+                        <option value="CA">California</option>
+                        <option value="NY">New York</option>
+                      </select>
+                      <Input name="zip" placeholder="ZIP code" className="h-12 rounded-md" required />
+                    </div>
                   </div>
                 </div>
 
-                <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
-                  <h2 className="text-xl font-semibold mb-2 text-green-700">Your order is FREE!</h2>
-                  <p className="text-green-600 mb-4">
-                    Your discounts have covered the full order amount.
-                  </p>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Shipping method</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 border-2 border-primary rounded-md bg-primary/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-primary"></div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">UPS Express (Tracked, Insured)</p>
+                          <p className="text-sm text-muted-foreground">Complete Satisfaction Guarantee</p>
+                        </div>
+                        <span className="font-medium">FREE</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <Button type="submit" className="w-full py-3 text-lg font-semibold" disabled={submitting}>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Payment</h3>
+                  <div className="p-4 border-2 border-green-500 rounded-md bg-green-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full border-2 border-green-500 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-medium text-green-700">Order Total: FREE</span>
+                        <p className="text-sm text-green-600 mt-1">
+                          Your applied discounts have covered the full order amount. No payment required!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {paymentError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    {paymentError}
+                  </div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 text-lg font-semibold bg-black hover:bg-gray-800 text-white rounded-md"
+                  disabled={submitting}
+                >
                   {submitting ? 'Processing...' : 'Complete Free Order'}
                 </Button>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  By continuing, you agree to Crallux Sells{' '}
+                  <button 
+                    type="button"
+                    onClick={() => navigate('/terms')} 
+                    className="underline hover:text-foreground"
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  and acknowledge the{' '}
+                  <button 
+                    type="button"
+                    onClick={() => navigate('/privacy')} 
+                    className="underline hover:text-foreground"
+                  >
+                    Privacy Policy
+                  </button>.
+                </p>
               </form>
             )}
           </div>
