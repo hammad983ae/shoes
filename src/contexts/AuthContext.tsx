@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       
-      console.log('Auth state change:', _event, session?.user?.id || 'none');
+      console.log('🔥 Auth state change:', _event, session?.user?.id || 'NO USER', 'Session exists:', !!session);
       
       // Always update session and user state for any auth event
       setSession(session);
@@ -77,7 +77,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserRole(null);
         setIsCreator(false);
         setProfile(null);
-        console.log('Session cleared, resetting profile state');
+        console.log('❌ Session cleared, resetting profile state');
+      } else {
+        console.log('✅ Session active, user:', session.user.email);
       }
     });
 
