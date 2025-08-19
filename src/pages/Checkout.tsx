@@ -9,6 +9,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const countries = [
+  'United States', 'Canada', 'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands',
+  'Belgium', 'Switzerland', 'Austria', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Australia',
+  'New Zealand', 'Japan', 'South Korea', 'Singapore', 'Hong Kong', 'Taiwan', 'Brazil', 'Mexico',
+  'Argentina', 'Chile', 'Colombia', 'Peru', 'India', 'Thailand', 'Malaysia', 'Philippines',
+  'Indonesia', 'Vietnam', 'South Africa', 'Israel', 'United Arab Emirates', 'Saudi Arabia',
+  'Turkey', 'Russia', 'Ukraine', 'Poland', 'Czech Republic', 'Hungary', 'Romania', 'Bulgaria',
+  'Croatia', 'Serbia', 'Slovenia', 'Slovakia', 'Estonia', 'Latvia', 'Lithuania'
+];
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
@@ -20,6 +31,7 @@ export default function Checkout() {
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
   const [chironLoaded, setChironLoaded] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const paymentFormRef = useRef<HTMLFormElement>(null);
   
   // Get discount data from cart page
@@ -40,6 +52,20 @@ export default function Checkout() {
     
     initChiron();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const fetchProfile = async () => {
+        const { data } = await supabase
+          .from('profiles')
+          .select('display_name, avatar_url')
+          .eq('user_id', user.id)
+          .single();
+        setUserProfile(data);
+      };
+      fetchProfile();
+    }
+  }, [user]);
 
   // Calculate order totals with discounts from cart
   const subtotal = items.reduce((sum, item) => {
@@ -144,14 +170,16 @@ export default function Checkout() {
             
             // Get form data for shipping address
             const formData = new FormData(paymentFormRef.current!);
-            const shippingAddress = {
-              name: formData.get('card-name')?.toString() || '',
-              email: formData.get('email')?.toString() || '',
-              address: formData.get('address')?.toString() || '',
-              city: formData.get('city')?.toString() || '',
-              state: formData.get('state')?.toString() || '',
-              zipCode: formData.get('zip')?.toString() || ''
-            };
+                  const shippingAddress = {
+                    name: `${formData.get('first-name')?.toString() || ''} ${formData.get('last-name')?.toString() || ''}`.trim(),
+                    email: formData.get('email')?.toString() || user.email || '',
+                    address: formData.get('address')?.toString() || '',
+                    apartment: formData.get('apartment')?.toString() || '',
+                    city: formData.get('city')?.toString() || '',
+                    state: formData.get('state')?.toString() || '',
+                    zipCode: formData.get('zip')?.toString() || '',
+                    country: formData.get('country')?.toString() || ''
+                  };
 
             // Prepare product details
             const productDetails = items.map(item => ({
@@ -245,14 +273,16 @@ export default function Checkout() {
       
       // Get form data for shipping address
       const formData = new FormData(paymentFormRef.current!);
-      const shippingAddress = {
-        name: formData.get('contact-name')?.toString() || '',
-        email: formData.get('email')?.toString() || '',
-        address: formData.get('address')?.toString() || '',
-        city: formData.get('city')?.toString() || '',
-        state: formData.get('state')?.toString() || '',
-        zipCode: formData.get('zip')?.toString() || ''
-      };
+        const shippingAddress = {
+          name: `${formData.get('first-name')?.toString() || ''} ${formData.get('last-name')?.toString() || ''}`.trim(),
+          email: formData.get('email')?.toString() || user.email || '',
+          address: formData.get('address')?.toString() || '',
+          apartment: formData.get('apartment')?.toString() || '',
+          city: formData.get('city')?.toString() || '',
+          state: formData.get('state')?.toString() || '',
+          zipCode: formData.get('zip')?.toString() || '',
+          country: formData.get('country')?.toString() || ''
+        };
       
       // Prepare product details
       const productDetails = items.map(item => ({
@@ -343,48 +373,58 @@ export default function Checkout() {
           <div className="space-y-8">
             <h1 className="text-2xl font-bold">sani</h1>
             
-            {/* Express Checkout */}
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Express checkout</p>
-              <div className="grid grid-cols-3 gap-3">
-                <Button className="h-12 bg-[#5A31F4] hover:bg-[#4A27D4] text-white font-medium">
-                  Shop Pay
-                </Button>
-                <Button className="h-12 bg-[#FFC439] hover:bg-[#E6A700] text-black font-medium">
-                  PayPal
-                </Button>
-                <Button className="h-12 bg-black hover:bg-gray-800 text-white font-medium">
-                  G Pay
-                </Button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-border"></div>
-                <span className="text-sm text-muted-foreground">OR</span>
-                <div className="flex-1 h-px bg-border"></div>
-              </div>
-            </div>
 
             {total > 0 ? (
               <form ref={paymentFormRef} onSubmit={handleChironPayment} className="space-y-8">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Email or Phone</label>
-                    <Button variant="link" className="text-sm p-0 h-auto text-primary">Log in</Button>
+                {!user ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Email or Phone</label>
+                      <Button 
+                        variant="link" 
+                        className="text-sm p-0 h-auto text-primary"
+                        onClick={() => navigate('/signin')}
+                        type="button"
+                      >
+                        Log in
+                      </Button>
+                    </div>
+                    <Input 
+                      name="email" 
+                      type="email" 
+                      placeholder="Email or mobile phone number" 
+                      className="h-12 rounded-md" 
+                      required 
+                    />
                   </div>
-                  <Input 
-                    name="email" 
-                    type="email" 
-                    placeholder="Email or mobile phone number" 
-                    className="h-12 rounded-md" 
-                    required 
-                  />
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Contact</label>
+                    <div className="flex items-center gap-3 p-4 border rounded-md bg-muted/50">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={userProfile?.avatar_url} />
+                        <AvatarFallback>{userProfile?.display_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{userProfile?.display_name || 'User'}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-green-600">
+                        <Check className="h-4 w-4" />
+                        <span>Purchasing profile</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Delivery</h3>
                   <div className="space-y-3">
-                    <select className="w-full h-12 px-3 rounded-md border border-input bg-background">
-                      <option>United States</option>
+                    <select name="country" className="w-full h-12 px-3 rounded-md border border-input bg-background" required>
+                      <option value="">Country</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
                     </select>
                     <div className="grid grid-cols-2 gap-3">
                       <Input name="first-name" placeholder="First name (optional)" className="h-12 rounded-md" />
@@ -409,25 +449,16 @@ export default function Checkout() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Shipping method</h3>
                   <div className="space-y-3">
-                    <div className="p-4 border rounded-md">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">US Express (Tracked, Insured)</p>
-                          <p className="text-sm text-muted-foreground">Complete Satisfaction Guarantee</p>
-                        </div>
-                        <span className="font-medium">$9.71</span>
-                      </div>
-                    </div>
                     <div className="p-4 border-2 border-primary rounded-md bg-primary/5">
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center">
                           <div className="w-2 h-2 rounded-full bg-primary"></div>
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium">US Eco-Friendly Express (Tracked, Insured)</p>
+                          <p className="font-medium">UPS Express (Tracked, Insured)</p>
                           <p className="text-sm text-muted-foreground">Complete Satisfaction Guarantee</p>
                         </div>
-                        <span className="font-medium">$14.71</span>
+                        <span className="font-medium">FREE</span>
                       </div>
                     </div>
                   </div>
@@ -442,10 +473,15 @@ export default function Checkout() {
                       </div>
                       <span className="font-medium">Credit card</span>
                       <div className="flex gap-2 ml-auto">
-                        <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center">V</div>
-                        <div className="w-8 h-5 bg-red-600 rounded text-white text-xs flex items-center justify-center">M</div>
-                        <div className="w-8 h-5 bg-orange-500 rounded text-white text-xs flex items-center justify-center">D</div>
-                        <span className="text-sm text-muted-foreground">+4</span>
+                        <div className="w-8 h-5 bg-blue-600 text-white text-xs flex items-center justify-center rounded">
+                          VISA
+                        </div>
+                        <div className="w-8 h-5 bg-red-600 text-white text-xs flex items-center justify-center rounded">
+                          MC
+                        </div>
+                        <div className="w-8 h-5 bg-blue-500 text-white text-xs flex items-center justify-center rounded">
+                          AMEX
+                        </div>
                       </div>
                     </div>
                     
@@ -577,12 +613,6 @@ export default function Checkout() {
                 ))}
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Input placeholder="Gift card" className="flex-1 h-10 text-sm" />
-                  <Button variant="outline" className="text-sm px-4">Apply</Button>
-                </div>
-              </div>
               
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex justify-between text-sm">
