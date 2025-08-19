@@ -61,6 +61,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
   });
   
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
   
   const [images, setImages] = useState<Array<{ id?: string; file?: File; url: string; role: string; display_order?: number }>>([]);
   const [loading, setLoading] = useState(false);
@@ -114,6 +115,9 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
       
       // Initialize selected categories from the product's category field
       setSelectedCategories(product.category ? product.category.split(',').map(cat => cat.trim()).filter(Boolean) : []);
+      
+      // Initialize selected colors from the product's color field
+      setSelectedColors(product.color ? product.color.split(',').map(color => color.trim()).filter(Boolean) : []);
     }
   }, [product, isOpen]);
 
@@ -141,6 +145,26 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     setFormData(prev => ({
       ...prev,
       category: newCategories.join(', ')
+    }));
+  };
+
+  const handleColorSelect = (color: string) => {
+    if (!selectedColors.includes(color)) {
+      const newColors = [...selectedColors, color];
+      setSelectedColors(newColors);
+      setFormData(prev => ({
+        ...prev,
+        color: newColors.join(', ')
+      }));
+    }
+  };
+
+  const removeColor = (colorToRemove: string) => {
+    const newColors = selectedColors.filter(color => color !== colorToRemove);
+    setSelectedColors(newColors);
+    setFormData(prev => ({
+      ...prev,
+      color: newColors.join(', ')
     }));
   };
 
@@ -397,36 +421,59 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
               </div>
             </div>
             <div>
-              <Label htmlFor="color">Color</Label>
-              <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
-                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
-                  <SelectValue placeholder="Select color" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                  <SelectItem value="Black" className="text-white hover:bg-gray-700 focus:bg-gray-700">Black</SelectItem>
-                  <SelectItem value="White" className="text-white hover:bg-gray-700 focus:bg-gray-700">White</SelectItem>
-                  <SelectItem value="Grey" className="text-white hover:bg-gray-700 focus:bg-gray-700">Grey</SelectItem>
-                  <SelectItem value="Silver" className="text-white hover:bg-gray-700 focus:bg-gray-700">Silver</SelectItem>
-                  <SelectItem value="Charcoal" className="text-white hover:bg-gray-700 focus:bg-gray-700">Charcoal</SelectItem>
-                  <SelectItem value="Off-White/Cream" className="text-white hover:bg-gray-700 focus:bg-gray-700">Off-White/Cream</SelectItem>
-                  <SelectItem value="Brown" className="text-white hover:bg-gray-700 focus:bg-gray-700">Brown</SelectItem>
-                  <SelectItem value="Tan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Tan</SelectItem>
-                  <SelectItem value="Beige" className="text-white hover:bg-gray-700 focus:bg-gray-700">Beige</SelectItem>
-                  <SelectItem value="Navy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Navy</SelectItem>
-                  <SelectItem value="Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Blue</SelectItem>
-                  <SelectItem value="Light Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Light Blue</SelectItem>
-                  <SelectItem value="Green" className="text-white hover:bg-gray-700 focus:bg-gray-700">Green</SelectItem>
-                  <SelectItem value="Olive" className="text-white hover:bg-gray-700 focus:bg-gray-700">Olive</SelectItem>
-                  <SelectItem value="Yellow" className="text-white hover:bg-gray-700 focus:bg-gray-700">Yellow</SelectItem>
-                  <SelectItem value="Orange" className="text-white hover:bg-gray-700 focus:bg-gray-700">Orange</SelectItem>
-                  <SelectItem value="Red" className="text-white hover:bg-gray-700 focus:bg-gray-700">Red</SelectItem>
-                  <SelectItem value="Burgundy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Burgundy</SelectItem>
-                  <SelectItem value="Pink" className="text-white hover:bg-gray-700 focus:bg-gray-700">Pink</SelectItem>
-                  <SelectItem value="Purple" className="text-white hover:bg-gray-700 focus:bg-gray-700">Purple</SelectItem>
-                  <SelectItem value="Gold" className="text-white hover:bg-gray-700 focus:bg-gray-700">Gold</SelectItem>
-                  <SelectItem value="Multicolor/Pattern" className="text-white hover:bg-gray-700 focus:bg-gray-700">Multicolor/Pattern</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="color">Colors</Label>
+              <div className="space-y-2">
+                <Select onValueChange={handleColorSelect}>
+                  <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
+                    <SelectValue placeholder="Select colors" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
+                    <SelectItem value="Black" className="text-white hover:bg-gray-700 focus:bg-gray-700">Black</SelectItem>
+                    <SelectItem value="White" className="text-white hover:bg-gray-700 focus:bg-gray-700">White</SelectItem>
+                    <SelectItem value="Grey" className="text-white hover:bg-gray-700 focus:bg-gray-700">Grey</SelectItem>
+                    <SelectItem value="Silver" className="text-white hover:bg-gray-700 focus:bg-gray-700">Silver</SelectItem>
+                    <SelectItem value="Charcoal" className="text-white hover:bg-gray-700 focus:bg-gray-700">Charcoal</SelectItem>
+                    <SelectItem value="Off-White/Cream" className="text-white hover:bg-gray-700 focus:bg-gray-700">Off-White/Cream</SelectItem>
+                    <SelectItem value="Brown" className="text-white hover:bg-gray-700 focus:bg-gray-700">Brown</SelectItem>
+                    <SelectItem value="Tan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Tan</SelectItem>
+                    <SelectItem value="Beige" className="text-white hover:bg-gray-700 focus:bg-gray-700">Beige</SelectItem>
+                    <SelectItem value="Navy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Navy</SelectItem>
+                    <SelectItem value="Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Blue</SelectItem>
+                    <SelectItem value="Light Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Light Blue</SelectItem>
+                    <SelectItem value="Green" className="text-white hover:bg-gray-700 focus:bg-gray-700">Green</SelectItem>
+                    <SelectItem value="Olive" className="text-white hover:bg-gray-700 focus:bg-gray-700">Olive</SelectItem>
+                    <SelectItem value="Yellow" className="text-white hover:bg-gray-700 focus:bg-gray-700">Yellow</SelectItem>
+                    <SelectItem value="Orange" className="text-white hover:bg-gray-700 focus:bg-gray-700">Orange</SelectItem>
+                    <SelectItem value="Red" className="text-white hover:bg-gray-700 focus:bg-gray-700">Red</SelectItem>
+                    <SelectItem value="Burgundy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Burgundy</SelectItem>
+                    <SelectItem value="Pink" className="text-white hover:bg-gray-700 focus:bg-gray-700">Pink</SelectItem>
+                    <SelectItem value="Purple" className="text-white hover:bg-gray-700 focus:bg-gray-700">Purple</SelectItem>
+                    <SelectItem value="Gold" className="text-white hover:bg-gray-700 focus:bg-gray-700">Gold</SelectItem>
+                    <SelectItem value="Multicolor/Pattern" className="text-white hover:bg-gray-700 focus:bg-gray-700">Multicolor/Pattern</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {/* Selected Colors Tags */}
+                {selectedColors.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedColors.map((color) => (
+                      <div
+                        key={color}
+                        className="flex items-center gap-1 bg-gray-700 text-white px-2 py-1 rounded-md text-sm"
+                      >
+                        <span>{color}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeColor(color)}
+                          className="text-gray-300 hover:text-white"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
