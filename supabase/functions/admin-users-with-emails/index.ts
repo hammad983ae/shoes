@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting admin-users-with-emails function...');
+
     // Create Supabase clients
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -36,10 +38,13 @@ serve(async (req) => {
     );
 
     // Verify the user is authenticated
+    console.log('Checking user authentication...');
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-    if (authError || !user) {
+    
+    if (authError) {
+      console.error('Auth error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Authentication failed', details: authError.message }),
         { 
           status: 401, 
           headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -47,16 +52,44 @@ serve(async (req) => {
       );
     }
 
+    if (!user) {
+      console.error('No user found in request');
+      return new Response(
+        JSON.stringify({ error: 'No authenticated user found' }),
+        { 
+          status: 401, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      );
+    }
+
+    console.log('User authenticated:', user.id);
+
     // Check if user is admin
-    const { data: adminCheck } = await supabaseAdmin
+    console.log('Checking admin privileges...');
+    const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (adminCheck?.role !== 'admin') {
+    if (adminCheckError) {
+      console.error('Admin check error:', adminCheckError);
       return new Response(
-        JSON.stringify({ error: 'Forbidden: Admin access required' }),
+        JSON.stringify({ error: 'Failed to verify admin status', details: adminCheckError.message }),
+        { 
+          status: 500, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      );
+    }
+
+    console.log('Admin check result:', adminCheck);
+
+    if (!adminCheck || adminCheck.role !== 'admin') {
+      console.error('User is not admin. Role:', adminCheck?.role);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Admin access required', currentRole: adminCheck?.role }),
         { 
           status: 403, 
           headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -64,7 +97,10 @@ serve(async (req) => {
       );
     }
 
+    console.log('Admin access verified!');
+
     if (req.method === 'GET') {
+      console.log('Fetching profiles...');
       // Get all profiles with robust LEFT JOINs - never filter out users
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profiles')
@@ -73,8 +109,16 @@ serve(async (req) => {
 
       if (profilesError) {
         console.error('Profiles error:', profilesError);
-        throw profilesError;
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch profiles', details: profilesError.message }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
       }
+
+      console.log('Profiles fetched:', profiles?.length || 0);
 
       // Get auth users with service role to get emails
       const { data: authData, error: authUsersError } = await supabaseAdmin.auth.admin.listUsers();
