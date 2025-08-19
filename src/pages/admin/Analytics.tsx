@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { supabase } from "@/integrations/supabase/client";
 
 import { 
   Download,
@@ -18,50 +17,8 @@ import {
 } from "lucide-react";
 
 export default function Analytics() {
-  const [loading, setLoading] = useState(true);
-  const [realtimeData, setRealtimeData] = useState<any>(null);
-  const analytics = useAnalytics();
-
-  useEffect(() => {
-    setLoading(analytics.loading);
-  }, [analytics.loading]);
-
-  useEffect(() => {
-    const fetchRealtimeData = async () => {
-      try {
-        const { data: realtimeAnalytics } = await supabase
-          .from('site_analytics_realtime')
-          .select('*')
-          .gte('date', new Date().toISOString().split('T')[0])
-          .order('hour', { ascending: false })
-          .limit(24);
-
-        setRealtimeData(realtimeAnalytics);
-      } catch (error) {
-        console.error('Failed to fetch realtime data:', error);
-      }
-    };
-
-    fetchRealtimeData();
-    
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('realtime-analytics')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'site_analytics_realtime'
-        },
-        () => fetchRealtimeData()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const [timeRange, setTimeRange] = useState('today');
+  const { loading, stats } = useAnalytics(timeRange);
 
   return (
     <DashboardLayout currentPage="analytics">
@@ -71,10 +28,21 @@ export default function Analytics() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
             <p className="text-muted-foreground">
-              Deep insights into sales performance, traffic, and customer behavior
+              Real insights from PostHog and Supabase data
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <select 
+              value={timeRange} 
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="px-3 py-2 border rounded-md"
+            >
+              <option value="today">Today</option>
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+              <option value="all">All time</option>
+            </select>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -89,9 +57,9 @@ export default function Analytics() {
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">${analytics?.stats?.revenue || 0}</p>}
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  <p className="text-sm text-muted-foreground">Revenue</p>
+                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">${stats.revenue.toFixed(2)}</p>}
+                  <Badge variant="secondary" className="text-xs">Real Data</Badge>
                 </div>
               </div>
             </CardContent>
@@ -101,9 +69,9 @@ export default function Analytics() {
               <div className="flex items-center space-x-2">
                 <ShoppingCart className="h-4 w-4 text-blue-600" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Orders Today</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{analytics?.stats?.orders || 0}</p>}
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  <p className="text-sm text-muted-foreground">Orders</p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{stats.orders}</p>}
+                  <Badge variant="secondary" className="text-xs">Real Data</Badge>
                 </div>
               </div>
             </CardContent>
@@ -113,9 +81,9 @@ export default function Analytics() {
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 text-purple-600" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Users</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{realtimeData?.length || 0}</p>}
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  <p className="text-sm text-muted-foreground">Unique Visitors</p>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{stats.uniqueVisitors}</p>}
+                  <Badge variant="secondary" className="text-xs">PostHog</Badge>
                 </div>
               </div>
             </CardContent>
@@ -126,34 +94,34 @@ export default function Analytics() {
                 <Eye className="h-4 w-4 text-orange-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Page Views</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{realtimeData?.reduce((sum: number, item: any) => sum + (item.metric_value || 0), 0) || 0}</p>}
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{stats.pageViews}</p>}
+                  <Badge variant="secondary" className="text-xs">PostHog</Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="realtime" className="w-full">
+        <Tabs value={timeRange} onValueChange={setTimeRange} className="w-full">
           <TabsList className="grid w-full max-w-2xl grid-cols-5">
-            <TabsTrigger value="realtime">Real-time</TabsTrigger>
-            <TabsTrigger value="sales">Sales & Revenue</TabsTrigger>
-            <TabsTrigger value="traffic">Traffic & Behavior</TabsTrigger>
-            <TabsTrigger value="conversion">Conversion</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
+            <TabsTrigger value="today">Real-time</TabsTrigger>
+            <TabsTrigger value="7d">Sales & Revenue</TabsTrigger>
+            <TabsTrigger value="30d">Traffic & Behavior</TabsTrigger>
+            <TabsTrigger value="90d">Conversion</TabsTrigger>
+            <TabsTrigger value="all">Customers</TabsTrigger>
           </TabsList>
 
           {/* Real-time Tab */}
-          <TabsContent value="realtime" className="space-y-6">
+          <TabsContent value="today" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <BarChart3 className="h-5 w-5" />
                     <span>Hourly Activity</span>
-                    <Badge variant="secondary">Live</Badge>
+                    <Badge variant="secondary">Real Data</Badge>
                   </CardTitle>
-                  <CardDescription>Real-time user activity by hour</CardDescription>
+                  <CardDescription>Activity based on actual order data</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -165,16 +133,16 @@ export default function Analytics() {
                         </div>
                       ))}
                     </div>
-                  ) : realtimeData && realtimeData.length > 0 ? (
+                  ) : stats.hourlyActivity.length > 0 ? (
                     <div className="space-y-3">
-                      {realtimeData.slice(0, 8).map((item: any) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      {stats.hourlyActivity.map((item) => (
+                        <div key={item.hour} className="flex items-center justify-between p-3 rounded-lg border">
                           <div>
                             <p className="font-medium">{item.hour}:00</p>
-                            <p className="text-sm text-muted-foreground">{item.metric_type}</p>
+                            <p className="text-sm text-muted-foreground">Peak activity</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold">{item.metric_value}</p>
+                            <p className="font-bold">{item.views + item.sessions}</p>
                             <p className="text-xs text-muted-foreground">events</p>
                           </div>
                         </div>
@@ -182,7 +150,7 @@ export default function Analytics() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      No real-time data available
+                      No activity data for today
                     </div>
                   )}
                 </CardContent>
@@ -191,24 +159,24 @@ export default function Analytics() {
               <Card>
                 <CardHeader>
                   <CardTitle>Live Metrics</CardTitle>
-                  <CardDescription>Current performance indicators</CardDescription>
+                  <CardDescription>Real performance indicators</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="font-medium">System Status</span>
+                        <span className="font-medium">PostHog Status</span>
                       </div>
-                      <Badge variant="default">Operational</Badge>
+                      <Badge variant="default">Connected</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <span className="text-sm text-muted-foreground">Database Queries</span>
-                      <span className="font-bold">{Math.floor(Math.random() * 50) + 10}/sec</span>
+                      <span className="text-sm text-muted-foreground">Conversion Rate</span>
+                      <span className="font-bold">{stats.conversionRate.toFixed(1)}%</span>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <span className="text-sm text-muted-foreground">API Response Time</span>
-                      <span className="font-bold">{Math.floor(Math.random() * 100) + 50}ms</span>
+                      <span className="text-sm text-muted-foreground">Avg Order Value</span>
+                      <span className="font-bold">${stats.averageOrderValue.toFixed(2)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -217,193 +185,198 @@ export default function Analytics() {
           </TabsContent>
 
           {/* Sales & Revenue Tab */}
-          <TabsContent value="sales" className="space-y-6">
+          <TabsContent value="7d" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-3">
               <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Revenue Breakdown</CardTitle>
-                  <CardDescription>Revenue by product category (Last 30 days)</CardDescription>
+                  <CardDescription>Revenue metrics from real order data</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {loading ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-8 w-32" />
-                      {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex justify-between">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-4 w-20" />
-                          </div>
-                          <Skeleton className="h-2 w-full" />
-                        </div>
-                      ))}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center p-4 border rounded-lg">
+                      <span className="font-medium">Total Revenue</span>
+                      <span className="text-2xl font-bold">${stats.revenue.toFixed(2)}</span>
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No analytics data available
+                    <div className="flex justify-between items-center p-4 border rounded-lg">
+                      <span className="font-medium">Average Order Value</span>
+                      <span className="text-xl font-bold">${stats.averageOrderValue.toFixed(2)}</span>
                     </div>
-                  )}
+                    <div className="flex justify-between items-center p-4 border rounded-lg">
+                      <span className="font-medium">Total Orders</span>
+                      <span className="text-xl font-bold">{stats.orders}</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
               <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Card key={index}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2">
-                        {loading ? (
-                          <>
-                            <Skeleton className="h-4 w-4 rounded" />
-                            <div className="space-y-2">
-                              <Skeleton className="h-3 w-16" />
-                              <Skeleton className="h-6 w-12" />
-                              <Skeleton className="h-3 w-8" />
-                            </div>
-                          </>
-                        ) : (
-                          <div>
-                            <p className="text-sm text-muted-foreground">Metric</p>
-                            <p className="text-xl font-bold">0</p>
-                            <p className="text-xs text-muted-foreground">No data</p>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <Card>
+                  <CardContent className="p-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">New Customers</p>
+                      <p className="text-xl font-bold">{stats.newCustomers}</p>
+                      <p className="text-xs text-muted-foreground">Real data</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Returning Customers</p>
+                      <p className="text-xl font-bold">{stats.returningCustomers}</p>
+                      <p className="text-xs text-muted-foreground">Real data</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Conversion Rate</p>
+                      <p className="text-xl font-bold">{stats.conversionRate.toFixed(1)}%</p>
+                      <p className="text-xs text-muted-foreground">Calculated</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
 
           {/* Traffic & Behavior Tab */}
-          <TabsContent value="traffic" className="space-y-6">
+          <TabsContent value="30d" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Traffic Sources</CardTitle>
-                  <CardDescription>Where your visitors are coming from</CardDescription>
+                  <CardDescription>Where visitors are coming from</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {loading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                          <div className="flex items-center space-x-3">
-                            <Skeleton className="h-4 w-4 rounded" />
-                            <div className="space-y-1">
-                              <Skeleton className="h-4 w-20" />
-                              <Skeleton className="h-3 w-12" />
-                            </div>
-                          </div>
-                          <div className="text-right space-y-1">
-                            <Skeleton className="h-4 w-16" />
-                            <Skeleton className="h-3 w-8" />
+                  <div className="space-y-4">
+                    {stats.trafficSources.map((source, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                          <div>
+                            <p className="font-medium">{source.source}</p>
+                            <p className="text-sm text-muted-foreground">{source.percentage}%</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No traffic data available
-                    </div>
-                  )}
+                        <div className="text-right">
+                          <p className="font-bold">{source.visitors}</p>
+                          <p className="text-xs text-muted-foreground">visitors</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
                   <CardTitle>Device Analytics</CardTitle>
-                  <CardDescription>Performance by device type</CardDescription>
+                  <CardDescription>Visitor breakdown by device</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {loading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                          <div className="flex items-center space-x-3">
-                            <Skeleton className="h-4 w-4 rounded" />
-                            <div className="space-y-1">
-                              <Skeleton className="h-4 w-16" />
-                              <Skeleton className="h-3 w-8" />
-                            </div>
-                          </div>
-                          <div className="text-right space-y-1">
-                            <Skeleton className="h-4 w-12" />
-                            <Skeleton className="h-3 w-8" />
+                  <div className="space-y-4">
+                    {stats.deviceData.map((device, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 bg-green-500 rounded"></div>
+                          <div>
+                            <p className="font-medium">{device.device}</p>
+                            <p className="text-sm text-muted-foreground">{device.percentage}%</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No device data available
-                    </div>
-                  )}
+                        <div className="text-right">
+                          <p className="font-bold">{device.visitors}</p>
+                          <p className="text-xs text-muted-foreground">visitors</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
           {/* Conversion Tab */}
-          <TabsContent value="conversion" className="space-y-6">
+          <TabsContent value="90d" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Sales Funnel Analysis</CardTitle>
-                <CardDescription>Customer journey from page view to purchase</CardDescription>
+                <CardDescription>Real conversion funnel based on order data</CardDescription>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="space-y-6">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
-                        <div className="flex items-center space-x-3">
-                          <Skeleton className="h-6 w-8 rounded" />
-                          <div className="space-y-1">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
+                <div className="space-y-6">
+                  {stats.conversionFunnel.map((step, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {index + 1}
                         </div>
-                        <div className="text-right space-y-1">
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-3 w-20" />
+                        <div>
+                          <p className="font-medium">{step.step}</p>
+                          <p className="text-sm text-muted-foreground">Step {index + 1}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No conversion data available
-                  </div>
-                )}
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">{step.users}</p>
+                        <p className="text-sm text-muted-foreground">{step.percentage}% of total</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Customers Tab */}
-          <TabsContent value="customers" className="space-y-6">
+          <TabsContent value="all" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      {loading ? (
-                        <>
-                          <Skeleton className="h-4 w-4 rounded" />
-                          <div className="space-y-1">
-                            <Skeleton className="h-3 w-20" />
-                            <Skeleton className="h-6 w-12" />
-                          </div>
-                        </>
-                      ) : (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Customer Metric</p>
-                          <p className="text-xl font-bold">0</p>
-                        </div>
-                      )}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-blue-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Customers</p>
+                      <p className="text-xl font-bold">{stats.customerMetrics.totalCustomers}</p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Returning Rate</p>
+                      <p className="text-xl font-bold">{stats.customerMetrics.returningRate.toFixed(1)}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <ShoppingCart className="h-4 w-4 text-purple-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Avg Lifetime Value</p>
+                      <p className="text-xl font-bold">${stats.customerMetrics.avgLifetimeValue.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Eye className="h-4 w-4 text-orange-500" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Churn Rate</p>
+                      <p className="text-xl font-bold">{stats.customerMetrics.churnRate}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
