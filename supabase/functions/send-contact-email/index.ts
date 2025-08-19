@@ -30,9 +30,11 @@ serve(async (req) => {
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
     // Send confirmation email to user
+    const senderEmail = Deno.env.get("SENDER_EMAIL") || "no-reply@cralluxsells.com";
     const userEmailResult = await resend.emails.send({
-      from: 'Crallux <noreply@crallux.com>',
+      from: `Crallux <${senderEmail}>`,
       to: email,
+      reply_to: [email],
       subject: 'We received your message - Crallux',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -56,8 +58,9 @@ serve(async (req) => {
 
     // Send notification email to admin (BCC)
     const adminEmailResult = await resend.emails.send({
-      from: 'Crallux Contact Form <noreply@crallux.com>',
+      from: `Crallux Contact Form <${senderEmail}>`,
       to: 'cralluxmaster@protonmail.com',
+      reply_to: [email],
       subject: `New Contact Request from ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

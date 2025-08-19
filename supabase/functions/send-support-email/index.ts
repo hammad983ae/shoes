@@ -37,9 +37,11 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send confirmation email to user
+    const senderEmail = Deno.env.get("SENDER_EMAIL") || "no-reply@cralluxsells.com";
     const userEmailResponse = await resend.emails.send({
-      from: "Crallux Sells Support <onboarding@resend.dev>",
+      from: `Crallux Sells Support <${senderEmail}>`,
       to: [email],
+      reply_to: [email],
       subject: `Ticket Received: ${issue_type}`,
       html: `
         <h1>Hi ${name},</h1>
@@ -61,8 +63,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to company
     const companyEmailResponse = await resend.emails.send({
-      from: "Crallux Sells Support <onboarding@resend.dev>",
+      from: `Crallux Sells Support <${senderEmail}>`,
       to: ["cralluxmaster@protonmail.com"],
+      reply_to: [email],
       subject: `New Support Ticket: ${issue_type} - ${name}`,
       html: `
         <h1>New Support Ticket Received</h1>
