@@ -298,9 +298,17 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
                 <span>-${order.coupon_discount.toFixed(2)}</span>
               </div>
             )}
+            <div className="flex justify-between items-center">
+              <span>Shipping</span>
+              <span>FREE</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Tax (8.75%)</span>
+              <span>${((order.order_total || 0) * 0.0875).toFixed(2)}</span>
+            </div>
             <div className="flex justify-between items-center pt-2 border-t font-bold">
               <span>Final Total</span>
-              <span className="text-lg">${(order.order_total - (order.credits_used ? order.credits_used / 100 : 0) - (order.coupon_discount || 0)).toFixed(2)}</span>
+              <span className="text-lg">${(order.order_total || 0).toFixed(2)}</span>
             </div>
           </div>
 

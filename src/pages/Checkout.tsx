@@ -197,9 +197,11 @@ export default function Checkout() {
             const { error: orderError } = await supabase.from('orders').insert({
               user_id: user.id,
               order_total: total,
+              subtotal: subtotal,
               coupon_code: appliedCoupon?.code || null,
               coupon_discount: couponDiscount,
               credits_used: appliedCredits,
+              discount_amount: discount,
               status: 'paid',
               shipping_address: shippingAddress,
               product_details: productDetails,
@@ -300,9 +302,11 @@ export default function Checkout() {
       const { error: orderError } = await supabase.from('orders').insert({
         user_id: user.id,
         order_total: 0,
+        subtotal: subtotal,
         coupon_code: appliedCoupon?.code || null,
         coupon_discount: couponDiscount,
         credits_used: appliedCredits,
+        discount_amount: discount,
         status: 'paid',
         payment_method: 'credits',
         shipping_address: shippingAddress,
