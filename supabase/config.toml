@@ -1,5 +1,8 @@
 project_id = "uvczawicaqqiyutcqoyg"
 
+[functions.wake-up-backend]
+verify_jwt = false
+
 [functions.submit-message]
 verify_jwt = false
 

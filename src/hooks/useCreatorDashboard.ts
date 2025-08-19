@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSessionGuard } from './useSessionGuard';
 import { useCouponCode } from './useCouponCode';
 
 interface CreatorStats {
@@ -57,7 +58,8 @@ interface ChecklistItem {
 }
 
 export const useCreatorDashboard = () => {
-  const { user } = useAuth();
+  const { user, authStable } = useAuth();
+  const { isSessionValid, guardedValidation } = useSessionGuard();
   const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<CreatorProfile>({
@@ -83,7 +85,20 @@ export const useCreatorDashboard = () => {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
 
   const fetchCreatorData = async () => {
-    if (!user?.id) return;
+    // 🛡️ WAIT FOR STABLE AUTH + SESSION VALIDATION
+    if (!user?.id || !authStable || !isSessionValid) {
+      console.log('❌ Skipping fetch - auth not stable or session invalid');
+      return;
+    }
+
+    // 🔒 VALIDATE SESSION BEFORE MAKING QUERIES
+    const sessionValid = await guardedValidation();
+    if (!sessionValid) {
+      console.error('❌ Session validation failed, aborting fetch');
+      return;
+    }
+
+    console.log('✅ Session validated, fetching creator data for user:', user.id);
 
     try {
       setLoading(true);
@@ -266,10 +281,11 @@ export const useCreatorDashboard = () => {
   };
 
   useEffect(() => {
-    if (user?.id) {
+    // Only fetch when auth is fully stable
+    if (authStable && isSessionValid) {
       fetchCreatorData();
     }
-  }, [user?.id, couponCodeData?.code]); // Re-fetch when coupon code changes
+  }, [user?.id, couponCodeData?.code, authStable, isSessionValid]); // Re-fetch when coupon code changes
 
   return {
     loading,

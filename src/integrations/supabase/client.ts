@@ -14,19 +14,136 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    debug: true // 🔍 Enable debug mode to catch refresh errors
+    debug: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'x-client-info': 'supabase-js-web'
+    }
   }
 });
 
-// 🔍 DIAGNOSTIC: Global error handler for auth failures
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_OUT' && !session) {
-    console.log("🚨 CRITICAL: Unexpected SIGNED_OUT event detected");
-    console.log("📍 Location:", window.location.href);
-    console.log("🕐 Timestamp:", new Date().toISOString());
+// 🚀 KEEP-ALIVE PING SYSTEM
+let keepAliveInterval: NodeJS.Timeout | null = null;
+
+const startKeepAlive = () => {
+  if (keepAliveInterval) return;
+  
+  keepAliveInterval = setInterval(async () => {
+    try {
+      console.log("💓 Sending keepalive ping...");
+      await supabase.from('profiles').select('id').limit(1);
+      console.log("✅ Keepalive ping successful");
+    } catch (error) {
+      console.warn("⚠️ Keepalive ping failed:", error);
+    }
+  }, 180000); // 3 minutes
+};
+
+const stopKeepAlive = () => {
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+  }
+};
+
+// 🔧 UTILITY: Backend Wake-up RPC
+export const wakeUpBackend = async (): Promise<boolean> => {
+  try {
+    console.log("🔥 Waking up backend services...");
     
-    // Check localStorage for any remaining auth data
-    const authKeys = Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('supabase'));
-    console.log("🔑 Auth keys in localStorage:", authKeys);
+    // Try multiple wake-up strategies
+    const wakePromises = [
+      supabase.from('profiles').select('id').limit(1),
+      supabase.functions.invoke('wake-up-backend').catch(() => null), // Wake-up edge function
+    ];
+    
+    await Promise.allSettled(wakePromises);
+    console.log("✅ Backend wake-up completed");
+    return true;
+  } catch (error) {
+    console.warn("⚠️ Backend wake-up failed:", error);
+    return false;
+  }
+};
+
+// 🔧 UTILITY: Session validation with forced refresh
+export const validateSession = async (): Promise<boolean> => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error("❌ Session validation error:", error);
+      return false;
+    }
+    
+    if (!session) {
+      console.warn("🔁 No session found during validation");
+      return false;
+    }
+
+    // Check if session is about to expire (within 5 minutes)
+    const expiresAt = session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+    const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
+    
+    if (timeUntilExpiry < 300) {
+      console.log("⏰ Session expiring soon, forcing refresh...");
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError) {
+        console.error("❌ Forced session refresh failed:", refreshError);
+        return false;
+      }
+      
+      console.log("✅ Session refreshed successfully");
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("💥 Session validation threw error:", error);
+    return false;
+  }
+};
+
+// 🔍 ENHANCED DIAGNOSTIC: Global auth event monitoring
+supabase.auth.onAuthStateChange(async (event, session) => {
+  console.log(`🌀 Auth Event: ${event} at ${new Date().toISOString()}`);
+  
+  switch (event) {
+    case 'SIGNED_IN':
+      console.log("✅ User signed in, starting keepalive");
+      startKeepAlive();
+      break;
+      
+    case 'SIGNED_OUT':
+      console.log("🚪 User signed out, stopping keepalive");
+      stopKeepAlive();
+      if (!session) {
+        console.log("🚨 CRITICAL: Unexpected SIGNED_OUT event detected");
+        console.log("📍 Location:", window.location.href);
+        console.log("🕐 Timestamp:", new Date().toISOString());
+        
+        const authKeys = Object.keys(localStorage).filter(key => 
+          key.includes('auth') || key.includes('supabase'));
+        console.log("🔑 Auth keys in localStorage:", authKeys);
+      }
+      break;
+      
+    case 'TOKEN_REFRESHED':
+      console.log("🔄 Token refreshed successfully");
+      break;
+      
+    case 'INITIAL_SESSION':
+      if (session) {
+        console.log("🏁 Initial session loaded, starting keepalive");
+        startKeepAlive();
+      }
+      break;
+  }
+  
+  if (session) {
+    console.log(`📦 Session info: expires in ${Math.floor((session.expires_at! * 1000 - Date.now()) / 60000)} minutes`);
   }
 });
