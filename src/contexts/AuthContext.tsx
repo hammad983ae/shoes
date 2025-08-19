@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,281 +6,267 @@ import { useToast } from '@/hooks/use-toast';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
-  userRole: 'user' | 'creator' | 'admin' | null;
+  userRole: string | null;
   isCreator: boolean;
-  profile: any; // Add profile to context
-  signUp: (email: string, password: string, displayName?: string, referralCode?: string) => Promise<{ error: any }>;
+  profile: any;
+  loading: boolean;
+  authStable: boolean; // New: indicates auth is fully stable and ready
+  signUp: (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function isAuthenticated(user: any) {
-  return !!user;
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<'user' | 'creator' | 'admin' | null>(null);
-  const [isCreator, setIsCreator] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isCreator, setIsCreator] = useState<boolean>(false);
   const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [authStable, setAuthStable] = useState(false);
   const { toast } = useToast();
 
-  // Remove the debug logs that were causing noise during normal React rendering
-  // These were triggering during legitimate React remounts and causing confusion
-
-  useEffect(() => {
-    let mounted = true;
-
-    console.log("🔄 Initializing auth session...");
-
-    // Wake-up ping to prevent backend sleep issues
-    const warmUpBackend = async () => {
-      try {
-        console.log("🔥 Sending backend wake-up ping...");
-        await supabase.from('profiles').select('id').limit(1);
-        console.log("✅ Backend wake-up ping successful");
-      } catch (err) {
-        console.warn("⚠️ Backend wake-up ping failed:", err);
-      }
-    };
-
-    // Manual session refresh for when backend wakes up
-    const refreshSessionOnWakeUp = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (!session || error) {
-        console.warn("🔁 No session or error on wake — refreshing session manually...");
-        const result = await supabase.auth.refreshSession();
-        console.log("🔄 Session refresh result:", result);
-      }
-    };
-
-    // Set up wake-up handlers
-    window.addEventListener("focus", refreshSessionOnWakeUp);
-    window.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === 'visible') {
-        refreshSessionOnWakeUp();
-      }
-    });
-
-    // Send initial wake-up ping
-    warmUpBackend();
-
-    // Set up auth state listener FIRST to catch all events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        console.log("🌀 Supabase auth event:", event);
-        console.log("📦 Session from event:", session?.user?.email || 'none');
-        
-        // 🔍 DIAGNOSTIC: Log session details for debugging
-        if (session) {
-          const now = Math.floor(Date.now() / 1000);
-          console.log("🕐 Session expires at:", new Date(session.expires_at! * 1000).toISOString());
-          console.log("⏰ Time until expiry:", Math.floor((session.expires_at! - now) / 60), "minutes");
-          console.log("🔑 Access token length:", session.access_token?.length);
-          console.log("🔄 Refresh token exists:", !!session.refresh_token);
-        } else {
-          console.log("❌ No session in event");
-        }
-        
-        // Handle ALL auth events properly
-        switch (event) {
-          case 'INITIAL_SESSION':
-            console.log("🏁 Initial session loaded");
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-            break;
-            
-          case 'SIGNED_IN':
-            console.log("✅ User signed in");
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-            break;
-            
-          case 'SIGNED_OUT':
-            console.log("👋 User signed out - Event triggered by:", event);
-            console.log("📍 Current URL:", window.location.href);
-            setSession(null);
-            setUser(null);
-            setUserRole(null);
-            setIsCreator(false);
-            setProfile(null);
-            setLoading(false);
-            break;
-            
-          case 'TOKEN_REFRESHED':
-            console.log("🔄 Token refreshed successfully");
-            if (session) {
-              const now = Math.floor(Date.now() / 1000);
-              console.log("✨ New token expires at:", new Date(session.expires_at! * 1000).toISOString());
-              console.log("⏰ New expiry in:", Math.floor((session.expires_at! - now) / 60), "minutes");
-            }
-            // CRITICAL: Update session with new tokens
-            setSession(session);
-            setUser(session?.user ?? null);
-            break;
-            
-          case 'USER_UPDATED':
-            console.log("👤 User updated");
-            setSession(session);
-            setUser(session?.user ?? null);
-            break;
-            
-          default:
-            console.log(`🤷‍♂️ Unhandled auth event: ${event}`);
-            if (session) {
-              setSession(session);
-              setUser(session?.user ?? null);
-            } else {
-              console.log("⚠️ Unknown event with no session - possible session drop");
-            }
-        }
-      }
-    );
-
-    // Get initial session AFTER setting up listener
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+  // 🔥 CORE SESSION REFRESH FUNCTION
+  const refreshSession = async () => {
+    try {
+      console.log("🔄 Manually refreshing session...");
+      const { error } = await supabase.auth.refreshSession();
+      
       if (error) {
-        console.error('❌ Error getting initial session:', error);
-        setLoading(false);
+        console.error("❌ Manual session refresh failed:", error);
+        toast({
+          title: "Session Error",
+          description: "Please refresh the page or sign in again",
+          variant: "destructive"
+        });
         return;
       }
       
-      // 🔍 DIAGNOSTIC: Log initial session state
-      if (session) {
-        console.log("📦 Initial session found for:", session.user?.email);
-        const now = Math.floor(Date.now() / 1000);
-        console.log("🕐 Initial session expires:", new Date(session.expires_at! * 1000).toISOString());
-        console.log("⏰ Minutes until expiry:", Math.floor((session.expires_at! - now) / 60));
-      } else {
-        console.log("📦 No initial session found");
-      }
+      console.log("✅ Manual session refresh successful");
+      // onAuthStateChange will handle the state updates
+    } catch (error) {
+      console.error("💥 Session refresh threw error:", error);
+    }
+  };
+
+  // 🧠 BACKEND WAKE-UP PING
+  const wakeUpBackend = async () => {
+    try {
+      console.log("🔥 Sending backend wake-up ping...");
+      await supabase.from('profiles').select('id').limit(1);
+      console.log("✅ Backend wake-up ping successful");
+    } catch (err) {
+      console.warn("⚠️ Backend wake-up ping failed:", err);
+    }
+  };
+
+  // 🔒 LOAD USER PROFILE (only when session is guaranteed)
+  const loadUserProfile = async (userId: string) => {
+    try {
+      console.log('Loading profile for user:', userId);
       
-      console.log("📦 Initial session check complete");
-    });
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role, is_creator, display_name, avatar_url, bio, credits')
+        .eq('user_id', userId)
+        .single();
+
+      console.log('Profile query result:', { data, error });
+
+      if (error) {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (data) {
+        setUserRole(data.role);
+        setIsCreator(data.is_creator || false);
+        setProfile(data);
+        console.log('Profile loaded successfully:', data);
+      }
+    } catch (error) {
+      console.error('Error in loadUserProfile:', error);
+    }
+  };
+
+  // 🎯 SESSION VALIDATION & REFRESH CHECK
+  const validateAndRefreshSession = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (!session || error) {
+        console.warn("🔁 No session or error detected, attempting refresh...");
+        await refreshSession();
+        return false;
+      }
+
+      // Check if session is expiring soon (within 5 minutes)
+      const expiresAt = session.expires_at;
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
+      
+      if (timeUntilExpiry < 300) { // Less than 5 minutes
+        console.log("⏰ Session expiring soon, refreshing preemptively...");
+        await refreshSession();
+        return false;
+      }
+
+      console.log(`✅ Session valid, expires in ${Math.floor(timeUntilExpiry / 60)} minutes`);
+      return true;
+    } catch (error) {
+      console.error("💥 Session validation failed:", error);
+      return false;
+    }
+  };
+
+  // 🎯 INITIAL AUTH SETUP
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      console.log("🔄 Initializing bulletproof auth session...");
+
+      // Send initial wake-up ping
+      await wakeUpBackend();
+
+      // Set up auth state listener FIRST to catch all events
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (!mounted) return;
+
+          console.log(`🌀 Supabase auth event: ${event}`);
+          
+          if (session?.user) {
+            console.log(`📦 Session from event: ${session.user.email}`);
+            console.log(`🕐 Session expires at: ${new Date(session.expires_at! * 1000).toISOString()}`);
+            console.log(`⏰ Time until expiry: ${Math.floor((session.expires_at! * 1000 - Date.now()) / 60000)} minutes`);
+            console.log(`🔑 Access token length: ${session.access_token.length}`);
+            console.log(`🔄 Refresh token exists: ${!!session.refresh_token}`);
+          }
+
+          // Handle different auth events
+          switch (event) {
+            case 'SIGNED_IN':
+              console.log("✅ User signed in");
+              setSession(session);
+              setUser(session?.user ?? null);
+              break;
+              
+            case 'SIGNED_OUT':
+              console.log("🚪 User signed out");
+              setSession(null);
+              setUser(null);
+              setUserRole(null);
+              setIsCreator(false);
+              setProfile(null);
+              setAuthStable(false);
+              break;
+              
+            case 'TOKEN_REFRESHED':
+              console.log("🔄 Token refreshed successfully");
+              setSession(session);
+              setUser(session?.user ?? null);
+              break;
+              
+            case 'INITIAL_SESSION':
+              console.log("🏁 Initial session loaded");
+              setSession(session);
+              setUser(session?.user ?? null);
+              
+              if (session?.user) {
+                console.log(`📦 Initial session found for: ${session.user.email}`);
+                console.log(`🕐 Initial session expires: ${new Date(session.expires_at! * 1000).toISOString()}`);
+                console.log(`⏰ Minutes until expiry: ${Math.floor((session.expires_at! * 1000 - Date.now()) / 60000)}`);
+              }
+              break;
+              
+            default:
+              console.log(`🔄 Auth event: ${event}`);
+              setSession(session);
+              setUser(session?.user ?? null);
+          }
+        }
+      );
+
+      // THEN check for existing session
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("❌ Error getting initial session:", error);
+        } else if (session) {
+          console.log("📦 Initial session check complete");
+          setSession(session);
+          setUser(session.user);
+        } else {
+          console.log("🚫 No initial session found");
+        }
+      } catch (error) {
+        console.error("💥 Initial session check failed:", error);
+      } finally {
+        setLoading(false);
+      }
+
+      return subscription;
+    };
+
+    const subscription = initializeAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
-      window.removeEventListener("focus", refreshSessionOnWakeUp);
-      window.removeEventListener("visibilitychange", refreshSessionOnWakeUp);
+      subscription.then(sub => sub?.unsubscribe());
     };
   }, []); // Empty deps - run only once!
 
+  // 🔒 PROFILE LOADING (only when session is confirmed stable)
   useEffect(() => {
     if (!user || !session) {
       console.log('No user or session, clearing profile state');
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
-      // DON'T set loading false here - let session restoration handle it
+      setAuthStable(false);
       return;
     }
-    
-    console.log('Loading profile for user:', user.id);
-    
-    // 🔧 FIX: Defer profile loading to prevent session interference
-    const loadProfile = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role, is_creator, display_name, avatar_url, bio, credits')
-          .eq('user_id', user.id)
-          .single();
-        
-        console.log('Profile query result:', { data, error });
-        
-        if (error) {
-          console.error('Profile query error:', error);
-          
-          // Create profile if it doesn't exist
-          if (error.code === 'PGRST116') {
-            console.log('Creating new profile for user');
-            const newProfile = {
-              user_id: user.id,
-              display_name: user.email?.split('@')[0] || 'User',
-              role: 'user',
-              is_creator: false,
-              bio: '',
-              credits: 0
-            };
-            
-            const { data: insertData, error: insertError } = await supabase
-              .from('profiles')
-              .insert(newProfile)
-              .select()
-              .single();
-              
-            if (insertError) {
-              console.error('Failed to create profile:', insertError);
-              setUserRole('user');
-              setIsCreator(false);
-              setProfile(newProfile);
-            } else {
-              console.log('Profile created successfully:', insertData);
-              setProfile(insertData);
-              setUserRole(insertData.role as 'user' | 'creator' | 'admin');
-              setIsCreator(Boolean(insertData.is_creator));
-            }
-          } else {
-            // Use defaults for other errors
-            const defaultProfile = {
-              display_name: user.email?.split('@')[0] || 'User',
-              role: 'user',
-              is_creator: false,
-              bio: '',
-              credits: 0
-            };
-            setUserRole('user');
-            setIsCreator(false);
-            setProfile(defaultProfile);
-          }
-          return;
-        }
-        
-        console.log('Profile loaded successfully:', data);
-        setProfile(data);
-        setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
-        setIsCreator(Boolean(data.is_creator));
-      } catch (e) {
-        console.error('Failed to load profile:', e);
-        const defaultProfile = {
-          display_name: user.email?.split('@')[0] || 'User',
-          role: 'user',
-          is_creator: false,
-          bio: '',
-          credits: 0
-        };
-        setUserRole('user');
-        setIsCreator(false);
-        setProfile(defaultProfile);
-      }
-    };
-    
-    // 🔧 FIX: Defer profile loading to prevent auth cycle interference
-    const timeoutId = setTimeout(() => {
-      loadProfile();
-    }, 100); // Small delay to ensure auth state is stable
+
+    // Add a small delay to ensure auth state is fully stable
+    const timeoutId = setTimeout(async () => {
+      console.log("🔒 Session confirmed stable, loading profile...");
+      await loadUserProfile(user.id);
+      setAuthStable(true); // Mark auth as fully stable
+    }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [user, session]); // Include session in deps for better session checking
+  }, [user, session]);
 
+  // 🔁 SESSION REFRESH ON FOCUS/VISIBILITY
+  useEffect(() => {
+    const handleFocus = async () => {
+      if (!session) return;
+      
+      console.log("👁️ Window focused, validating session...");
+      await validateAndRefreshSession();
+    };
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && session) {
+        console.log("👁️ Tab became visible, validating session...");
+        await validateAndRefreshSession();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [session]);
+
+  // 🔥 AUTH FUNCTIONS
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -291,41 +277,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            display_name: displayName || email.split('@')[0],
-            referral_code: referralCode || localStorage.getItem('referral_code') || null,
-            accepted_terms: acceptedTerms || false
+            display_name: displayName,
+            referral_code: referralCode,
+            accepted_terms: acceptedTerms
           }
         }
       });
 
-      if (error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        // Show success toast when signup is successful (regardless of confirmation status)
-        if (referralCode) {
-          toast({
-            title: "Welcome! 🎉", 
-            description: "Check your email for confirmation. You'll get 10% off your first order!",
-          });
-        } else {
-          toast({
-            title: "Confirmation email sent",
-            description: "Check your email for a confirmation link to complete your registration.",
-          });
-        }
-      }
-
       return { error };
-    } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('SignUp error:', error);
       return { error };
     }
   };
@@ -337,99 +298,101 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
       });
 
-      if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You've been signed in successfully.",
-        });
-      }
-
       return { error };
-    } catch (error: any) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('SignIn error:', error);
       return { error };
     }
   };
 
   const signOut = async () => {
     try {
-      // Force clear all state immediately
-      setLoading(true);
+      console.log("🚪 Signing out...");
+      await supabase.auth.signOut();
+      
+      // Clear all state
       setUser(null);
       setSession(null);
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
-      
-      // Clear all Supabase auth data
-      await supabase.auth.signOut({ scope: 'global' });
-      
-      // Clear any remaining localStorage auth data
-      localStorage.removeItem('sb-uvczawicaqqiyutcqoyg-auth-token');
-      localStorage.removeItem('supabase.auth.token');
-      
-      // Clear session storage as well
-      sessionStorage.clear();
-      
-      toast({
-        title: "Signed out",
-        description: "You've been signed out successfully.",
-      });
-      
-      // Force complete page reload to reset everything
-      window.location.replace('/');
-    } catch (error: any) {
-      console.error('Sign out failed:', error);
-      
-      // Force clear everything even if signOut fails
-      setUser(null);
-      setSession(null);
-      setUserRole(null);
-      setIsCreator(false);
-      setProfile(null);
-      
-      // Clear storage manually
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Force reload anyway
-      window.location.replace('/');
+      setAuthStable(false);
+    } catch (error) {
+      console.error('SignOut error:', error);
     }
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    userRole,
-    isCreator,
-    profile,
-    signUp,
-    signIn,
-    signOut,
-  };
-
-  // Block rendering until session is fully restored
-  if (loading) {
+  // 🔒 SESSION STABILITY CHECK - Show fallback if session dies
+  if (!session && !loading && user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Restoring session...</p>
+        <div className="text-center space-y-4 p-6 border rounded-lg bg-card">
+          <div className="text-destructive text-lg font-medium">⚠️ Session Lost</div>
+          <p className="text-muted-foreground">Your session has expired or been lost.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  // Loading state with session restoration info
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">🔄 Restoring session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      session,
+      userRole,
+      isCreator,
+      profile,
+      loading,
+      authStable, // New: indicates auth is fully stable
+      signUp,
+      signIn,
+      signOut,
+      refreshSession
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
+// 🔒 SESSION GUARD HOOK - Use this in any component that needs guaranteed session
+export function useAuthGuard() {
+  const { session, loading, authStable } = useAuth();
+  
+  const isReady = !loading && authStable && session;
+  
+  return {
+    isReady,
+    session,
+    loading: loading || !authStable,
+    error: !loading && !session ? 'No valid session' : null
+  };
+}
+
+export function isAuthenticated(user: any) {
+  return !!user;
+}

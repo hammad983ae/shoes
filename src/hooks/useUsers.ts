@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthGuard } from '@/contexts/AuthContext';
 
 interface User {
   id: string;
@@ -28,6 +29,7 @@ interface UserSummary {
 }
 
 export const useUsers = () => {
+  const { isReady, loading: authLoading } = useAuthGuard(); // 🔒 Session guard
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [summary, setSummary] = useState<UserSummary>({
@@ -196,11 +198,18 @@ export const useUsers = () => {
   };
 
   useEffect(() => {
+    // 🔒 GUARD: Only fetch when auth is fully stable
+    if (!isReady || authLoading) {
+      console.log('⏳ Auth not ready, waiting...', { isReady, authLoading });
+      return;
+    }
+    
+    console.log('✅ Auth ready, fetching users...');
     fetchUsers();
-  }, []);
+  }, [isReady, authLoading]);
 
   return {
-    loading,
+    loading: loading || authLoading, // Include auth loading
     users,
     summary,
     updateUserRole,
