@@ -82,11 +82,20 @@ function KPIGrid({ loading = true, stats }: { loading?: boolean; stats?: any }) 
 }
 
 export default function Dashboard() {
-  const { loading: adminLoading, recentOrders, alerts } = useAdminDashboard();
+  const { loading: adminLoading, recentOrders, alerts, stats: realStats } = useAdminDashboard();
   const [timeRange, setTimeRange] = useState('today');
-  const { loading: analyticsLoading, stats } = useAnalytics(timeRange);
+  const { loading: analyticsLoading, stats: analyticsStats } = useAnalytics(timeRange);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const navigate = useNavigate();
+  
+  // Combine real Supabase data with PostHog analytics where needed
+  const stats = {
+    ...realStats,
+    pageViews: analyticsStats.pageViews,
+    uniqueVisitors: analyticsStats.uniqueVisitors,
+    avgSessionDuration: analyticsStats.avgSessionDuration,
+    topSource: analyticsStats.topSource
+  };
   
   const loading = adminLoading || analyticsLoading;
 
