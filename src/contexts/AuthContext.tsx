@@ -3,14 +3,37 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const AuthContext = createContext(undefined);
+interface Profile {
+  role: string;
+  is_creator: boolean;
+  display_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  credits: number | null;
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  userRole: string | null;
+  isCreator: boolean;
+  profile: Profile | null;
+  loading: boolean;
+  authStable: boolean;
+  signUp: (email: string, password: string, displayName: string, referralCode: string, acceptedTerms: boolean) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isCreator, setIsCreator] = useState(false);
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authStable, setAuthStable] = useState(false);
   const { toast } = useToast();
@@ -27,7 +50,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loadUserProfile = async (userId) => {
+  const loadUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -125,7 +148,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signUp = async (email, password, displayName, referralCode, acceptedTerms) => {
+  const signUp = async (email: string, password: string, displayName: string, referralCode: string, acceptedTerms: boolean) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -137,7 +160,7 @@ export function AuthProvider({ children }) {
     return { error };
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
@@ -195,6 +218,6 @@ export function useAuthGuard() {
   };
 }
 
-export function isAuthenticated(user) {
+export function isAuthenticated(user: User | null) {
   return !!user;
 }

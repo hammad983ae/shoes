@@ -60,7 +60,7 @@ export default function AuthModal({ open, onOpenChange, mode = 'login', fullPage
           setError('You must agree to the Terms of Service');
           return;
         }
-        const { error } = await signUp(email, password, displayName, referralCode || undefined);
+        const { error } = await signUp(email, password, displayName, referralCode || '', agreedToTerms);
         if (!error) {
           clearReferralCode(); // Clear the referral code after successful signup
         } else {
