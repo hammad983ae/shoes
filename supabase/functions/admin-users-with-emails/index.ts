@@ -121,12 +121,21 @@ serve(async (req) => {
       console.log('Profiles fetched:', profiles?.length || 0);
 
       // Get auth users with service role to get emails
+      console.log('Fetching auth users...');
       const { data: authData, error: authUsersError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (authUsersError) {
         console.error('Auth users error:', authUsersError);
-        throw authUsersError;
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch auth users', details: authUsersError.message }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
       }
+
+      console.log('Auth users fetched:', authData?.users?.length || 0);
 
       // Get coupon codes with error handling
       const { data: couponCodes, error: couponError } = await supabaseAdmin
