@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, Home, TrendingUp, Laptop, Settings, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -16,6 +17,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ avatar_url?: string | null; display_name?: string | null } | null>(null);
   const { user, signOut } = useAuth();
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     if (user) {
@@ -136,10 +138,15 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
               
               <Link
                 to={user ? "/profile" : "/signin"}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors relative"
                 onClick={() => setIsMobileOpen(false)}
               >
-                <User className="w-4 h-4 text-primary" />
+                <div className="relative">
+                  <User className="w-4 h-4 text-primary" />
+                  {user && unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                  )}
+                </div>
                 <span className="text-sm text-foreground">
                   {user ? 'Profile' : 'Sign In'}
                 </span>
@@ -225,18 +232,23 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
             {/* Profile / Sign In */}
             <Link
               to={user ? "/profile" : "/signin"}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors relative"
             >
-              {user ? (
-                <Avatar className="w-5 h-5 flex-shrink-0 border border-primary/20">
-                  <AvatarImage src={userProfile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {userProfile?.display_name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <User className="w-5 h-5 text-primary flex-shrink-0" />
-              )}
+              <div className="relative">
+                {user ? (
+                  <Avatar className="w-5 h-5 flex-shrink-0 border border-primary/20">
+                    <AvatarImage src={userProfile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {userProfile?.display_name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <User className="w-5 h-5 text-primary flex-shrink-0" />
+                )}
+                {user && unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-background"></div>
+                )}
+              </div>
               <span
                 className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
