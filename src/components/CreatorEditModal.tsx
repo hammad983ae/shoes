@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Instagram, Twitter, Youtube, Plus, Minus } from 'lucide-react';
 import { useCouponCode } from '@/hooks/useCouponCode';
+import { useToast } from '@/hooks/use-toast';
 
 interface Creator {
   id: string;
@@ -44,10 +45,19 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
   const [loadingSocials, setLoadingSocials] = useState(true);
   const [editingSocials, setEditingSocials] = useState(false);
   const [updatingCouponCode, setUpdatingCouponCode] = useState(false);
+  const [creatorStats, setCreatorStats] = useState({
+    totalOrders: 0,
+    averageOrderValue: 0,
+    customersAcquired: 0,
+    totalCommission: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (creator?.user_id && isOpen) {
       fetchSocialConnections();
+      fetchCreatorStats();
       setFormData(prev => ({
         ...prev,
         coupon_code: couponCodeData?.code || '',
@@ -76,6 +86,39 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
     }
   };
 
+  const fetchCreatorStats = async () => {
+    if (!creator?.user_id) return;
+    
+    setLoadingStats(true);
+    try {
+      // Fetch orders for this creator
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('creator_id', creator.user_id)
+        .eq('status', 'paid');
+      
+      if (error) throw error;
+      
+      const totalOrders = orders?.length || 0;
+      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.order_total || 0), 0) || 0;
+      const totalCommission = orders?.reduce((sum, order) => sum + Number(order.commission_amount_at_purchase || 0), 0) || 0;
+      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+      const uniqueCustomers = new Set(orders?.map(order => order.user_id) || []);
+      
+      setCreatorStats({
+        totalOrders,
+        averageOrderValue,
+        customersAcquired: uniqueCustomers.size,
+        totalCommission
+      });
+    } catch (error) {
+      console.error('Error fetching creator stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const handleSave = async () => {
     // Update coupon code if it has changed
     if (formData.coupon_code !== couponCodeData?.code && formData.coupon_code.trim()) {
@@ -84,8 +127,17 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
       setUpdatingCouponCode(false);
       
       if (!result.success) {
-        console.error('Failed to update coupon code:', result.error);
-        // Still proceed with other updates
+        toast({
+          title: "Error",
+          description: result.error || "Failed to update coupon code",
+          variant: "destructive"
+        });
+        return; // Don't proceed if coupon update failed
+      } else {
+        toast({
+          title: "Success",
+          description: "Coupon code updated successfully",
+        });
       }
     }
     
@@ -139,6 +191,37 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Creator Analytics */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Creator Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingStats ? (
+                <p className="text-sm text-muted-foreground">Loading analytics...</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-muted/50 rounded">
+                    <div className="text-2xl font-bold">{creatorStats.totalOrders}</div>
+                    <div className="text-xs text-muted-foreground">Total Orders</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/50 rounded">
+                    <div className="text-2xl font-bold">${creatorStats.averageOrderValue.toFixed(0)}</div>
+                    <div className="text-xs text-muted-foreground">Average Order Value</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/50 rounded">
+                    <div className="text-2xl font-bold">{creatorStats.customersAcquired}</div>
+                    <div className="text-xs text-muted-foreground">Customers Acquired</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/50 rounded">
+                    <div className="text-2xl font-bold">${creatorStats.totalCommission.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground">Total Commission</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Basic Creator Info */}
           <Card>
             <CardHeader>
