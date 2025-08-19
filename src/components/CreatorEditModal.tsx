@@ -133,7 +133,7 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
                       <SelectValue placeholder="No override" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No override</SelectItem>
+                      <SelectItem value="none">No override</SelectItem>
                       <SelectItem value="standard">Standard Payout</SelectItem>
                       <SelectItem value="priority">Priority Payout</SelectItem>
                       <SelectItem value="instant">Instant Payout</SelectItem>
