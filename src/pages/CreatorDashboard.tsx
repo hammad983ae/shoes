@@ -53,6 +53,7 @@ export default function CreatorDashboard() {
   };
 
   const getCreditTier = (followers: number) => {
+    if (followers >= 1000000) return { tier: "Diamond+", rate: 150 };
     if (followers >= 500000) return { tier: "Diamond", rate: 100 };
     if (followers >= 100000) return { tier: "Platinum", rate: 75 };
     if (followers >= 50000) return { tier: "Gold", rate: 50 };
@@ -327,8 +328,12 @@ export default function CreatorDashboard() {
                       <span>$75/video</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>500K+</span>
+                      <span>500K–1M</span>
                       <span>$100/video</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>1M+</span>
+                      <span>$150/video</span>
                     </div>
                   </div>
                 </div>
