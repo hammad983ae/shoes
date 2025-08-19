@@ -40,11 +40,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!user) {
-      console.warn("⚠️ User became null");
+      console.error("⚠️ USER BECAME NULL - Navigation broke auth state");
+      console.trace("User null stack trace");
     } else {
-      console.log("✅ User active:", user.email);
+      console.log("✅ User active:", user.email, "User ID:", user.id);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!session) {
+      console.error("⚠️ SESSION BECAME NULL - Auth session lost");
+      console.trace("Session null stack trace");
+    } else {
+      console.log("✅ Session active for:", session.user?.email);
+    }
+  }, [session]);
 
   useEffect(() => {
     let mounted = true;
