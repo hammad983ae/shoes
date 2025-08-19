@@ -27,6 +27,7 @@ import {
   TrendingUp,
   DollarSign,
   Edit,
+  RefreshCw,
 } from "lucide-react";
 
 export default function Users() {
@@ -118,6 +119,10 @@ export default function Users() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
             <Button variant="outline" size="sm" onClick={handleExportUsers}>
               <Download className="w-4 h-4 mr-2" />
               Export Users
