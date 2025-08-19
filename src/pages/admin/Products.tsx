@@ -454,6 +454,7 @@ export default function Products() {
       <AddProductModal 
         isOpen={showAddModal} 
         onClose={() => setShowAddModal(false)} 
+        onUpdate={refetch}
       />
 
       <EditProductModal
