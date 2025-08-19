@@ -5,54 +5,58 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { sneakerCatalog } from './SneakerCatalog';
 import { CHATBOT_KNOWLEDGE, FAQ_DATA } from '@/data/chatbotKnowledge';
+import { useLocation } from 'react-router-dom';
 
 interface Message {
   sender: 'user' | 'ai';
   text: string;
 }
 
-const ENHANCED_SYSTEM_PROMPT = `You are Crallux Sells' AI assistant. You have access to:
+const CRALLUX_SYSTEM_PROMPT = `You are the **Crallux Sells AI Assistant**, the ultimate sneaker plug for customers looking for premium replica kicks. Your job is to increase sales, answer customer questions with confidence, and guide users through the site like a top-tier concierge.
 
-PRODUCT CATALOG (Live Data):
-- Current inventory with prices, descriptions, and availability
-- Product categories: Rick Owens, Maison Margiela, Nike
-- Sizing information and material details
-- All products are high-quality alternatives with premium materials
+🔒 BRAND PERSONALITY:
+- Tone: Bold, helpful, and sharp — never robotic. Use confident language. Add humor or personality if it matches the user's tone.
+- Never overexplain. Short, clear answers with direction or next steps.
+- You sound like a plug who knows exactly what's in stock, how the system works, and how to get the customer what they want — fast.
 
-POLICIES:
-- Returns: All sales final unless damaged/incorrect. 3-day return window.
-- Shipping: FREE 5-9 day shipping on all orders
-- Payment: Stripe processing, must be signed in to purchase
-- Contact: cralluxmaster@protonmail.com
+📦 PRODUCT INFO & POLICIES (Crallux Sells):
+- Crallux Sells is a **premium replica sneaker site**.
+- All sneakers are made with **retail-matching materials** — same factories, same quality.
+- Orders ship within **5–9 days** to the U.S., fully tracked.
+- Users can send **StockX, GOAT, or Instagram screenshots** to request exact models.
+- All orders are now placed through the **Crallux Sells website** — **no more DM orders**.
+- Orders include **tracking within 48 hours** of payment confirmation.
+- Payment options: **Cash App, Zelle, Venmo**, and **Crypto (BTC, ETH)**.
+- Sizes are in **EU sizing** — conversions available upon request.
+- **No refunds**, unless the shoe arrives damaged or incorrect.
+- Users can earn credits: **100 credits = $1**
+- Referral program: Users earn **20% of referred user's purchases**.
 
-REFERRAL SYSTEM:
-- Users earn 10% back in credits for successful referrals
-- New customers get 10% off using referral links
-- Referral links: https://cralluxsells.com/ref/[code]
+⚙️ INTERACTION STRATEGIES:
+- Start chats with page-specific guidance. Trigger engagement early.
+- Push urgency on limited drops or product restocks.
+- Offer next steps after every reply — product link, size chart, payment info, etc.
+- Mention referral rewards if user is a returning customer or creator.
 
-CREDITS SYSTEM:
-- Earn credits through referrals and promotions
-- Use credits for discounts at checkout
-- Credits are site-wide currency
+👟 SNEAKER MATCHMAKER FLOW:
+If user asks "what should I get?" or "help me choose", reply with:
+"Answer these quick 3 and I got you:  
+1. What's your budget?  
+2. Hype or lowkey?  
+3. Any brands/colors you're into?"
 
-AUTHENTICITY:
-- All products are high-quality alternatives sourced from premium suppliers
-- Premium materials and construction standards
-- Not claiming to be original brand items
+🪬 FALLBACK STRATEGY:
+If you're not sure how to answer:
+> "Good question — let me get the team on that. Want to check out the current bestsellers while you wait?"
 
-BUSINESS DETAILS:
-- Website: https://cralluxsells.com
-- Email: cralluxmaster@protonmail.com
-- 24/7 online support
-- Premium sneaker marketplace
+Never say "I don't know" with no follow-up.
 
 ALWAYS:
-- Be accurate and factual
-- Reference specific policies when relevant
-- Offer to connect to human support for complex issues
-- Use markdown formatting for clarity
-- Provide actionable next steps
-- For authenticity questions, emphasize high-quality alternatives and premium materials`;
+- Be bold and confident
+- Use emojis sparingly but effectively
+- Keep responses concise with clear next steps
+- Push sales and engagement
+- Reference specific products when relevant`;
 
 const API_KEY = "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";
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -68,21 +72,6 @@ function stripThinking(text: string): string {
   return cleaned;
 }
 
-// Validate response contains accurate facts
-function validateResponse(response: string): boolean {
-  const keyFacts = [
-    'cralluxsells.com',
-    'cralluxmaster@protonmail.com',
-    '5-9 days',
-    'FREE shipping',
-    '3 days',
-    'high-quality alternative',
-    'premium materials'
-  ];
-  
-  const responseLower = response.toLowerCase();
-  return keyFacts.some(fact => responseLower.includes(fact.toLowerCase()));
-}
 
 // Handle authenticity questions with workaround language
 function handleAuthenticityQuestion(response: string): string {
@@ -133,15 +122,35 @@ ${JSON.stringify(FAQ_DATA, null, 2)}
 `;
 }
 
+// Generate page-aware greeting based on current route
+function getPageAwareGreeting(pathname: string): string {
+  if (pathname === '/') {
+    return "Welcome to Crallux Sells! 👟 Want help finding your perfect pair? I can recommend kicks based on your style.";
+  } else if (pathname.startsWith('/product/')) {
+    return "Looking at something fire? 🔥 Need sizing help, fit info, or more photos of this model?";
+  } else if (pathname === '/cart') {
+    return "Ready to secure the bag? 💰 Want a last-minute discount before checkout? Ask me.";
+  } else if (pathname === '/checkout') {
+    return "Almost there! 💳 Not sure how to pay with Zelle or Cash App? I'll walk you through it.";
+  } else if (pathname.includes('catalog') || pathname.includes('full-catalog')) {
+    return "Browsing the collection? 👀 Tell me your vibe and I'll point you to the heat.";
+  }
+  return "What's good! I'm your Crallux Sells plug. What can I get for you today? 🔥";
+}
+
 export default function ChatBotWidget() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { sender: 'ai', text: 'Hi! I am the Crallux Sells AI assistant. Ask me anything about our business, products, or policies.' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize with page-aware greeting
+  useEffect(() => {
+    setMessages([{ sender: 'ai', text: getPageAwareGreeting(location.pathname) }]);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
@@ -163,6 +172,7 @@ export default function ChatBotWidget() {
     setLoading(true);
     try {
       const context = getComprehensiveContext();
+      const pageContext = `Current page: ${location.pathname}`;
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -174,8 +184,9 @@ export default function ChatBotWidget() {
         body: JSON.stringify({
           model: 'deepseek/deepseek-r1-0528:free',
           messages: [
-            { role: 'system', content: ENHANCED_SYSTEM_PROMPT },
+            { role: 'system', content: CRALLUX_SYSTEM_PROMPT },
             { role: 'system', content: context },
+            { role: 'system', content: pageContext },
             ...messages.map((m) => ({
               role: m.sender === 'user' ? 'user' : 'assistant',
               content: m.text,
@@ -192,11 +203,6 @@ export default function ChatBotWidget() {
       
       // Handle authenticity questions with workaround language
       aiText = handleAuthenticityQuestion(aiText);
-      
-      // Validate response accuracy
-      if (!validateResponse(aiText)) {
-        aiText += '\n\n*For the most accurate information, please contact cralluxmaster@protonmail.com*';
-      }
       
       setMessages((msgs) => [...msgs, { sender: 'ai', text: aiText }]);
     } catch (err) {
@@ -217,8 +223,8 @@ export default function ChatBotWidget() {
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-primary/10 rounded-t-2xl">
             <div className="flex flex-col">
-              <span className="font-bold text-lg text-primary">AI Chat Assistant</span>
-              <span className="text-xs text-muted-foreground">Anything said here is AI and may be wrong.</span>
+              <span className="font-bold text-lg text-primary">Crallux Plug 🔥</span>
+              <span className="text-xs text-muted-foreground">Your sneaker concierge - responses are AI-generated</span>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
               <X className="w-5 h-5" />
