@@ -44,6 +44,7 @@ import Products from "./pages/admin/Products";
 import Users from "./pages/admin/Users";
 import AdminNotFound from "./pages/admin/NotFound";
 import HelpCenter from './pages/HelpCenter';
+import CreatorSignup from './pages/CreatorSignup';
 import RouteGuard from "./components/RouteGuard";
 
 const App = () => (
@@ -82,8 +83,9 @@ const App = () => (
                      <Route path="/terms" element={<Terms />} />
                      <Route path="/return-policy" element={<ReturnPolicy />} />
                      <Route path="/opt-in-policy" element={<OptInPolicy />} />
-                     <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
-                     <Route path="/creator" element={
+                      <Route path="/ref/:referralCode" element={<ReferralRedirect />} />
+                      <Route path="/creator-signup" element={<CreatorSignup />} />
+                      <Route path="/creator" element={
                        <RouteGuard requireCreator>
                          <CreatorDashboard />
                        </RouteGuard>

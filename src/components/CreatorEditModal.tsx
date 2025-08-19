@@ -120,7 +120,7 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Creator - {creator.display_name}</DialogTitle>
+          <DialogTitle>Edit Creator Settings</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

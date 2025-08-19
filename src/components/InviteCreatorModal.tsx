@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InviteCreatorModalProps {
   isOpen: boolean;
@@ -58,19 +59,26 @@ export function InviteCreatorModal({ isOpen, onClose, onSuccess }: InviteCreator
 
     setLoading(true);
     try {
-      // Here you would call your API to create invite and send email
-      // const inviteData = {
-      //   email,
-      //   display_name: displayName,
-      //   tier,
-      //   coupon_code: couponCode,
-      //   starting_credits: parseInt(startingCredits) || 0,
-      //   tiktok_username: tiktokUsername,
-      //   followers: parseInt(followers) || 0,
-      //   notes
-      // };
+      const inviteData = {
+        email,
+        display_name: displayName,
+        tier,
+        coupon_code: couponCode,
+        starting_credits: parseInt(startingCredits) || 0,
+        tiktok_username: tiktokUsername,
+        followers: parseInt(followers) || 0,
+        notes
+      };
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock API call
+      const { data, error } = await supabase.functions.invoke('send-creator-invite', {
+        body: inviteData
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to send invite');
+      }
       
       toast({
         title: "Invite Sent",
@@ -80,10 +88,11 @@ export function InviteCreatorModal({ isOpen, onClose, onSuccess }: InviteCreator
       onSuccess?.();
       onClose();
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error sending creator invite:', error);
       toast({
         title: "Error",
-        description: "Failed to send invite",
+        description: error.message || "Failed to send invite",
         variant: "destructive",
       });
     } finally {
