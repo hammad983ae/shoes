@@ -43,63 +43,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let initializationComplete = false;
 
-    // CRITICAL: Single initialization - getSession() only runs ONCE on app load
-    const initializeAuth = async () => {
-      try {
-        console.log("🔄 Initializing auth session...");
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (mounted) {
-          console.log("📦 Session on load:", session?.user?.email || 'none');
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-          initializationComplete = true;
-        }
-      } catch (error) {
-        console.error('❌ Error restoring session:', error);
-        if (mounted) {
-          setLoading(false);
-          initializationComplete = true;
-        }
-      }
-    };
+    console.log("🔄 Initializing auth session...");
 
-    // Set up auth state listener for ALL events
+    // Set up auth state listener FIRST to catch all events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!mounted) return;
         
-        console.log("🌀 Supabase event:", event);
+        console.log("🌀 Supabase auth event:", event);
         console.log("📦 Session from event:", session?.user?.email || 'none');
         
-        // Only process auth events after initial session load is complete
-        // This prevents race conditions during React rendering
-        if (!initializationComplete && event !== 'INITIAL_SESSION') {
-          console.log("⏸️ Skipping auth event during initialization:", event);
-          return;
-        }
-        
-        // ALWAYS update session and user state for meaningful auth events
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Clear profile state only when session is null
-        if (!session) {
-          setUserRole(null);
-          setIsCreator(false);
-          setProfile(null);
-          console.log("❌ Session cleared, resetting profile state");
-        } else {
-          console.log("✅ Session active, user:", session.user.email);
+        // Handle ALL auth events properly
+        switch (event) {
+          case 'INITIAL_SESSION':
+            console.log("🏁 Initial session loaded");
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+            break;
+            
+          case 'SIGNED_IN':
+            console.log("✅ User signed in");
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+            break;
+            
+          case 'SIGNED_OUT':
+            console.log("👋 User signed out");
+            setSession(null);
+            setUser(null);
+            setUserRole(null);
+            setIsCreator(false);
+            setProfile(null);
+            setLoading(false);
+            break;
+            
+          case 'TOKEN_REFRESHED':
+            console.log("🔄 Token refreshed successfully");
+            // CRITICAL: Update session with new tokens
+            setSession(session);
+            setUser(session?.user ?? null);
+            break;
+            
+          case 'USER_UPDATED':
+            console.log("👤 User updated");
+            setSession(session);
+            setUser(session?.user ?? null);
+            break;
+            
+          default:
+            console.log(`🤷‍♂️ Unhandled auth event: ${event}`);
+            if (session) {
+              setSession(session);
+              setUser(session?.user ?? null);
+            }
         }
       }
     );
 
-    // Initialize session ONCE on mount
-    initializeAuth();
+    // Get initial session AFTER setting up listener
+    supabase.auth.getSession().then(({ error }) => {
+      if (error) {
+        console.error('❌ Error getting initial session:', error);
+        setLoading(false);
+        return;
+      }
+      
+      // Initial session is handled by INITIAL_SESSION event
+      console.log("📦 Initial session check complete");
+    });
 
     return () => {
       mounted = false;
