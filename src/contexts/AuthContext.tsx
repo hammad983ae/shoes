@@ -50,11 +50,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.log('Session restored:', session?.user?.id || 'none');
           setSession(session);
           setUser(session?.user ?? null);
-          setLoading(false);
+          // Don't set loading false here - wait for profile to load
         }
       } catch (error) {
         console.error('Error restoring session:', error);
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -71,9 +73,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserRole(null);
           setIsCreator(false);
           setProfile(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
+        // Don't set loading false here either - let profile effect handle it
       }
     );
 
@@ -92,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
+      setLoading(false); // Set loading false when no user
       return;
     }
     
@@ -152,6 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsCreator(false);
             setProfile(defaultProfile);
           }
+          setLoading(false); // Set loading false after handling error
           return;
         }
         
@@ -159,6 +163,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(data);
         setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
         setIsCreator(Boolean(data.is_creator));
+        setLoading(false); // Set loading false after successful profile load
       } catch (e) {
         console.error('Failed to load profile:', e);
         const defaultProfile = {
@@ -171,6 +176,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserRole('user');
         setIsCreator(false);
         setProfile(defaultProfile);
+        setLoading(false); // Set loading false after handling exception
       }
     };
     
@@ -259,21 +265,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Clear local state first
+      // Sign out from Supabase first - this handles session cleanup
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+      
+      // Clear local state after Supabase logout
       setUser(null);
       setSession(null);
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
-      
-      // Clear localStorage
-      localStorage.clear();
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-      }
       
       toast({
         title: "Signed out",
@@ -285,7 +288,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: any) {
       console.error('Sign out failed:', error);
       // Force logout anyway
-      localStorage.clear();
       window.location.href = '/';
     }
   };
