@@ -11,10 +11,13 @@ export const useDynamicProducts = () => {
       setLoading(true);
       console.log('Fetching products...');
       
-      // Simplified query first - just get products
+      // Query with product_media join to get real photos
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_media(id, url, role, display_order)
+        `)
         .order('created_at', { ascending: false });
 
       console.log('Products query result:', { data, error });
@@ -25,9 +28,21 @@ export const useDynamicProducts = () => {
 
       console.log('Formatting products, data length:', data?.length);
       const formattedProducts: Sneaker[] = (data || []).map(product => {
-        // Use the images array from the product directly
-        const images = product.images || [];
-        const primaryImage = images[0] || '';
+        // Sort all media by display_order to maintain consistent ordering
+        const sortedMedia = (product.product_media || [])
+          .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
+        
+        // Find primary image first, fallback to first image in order
+        const primaryImage = sortedMedia.find((media: any) => media.role === 'primary')?.url || 
+                           sortedMedia[0]?.url || '';
+        
+        // Get all gallery images in order
+        const galleryImages = sortedMedia
+          .filter((media: any) => media.role === 'gallery')
+          .map((media: any) => media.url);
+
+        // Combine all images: primary first, then gallery images in display order
+        const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
 
         return {
           id: product.id, // Keep UUID for internal operations
@@ -36,7 +51,7 @@ export const useDynamicProducts = () => {
           price: `$${product.price}`,
           slashed_price: product.slashed_price || undefined,
           image: primaryImage,
-          images: images,
+          images: allImages,
           brand: product.brand,
           category: product.category,
           description: product.description || '',
