@@ -1,20 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferral } from '@/hooks/useReferral';
-import { Check, Share } from 'lucide-react';
+import { Check, Share, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
 const GetFreeCredits = () => {
   const { user } = useAuth();
   const { referralData, copyReferralLink, shareReferralLink } = useReferral();
+  const navigate = useNavigate();
+  
   const [dollarAmount, setDollarAmount] = useState(1);
   const [isCopied, setIsCopied] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  
   const credits = dollarAmount * 100;
+
+  
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_creator, coupon_code')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (error) throw error;
+
+      setIsCreator(data?.is_creator || false);
+      setCouponCode(data?.coupon_code || '');
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const handleCopyLink = async () => {
     await copyReferralLink();
@@ -40,48 +71,78 @@ const GetFreeCredits = () => {
             <div className="mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Get Free Credits</h1>
             </div>
-            {/* Start Earning Credits Today UI */}
-            <div className="w-full flex justify-center mb-6">
-              <Card className="bg-[#0a0a0a] border-[#FFD700] max-w-2xl w-full mx-auto px-4 sm:px-8 py-6 rounded-2xl shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-2xl text-center">Start Earning Credits Today!</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4 text-xs sm:text-base text-center">
-                    Share your referral link with friends and start earning credits with every purchase they make. The more friends you refer, the more credits you earn!
-                  </p>
-                  <div className="p-2 sm:p-4 bg-primary/10 rounded-lg overflow-x-auto mb-2">
-                    <p className="font-semibold text-primary text-xs sm:text-base">Your Referral Link:</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground font-mono bg-background p-2 rounded mt-2 break-all">
-                      {referralData.referralCode ? `cralluxsells.com/ref/${referralData.referralCode}` : 'Loading...'}
+            {/* Creator Earning Section OR Start Earning Credits Today UI */}
+            {isCreator ? (
+              <div className="w-full flex justify-center mb-6">
+                <Card className="bg-[#0a0a0a] border-[#FFD700] max-w-2xl w-full mx-auto px-4 sm:px-8 py-6 rounded-2xl shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg sm:text-2xl text-center">Earn Money with Your Coupon Code!</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4 text-xs sm:text-base text-center">
+                      Share your coupon code and earn commission on every sale. Go to your creator dashboard to manage and share your code.
                     </p>
-                  </div>
-                  <div className="flex flex-row flex-wrap gap-2 justify-center w-full">
-                    <Button 
-                      onClick={handleShareLink} 
-                      className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
-                    >
-                      <Share className="w-4 h-4" />
-                      Share Link
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleCopyLink} 
-                      className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check className="w-4 h-4 text-green-500" />
-                          Copied!
-                        </>
-                      ) : (
-                        'Copy Link'
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    <div className="p-2 sm:p-4 bg-primary/10 rounded-lg overflow-x-auto mb-4">
+                      <p className="font-semibold text-primary text-xs sm:text-base">Your Coupon Code:</p>
+                      <p className="text-lg sm:text-xl text-foreground font-mono bg-background p-2 rounded mt-2 text-center font-bold">
+                        {couponCode || 'Loading...'}
+                      </p>
+                    </div>
+                    <div className="flex flex-row flex-wrap gap-2 justify-center w-full">
+                      <Button 
+                        onClick={() => navigate('/creator')} 
+                        className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Go to Creator Dashboard
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="w-full flex justify-center mb-6">
+                <Card className="bg-[#0a0a0a] border-[#FFD700] max-w-2xl w-full mx-auto px-4 sm:px-8 py-6 rounded-2xl shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg sm:text-2xl text-center">Start Earning Credits Today!</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4 text-xs sm:text-base text-center">
+                      Share your referral link with friends and start earning credits with every purchase they make. The more friends you refer, the more credits you earn!
+                    </p>
+                    <div className="p-2 sm:p-4 bg-primary/10 rounded-lg overflow-x-auto mb-2">
+                      <p className="font-semibold text-primary text-xs sm:text-base">Your Referral Link:</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground font-mono bg-background p-2 rounded mt-2 break-all">
+                        {referralData.referralCode ? `cralluxsells.com/ref/${referralData.referralCode}` : 'Loading...'}
+                      </p>
+                    </div>
+                    <div className="flex flex-row flex-wrap gap-2 justify-center w-full">
+                      <Button 
+                        onClick={handleShareLink} 
+                        className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
+                      >
+                        <Share className="w-4 h-4" />
+                        Share Link
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={handleCopyLink} 
+                        className="btn-hover-glow text-xs sm:text-base flex items-center gap-2"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="w-4 h-4 text-green-500" />
+                            Copied!
+                          </>
+                        ) : (
+                          'Copy Link'
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Top Referral Leaderboard */}
             <div className="w-full flex justify-center mb-6">
@@ -126,23 +187,25 @@ const GetFreeCredits = () => {
               </div>
             </div>
 
-            {/* Benefits Section - two boxes side by side (responsive) */}
-            <div className="w-full flex flex-col sm:flex-row justify-center items-stretch mb-2 max-w-2xl mx-auto">
-              <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
-                <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
-                  <p className="text-xs sm:text-lg font-medium text-foreground text-center">
-                    You get <span className="text-primary font-bold">10% back in credits</span> when someone buys using your link.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
-                <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
-                  <p className="text-xs sm:text-lg font-medium text-foreground text-center">
-                    They also get <span className="text-primary font-bold">10% off</span> their first purchase after creating an account.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Benefits Section - conditional for non-creators only */}
+            {!isCreator && (
+              <div className="w-full flex flex-col sm:flex-row justify-center items-stretch mb-2 max-w-2xl mx-auto">
+                <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
+                  <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
+                    <p className="text-xs sm:text-lg font-medium text-foreground text-center">
+                      You get <span className="text-primary font-bold">10% back in credits</span> when someone buys using your link.
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="flex-1 min-w-0 w-full h-full min-h-[140px] bg-[#0a0a0a] border-[#FFD700] flex flex-col justify-center items-center rounded-none sm:first:rounded-l-2xl sm:last:rounded-r-2xl">
+                  <CardContent className="flex flex-col justify-center items-center w-full h-full min-h-[140px] py-6">
+                    <p className="text-xs sm:text-lg font-medium text-foreground text-center">
+                      They also get <span className="text-primary font-bold">10% off</span> their first purchase after creating an account.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Subtext Below Benefits */}
             <div className="w-full flex justify-center mb-6">
