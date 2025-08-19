@@ -473,14 +473,36 @@ export default function Checkout() {
                       </div>
                       <span className="font-medium">Credit card</span>
                       <div className="flex gap-2 ml-auto">
-                        <div className="w-8 h-5 bg-blue-600 text-white text-xs flex items-center justify-center rounded">
+                        <div className="w-8 h-5 bg-[#1434CB] text-white text-xs flex items-center justify-center rounded font-bold">
                           VISA
                         </div>
-                        <div className="w-8 h-5 bg-red-600 text-white text-xs flex items-center justify-center rounded">
+                        <div className="w-8 h-5 bg-gradient-to-r from-[#EB001B] to-[#FF5F00] text-white text-xs flex items-center justify-center rounded font-bold">
                           MC
                         </div>
-                        <div className="w-8 h-5 bg-blue-500 text-white text-xs flex items-center justify-center rounded">
+                        <div className="w-8 h-5 bg-[#006FCF] text-white text-xs flex items-center justify-center rounded font-bold">
                           AMEX
+                        </div>
+                        <div className="w-8 h-5 bg-[#FF6000] text-white text-xs flex items-center justify-center rounded font-bold">
+                          DISC
+                        </div>
+                        <div className="relative group">
+                          <span className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                            +4
+                          </span>
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 hidden group-hover:flex gap-2 bg-background border border-border rounded-md p-2 shadow-lg z-10">
+                            <div className="w-8 h-5 bg-[#0079BE] text-white text-xs flex items-center justify-center rounded font-bold">
+                              DC
+                            </div>
+                            <div className="w-8 h-5 bg-[#000000] text-white text-xs flex items-center justify-center rounded font-bold">
+                              ELO
+                            </div>
+                            <div className="w-8 h-5 bg-[#006C44] text-white text-xs flex items-center justify-center rounded font-bold">
+                              JCB
+                            </div>
+                            <div className="w-8 h-5 bg-[#E21836] text-white text-xs flex items-center justify-center rounded font-bold">
+                              UP
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
