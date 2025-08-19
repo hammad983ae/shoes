@@ -31,20 +31,48 @@ export default function EditProfile() {
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (!user) return;
-    supabase
-      .from('profiles')
-      .select('avatar_url, display_name, bio')
-      .eq('user_id', user.id)
-      .single()
-      .then(({ data }) => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('avatar_url, display_name, bio')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading profile:', error);
+          toast({
+            title: "Error loading profile",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
         if (data) {
           setAvatarUrl(data.avatar_url || '');
           setDisplayName(data.display_name || '');
           setBio(data.bio || '');
+        } else {
+          // If no profile exists, set defaults
+          setDisplayName(user.email?.split('@')[0] || '');
+          setBio('');
+          setAvatarUrl('');
         }
-      });
-  }, [user]);
+      } catch (error: any) {
+        console.error('Failed to load profile:', error);
+        toast({
+          title: "Failed to load profile",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadProfile();
+  }, [user, toast]);
 
   const handleSaveChanges = async () => {
     if (!user) return;
