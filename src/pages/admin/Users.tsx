@@ -148,7 +148,7 @@ export default function Users() {
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Avg LTV</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">${summary.avgLTV}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">${summary.avgLTV.toFixed(2)}</p>}
                 </div>
               </div>
             </CardContent>
@@ -315,6 +315,60 @@ export default function Users() {
                       <div className="flex items-center space-x-2 pt-2">
                         <Skeleton className="h-8 w-16 rounded" />
                         <Skeleton className="h-8 w-16 rounded" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : users.filter(u => u.is_creator).length > 0 ? (
+                users.filter(u => u.is_creator).map((creator) => (
+                  <Card key={creator.id}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Avatar>
+                            <AvatarFallback>{creator.display_name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{creator.display_name}</p>
+                            <Badge variant="outline">{creator.creator_tier}</Badge>
+                          </div>
+                        </div>
+                        <Badge variant="default">Creator</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Total Spent</p>
+                          <p className="font-semibold">${creator.total_spent.toFixed(2)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Credits</p>
+                          <p className="font-semibold">{creator.credits}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Referrals</p>
+                          <p className="font-semibold">{creator.referrals_count}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Commission</p>
+                          <p className="font-semibold">{(creator.commission_rate * 100).toFixed(0)}%</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(creator);
+                            setShowDetailedEditModal(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        {creator.coupon_code && (
+                          <Badge variant="secondary">{creator.coupon_code}</Badge>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

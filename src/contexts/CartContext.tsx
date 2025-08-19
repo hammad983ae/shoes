@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { useCartPersistence } from '@/hooks/useCartPersistence';
 
 interface CartItem {
   id: string; // Changed from number to string to support UUIDs
@@ -33,6 +34,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Use cart persistence hook for Supabase sync
+  const { clearCartFromSupabase } = useCartPersistence(items, setItems);
 
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
@@ -81,6 +85,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCart = () => {
     setItems([]);
     setShowNotification(false); // Reset notification on cart clear
+    clearCartFromSupabase(); // Clear from Supabase as well
   };
 
   const getTotalItems = () => {
