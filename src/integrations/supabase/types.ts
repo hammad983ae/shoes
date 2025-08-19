@@ -113,6 +113,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "checklist_items_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       contact_requests: {
@@ -191,6 +198,13 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "coupon_codes_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -459,6 +473,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "credits_history_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -782,6 +803,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "payouts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1865,6 +1893,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "videos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       wallet_transactions: {
@@ -1910,6 +1945,48 @@ export type Database = {
       }
     }
     Views: {
+      post_view_counts: {
+        Row: {
+          post_id: string | null
+          view_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          creator_tier: string | null
+          display_name: string | null
+          is_creator: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          creator_tier?: string | null
+          display_name?: string | null
+          is_creator?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          creator_tier?: string | null
+          display_name?: string | null
+          is_creator?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       unified_credits: {
         Row: {
           commission_rate: number | null
@@ -1985,6 +2062,10 @@ export type Database = {
       demote_from_creator: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      generate_hmac_signature: {
+        Args: { payload: string; secret: string }
+        Returns: string
       }
       generate_referral_code: {
         Args: Record<PropertyKey, never> | { len?: number }

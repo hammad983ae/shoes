@@ -6,6 +6,7 @@ import { marked } from 'marked';
 import { sneakerCatalog } from './SneakerCatalog';
 import { CHATBOT_KNOWLEDGE, FAQ_DATA } from '@/data/chatbotKnowledge';
 import { useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   sender: 'user' | 'ai';
@@ -72,10 +73,7 @@ ALWAYS:
 - Reference specific products when relevant
 - Remember: you are the voice of Crallux Sells. You're here to sell, support, and make the user feel like they're in the right place — because they are.`;
 
-const API_KEY = "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";
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const SITE_URL = "https://cralluxsells.com";
-const SITE_TITLE = "Crallux Sells";
+// Removed hardcoded API key for security
 
 // Utility to strip <think>...</think> blocks from the AI response
 function stripThinking(text: string): string {
@@ -270,32 +268,22 @@ export default function ChatBotWidget() {
     try {
       const context = getComprehensiveContext();
       const pageContext = `Current page: ${location.pathname}`;
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'HTTP-Referer': SITE_URL,
-          'X-Title': SITE_TITLE,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'deepseek/deepseek-r1-0528:free',
-          messages: [
-            { role: 'system', content: CRALLUX_SYSTEM_PROMPT },
-            { role: 'system', content: context },
-            { role: 'system', content: pageContext },
-            ...messages.map((m) => ({
-              role: m.sender === 'user' ? 'user' : 'assistant',
-              content: m.text,
-            })),
-            { role: 'user', content: textToSend },
-          ],
-          max_tokens: 512,
-          temperature: 0.7,
-        }),
+      
+      // Use secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: {
+          prompt: textToSend,
+          context: `${CRALLUX_SYSTEM_PROMPT}\n\n${context}\n\n${pageContext}`,
+          messages: messages.map((m) => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          }))
+        }
       });
-      const data = await response.json();
-      let aiText = data.choices?.[0]?.message?.content || 'Sorry, I could not get a response.';
+
+      if (error) throw error;
+
+      let aiText = data?.response || 'Sorry, I could not get a response.';
       aiText = stripThinking(aiText);
       
       // Handle authenticity questions with workaround language
@@ -303,6 +291,7 @@ export default function ChatBotWidget() {
       
       setMessages((msgs) => [...msgs, { sender: 'ai', text: aiText }]);
     } catch (err) {
+      console.error('Chat error:', err);
       setMessages((msgs) => [...msgs, { sender: 'ai', text: 'Sorry, there was an error contacting the AI.' }]);
     } finally {
       setLoading(false);

@@ -12,75 +12,88 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with service role
+    // Extract JWT token from Authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Missing or invalid Authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+
+    // Create Supabase client with user's JWT
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         auth: {
           autoRefreshToken: false,
           persistSession: false
+        },
+        global: {
+          headers: {
+            authorization: `Bearer ${token}`
+          }
         }
       }
     )
 
-    const { email, role, is_creator } = await req.json()
+    // Verify admin access using the authenticated user
+    const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin')
     
-    console.log(`Promoting user ${email} to role: ${role}, creator: ${is_creator}`)
-
-    // First, find the user by email in auth.users
-    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
-    
-    if (authError) {
-      console.error('Error fetching users:', authError)
-      throw authError
+    if (adminError || !adminCheck) {
+      console.log('Unauthorized access attempt')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const targetUser = authUsers.users.find(user => user.email === email)
+    const { email, role, is_creator } = await req.json()
     
-    if (!targetUser) {
+    console.log(`Admin promoting user ${email} to role: ${role}, creator: ${is_creator}`)
+
+    // Find the target user by email using admin RPC
+    const { data: users, error: usersError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name')
+      .eq('user_id', supabase.auth.getUser().then(res => res.data.user?.email === email ? res.data.user.id : null))
+      .single()
+
+    // Alternative: Find user by checking auth.users via email lookup
+    const { data: authUser, error: authError } = await supabase.rpc('admin_find_user_by_email', { user_email: email })
+    
+    if (authError) {
+      console.error('Error finding user:', authError)
+      return new Response(
+        JSON.stringify({ error: `User with email ${email} not found` }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const targetUserId = authUser?.user_id
+    
+    if (!targetUserId) {
       return new Response(
         JSON.stringify({ error: `User with email ${email} not found` }), 
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Found user ID: ${targetUser.id}`)
+    console.log(`Found user ID: ${targetUserId}`)
 
-    // Use raw SQL through RPC to bypass triggers
-    const { data: updateResult, error: updateError } = await supabase.rpc('exec_sql', {
-      sql: `
-        UPDATE public.profiles 
-        SET 
-          role = $1,
-          is_creator = $2,
-          commission_rate = CASE WHEN $2 = true THEN 0.15 ELSE commission_rate END,
-          creator_tier = CASE WHEN $2 = true THEN 'tier2' ELSE creator_tier END,
-          updated_at = now()
-        WHERE user_id = $3
-      `,
-      args: [role, is_creator, targetUser.id]
+    // Use secure admin RPC function instead of raw SQL
+    const { data: updateResult, error: updateError } = await supabase.rpc('admin_set_creator_status', {
+      target_user_id: targetUserId,
+      is_creator_status: is_creator,
+      new_role: role
     })
 
     if (updateError) {
-      // If RPC doesn't work, try direct update with different approach
-      console.log('RPC failed, trying direct update...')
-      
-      const { error: directError } = await supabase
-        .from('profiles')
-        .update({
-          role: role,
-          is_creator: is_creator,
-          commission_rate: is_creator ? 0.15 : undefined,
-          creator_tier: is_creator ? 'tier2' : undefined,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', targetUser.id)
-
-      if (directError) {
-        console.error('Direct update failed:', directError)
-        throw directError
-      }
+      console.error('Admin update failed:', updateError)
+      throw updateError
     }
 
     // Generate coupon code if user is now a creator
@@ -89,25 +102,21 @@ Deno.serve(async (req) => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('coupon_code')
-        .eq('user_id', targetUser.id)
+        .eq('user_id', targetUserId)
         .single()
 
       if (!profile?.coupon_code) {
-        // Generate a simple coupon code
+        // Generate a simple coupon code using admin RPC
         const couponCode = Math.random().toString(36).substring(2, 10).toUpperCase()
         
-        await supabase
-          .from('profiles')
-          .update({ coupon_code: couponCode })
-          .eq('user_id', targetUser.id)
+        const { error: couponError } = await supabase.rpc('admin_set_coupon_code', {
+          target_user_id: targetUserId,
+          new_code: couponCode
+        })
 
-        // Add to coupon_codes table
-        await supabase
-          .from('coupon_codes')
-          .insert({
-            creator_id: targetUser.id,
-            code: couponCode
-          })
+        if (couponError) {
+          console.warn('Failed to set coupon code:', couponError)
+        }
       }
     }
 

@@ -16,6 +16,34 @@ interface SupportEmailRequest {
   message: string;
 }
 
+// Simple rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function getClientIP(req: Request): string {
+  return req.headers.get('cf-connecting-ip') || 
+         req.headers.get('x-forwarded-for')?.split(',')[0] || 
+         req.headers.get('x-real-ip') || 
+         'unknown';
+}
+
+function isRateLimited(identifier: string): boolean {
+  const now = Date.now();
+  const limit = rateLimitStore.get(identifier);
+  
+  if (!limit || now > limit.resetTime) {
+    // Reset limit every 5 minutes
+    rateLimitStore.set(identifier, { count: 1, resetTime: now + 300000 });
+    return false;
+  }
+  
+  if (limit.count >= 3) { // 3 requests per 5 minutes
+    return true;
+  }
+  
+  limit.count++;
+  return false;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -23,6 +51,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const clientIP = getClientIP(req);
+    
+    // Rate limiting
+    if (isRateLimited(clientIP)) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     const { name, email, issue_type, message }: SupportEmailRequest = await req.json();
 
     // Validate required fields
