@@ -280,20 +280,20 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="brand">Brand *</Label>
               <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
-                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
+                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                  <SelectItem value="Nike">Nike</SelectItem>
-                  <SelectItem value="Jordan">Jordan</SelectItem>
-                  <SelectItem value="Adidas">Adidas</SelectItem>
-                  <SelectItem value="Rick Owens">Rick Owens</SelectItem>
-                  <SelectItem value="Maison Margiela">Maison Margiela</SelectItem>
-                  <SelectItem value="Travis Scott">Travis Scott</SelectItem>
-                  <SelectItem value="Yeezy">Yeezy</SelectItem>
-                  <SelectItem value="New Balance">New Balance</SelectItem>
-                  <SelectItem value="Converse">Converse</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
+                  <SelectItem value="Nike" className="text-white hover:bg-gray-700 focus:bg-gray-700">Nike</SelectItem>
+                  <SelectItem value="Jordan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jordan</SelectItem>
+                  <SelectItem value="Adidas" className="text-white hover:bg-gray-700 focus:bg-gray-700">Adidas</SelectItem>
+                  <SelectItem value="Rick Owens" className="text-white hover:bg-gray-700 focus:bg-gray-700">Rick Owens</SelectItem>
+                  <SelectItem value="Maison Margiela" className="text-white hover:bg-gray-700 focus:bg-gray-700">Maison Margiela</SelectItem>
+                  <SelectItem value="Travis Scott" className="text-white hover:bg-gray-700 focus:bg-gray-700">Travis Scott</SelectItem>
+                  <SelectItem value="Yeezy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Yeezy</SelectItem>
+                  <SelectItem value="New Balance" className="text-white hover:bg-gray-700 focus:bg-gray-700">New Balance</SelectItem>
+                  <SelectItem value="Converse" className="text-white hover:bg-gray-700 focus:bg-gray-700">Converse</SelectItem>
+                  <SelectItem value="Other" className="text-white hover:bg-gray-700 focus:bg-gray-700">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -329,18 +329,18 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="category">Category</Label>
               <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
+                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                  <SelectItem value="High-Top">High-Top</SelectItem>
-                  <SelectItem value="Low-Top">Low-Top</SelectItem>
-                  <SelectItem value="Mid-Top">Mid-Top</SelectItem>
-                  <SelectItem value="Basketball">Basketball</SelectItem>
-                  <SelectItem value="Running">Running</SelectItem>
-                  <SelectItem value="Casual">Casual</SelectItem>
-                  <SelectItem value="Designer">Designer</SelectItem>
-                  <SelectItem value="Limited Edition">Limited Edition</SelectItem>
+                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
+                  <SelectItem value="High-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">High-Top</SelectItem>
+                  <SelectItem value="Low-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Low-Top</SelectItem>
+                  <SelectItem value="Mid-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mid-Top</SelectItem>
+                  <SelectItem value="Basketball" className="text-white hover:bg-gray-700 focus:bg-gray-700">Basketball</SelectItem>
+                  <SelectItem value="Running" className="text-white hover:bg-gray-700 focus:bg-gray-700">Running</SelectItem>
+                  <SelectItem value="Casual" className="text-white hover:bg-gray-700 focus:bg-gray-700">Casual</SelectItem>
+                  <SelectItem value="Designer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Designer</SelectItem>
+                  <SelectItem value="Limited Edition" className="text-white hover:bg-gray-700 focus:bg-gray-700">Limited Edition</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -378,13 +378,13 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="size_type">Size Type</Label>
               <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
-                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
+                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001]">
-                  <SelectItem value="US">US</SelectItem>
-                  <SelectItem value="EU">EU</SelectItem>
-                  <SelectItem value="UK">UK</SelectItem>
+                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001]">
+                  <SelectItem value="US" className="text-white hover:bg-gray-700 focus:bg-gray-700">US</SelectItem>
+                  <SelectItem value="EU" className="text-white hover:bg-gray-700 focus:bg-gray-700">EU</SelectItem>
+                  <SelectItem value="UK" className="text-white hover:bg-gray-700 focus:bg-gray-700">UK</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -395,16 +395,16 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 onValueChange={(value) => handleInputChange('availability', value)}
                 disabled={formData.infinite_stock}
               >
-                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
+                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001]">
-                  <SelectItem value="In Stock">In Stock</SelectItem>
-                  <SelectItem value="Low Stock">Low Stock</SelectItem>
-                  <SelectItem value="Out of Stock">Out of Stock</SelectItem>
-                  <SelectItem value="Pre-Order">Pre-Order</SelectItem>
-                  <SelectItem value="Very Limited">Very Limited</SelectItem>
-                  <SelectItem value="Extremely Limited">Extremely Limited</SelectItem>
+                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001]">
+                  <SelectItem value="In Stock" className="text-white hover:bg-gray-700 focus:bg-gray-700">In Stock</SelectItem>
+                  <SelectItem value="Low Stock" className="text-white hover:bg-gray-700 focus:bg-gray-700">Low Stock</SelectItem>
+                  <SelectItem value="Out of Stock" className="text-white hover:bg-gray-700 focus:bg-gray-700">Out of Stock</SelectItem>
+                  <SelectItem value="Pre-Order" className="text-white hover:bg-gray-700 focus:bg-gray-700">Pre-Order</SelectItem>
+                  <SelectItem value="Very Limited" className="text-white hover:bg-gray-700 focus:bg-gray-700">Very Limited</SelectItem>
+                  <SelectItem value="Extremely Limited" className="text-white hover:bg-gray-700 focus:bg-gray-700">Extremely Limited</SelectItem>
                 </SelectContent>
               </Select>
             </div>
