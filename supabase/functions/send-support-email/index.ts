@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification email to company
     const companyEmailResponse = await resend.emails.send({
       from: "Crallux Sells Support <onboarding@resend.dev>",
-      to: ["yourteam@cralluxsells.com"],
+      to: ["cralluxmaster@protonmail.com"],
       subject: `New Support Ticket: ${issue_type} - ${name}`,
       html: `
         <h1>New Support Ticket Received</h1>
