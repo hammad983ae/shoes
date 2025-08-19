@@ -11,35 +11,23 @@ export const useDynamicProducts = () => {
       setLoading(true);
       console.log('Fetching products...');
       
-      // Query with product_media join to get real photos
+      // Simplified query first - just get products
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_media(id, url, role, display_order)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       console.log('Products query result:', { data, error });
-      if (error) throw error;
+      if (error) {
+        console.error('Products query error:', error);
+        throw error;
+      }
 
       console.log('Formatting products, data length:', data?.length);
       const formattedProducts: Sneaker[] = (data || []).map(product => {
-        // Sort all media by display_order to maintain consistent ordering
-        const sortedMedia = (product.product_media || [])
-          .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
-        
-        // Find primary image first, fallback to first image in order
-        const primaryImage = sortedMedia.find((media: any) => media.role === 'primary')?.url || 
-                           sortedMedia[0]?.url || '';
-        
-        // Get all gallery images in order
-        const galleryImages = sortedMedia
-          .filter((media: any) => media.role === 'gallery')
-          .map((media: any) => media.url);
-
-        // Combine all images: primary first, then gallery images in display order
-        const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
+        // Use the images array from the product directly
+        const images = product.images || [];
+        const primaryImage = images[0] || '';
 
         return {
           id: product.id, // Keep UUID for internal operations
@@ -47,8 +35,8 @@ export const useDynamicProducts = () => {
           name: product.title,
           price: `$${product.price}`,
           slashed_price: product.slashed_price || undefined,
-          image: primaryImage || galleryImages[0] || '',
-          images: allImages,
+          image: primaryImage,
+          images: images,
           brand: product.brand,
           category: product.category,
           description: product.description || '',
@@ -72,6 +60,7 @@ export const useDynamicProducts = () => {
       setProducts(formattedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setProducts([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
