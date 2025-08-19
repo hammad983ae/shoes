@@ -223,7 +223,7 @@ const ProductDetail = () => {
         {/* Content */}
         <article className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Images */}
-          <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden flex-shrink-0">
+          <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden flex-shrink-0 aspect-square">
             {product.images && product.images.length > 0 && (
               <div className="carousel-container">
                 <div
