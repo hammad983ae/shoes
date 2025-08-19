@@ -38,26 +38,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!user) {
-      console.error("⚠️ USER BECAME NULL - Navigation broke auth state");
-      console.trace("User null stack trace");
-    } else {
-      console.log("✅ User active:", user.email, "User ID:", user.id);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!session) {
-      console.error("⚠️ SESSION BECAME NULL - Auth session lost");
-      console.trace("Session null stack trace");
-    } else {
-      console.log("✅ Session active for:", session.user?.email);
-    }
-  }, [session]);
+  // Remove the debug logs that were causing noise during normal React rendering
+  // These were triggering during legitimate React remounts and causing confusion
 
   useEffect(() => {
     let mounted = true;
+    let initializationComplete = false;
 
     // CRITICAL: Single initialization - getSession() only runs ONCE on app load
     const initializeAuth = async () => {
@@ -70,11 +56,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          initializationComplete = true;
         }
       } catch (error) {
         console.error('❌ Error restoring session:', error);
         if (mounted) {
           setLoading(false);
+          initializationComplete = true;
         }
       }
     };
@@ -87,7 +75,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log("🌀 Supabase event:", event);
         console.log("📦 Session from event:", session?.user?.email || 'none');
         
-        // ALWAYS update session and user state for ANY auth event
+        // Only process auth events after initial session load is complete
+        // This prevents race conditions during React rendering
+        if (!initializationComplete && event !== 'INITIAL_SESSION') {
+          console.log("⏸️ Skipping auth event during initialization:", event);
+          return;
+        }
+        
+        // ALWAYS update session and user state for meaningful auth events
         setSession(session);
         setUser(session?.user ?? null);
         
