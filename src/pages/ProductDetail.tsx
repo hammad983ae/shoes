@@ -223,49 +223,75 @@ const ProductDetail = () => {
         {/* Content */}
         <article className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Images */}
-          <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden flex-shrink-0 aspect-square">
-            {product.images && product.images.length > 0 && (
-              <div className="carousel-container">
-                <div
-                  className="carousel-track"
-                  style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-                >
-                  {product.images.map((img, i) => (
-                    <img key={i} src={img} alt={`${product.name} image ${i+1}`} className="carousel-image" />
-                  ))}
+          <div className="flex flex-col gap-4">
+            {/* Main Image */}
+            <div className="relative bg-background/40 border border-border rounded-lg overflow-hidden flex-shrink-0 aspect-square">
+              {product.images && product.images.length > 0 && (
+                <div className="carousel-container">
+                  <div
+                    className="carousel-track"
+                    style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                  >
+                    {product.images.map((img, i) => (
+                      <img key={i} src={img} alt={`${product.name} image ${i+1}`} className="carousel-image" />
+                    ))}
+                  </div>
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20"
+                        onClick={() => setCurrentIndex(prev => (prev === 0 ? product.images.length - 1 : prev - 1))}
+                        aria-label="Previous image"
+                      >
+                        &#8592;
+                      </button>
+                      <button
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20"
+                        onClick={() => setCurrentIndex(prev => (prev === product.images.length - 1 ? 0 : prev + 1))}
+                        aria-label="Next image"
+                      >
+                        &#8594;
+                      </button>
+                    </>
+                  )}
                 </div>
-                {product.images.length > 1 && (
-                  <>
-                    <button
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20"
-                      onClick={() => setCurrentIndex(prev => (prev === 0 ? product.images.length - 1 : prev - 1))}
-                      aria-label="Previous image"
-                    >
-                      &#8592;
-                    </button>
-                    <button
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 z-20"
-                      onClick={() => setCurrentIndex(prev => (prev === product.images.length - 1 ? 0 : prev + 1))}
-                      aria-label="Next image"
-                    >
-                      &#8594;
-                    </button>
-                  </>
-                )}
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 left-2 bg-background/80 hover:bg-background z-20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite(product.id.toString());
+                }}
+              >
+                <Heart className={`w-5 h-5 ${isFavorite(product.id.toString()) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+              </Button>
+            </div>
+
+            {/* Thumbnail Gallery */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {product.images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentIndex(i)}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                      i === currentIndex 
+                        ? 'border-primary shadow-md' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${product.name} thumbnail ${i+1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 left-2 bg-background/80 hover:bg-background z-20"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite(product.id.toString());
-              }}
-            >
-              <Heart className={`w-5 h-5 ${isFavorite(product.id.toString()) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-            </Button>
           </div>
 
           {/* Product Details */}
