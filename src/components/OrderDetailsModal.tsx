@@ -4,8 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Package, User, MapPin, Image as ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { X, Package, User, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import ImageUpload from "./ImageUpload";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrderItem {
   id: string;
@@ -49,18 +52,54 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
   const [trackingNumber, setTrackingNumber] = useState(order?.tracking_number || "");
   const [qualityCheckImage, setQualityCheckImage] = useState(order?.quality_check_image || "");
   const [fulfillmentNotes, setFulfillmentNotes] = useState(order?.fulfillment_notes || "");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (order) {
+      setTrackingNumber(order.tracking_number || "");
+      setQualityCheckImage(order.quality_check_image || "");
+      setFulfillmentNotes(order.fulfillment_notes || "");
+    }
+  }, [order]);
 
   if (!order) return null;
 
-  const handleSave = () => {
-    if (onUpdate) {
-      onUpdate(order.id, {
-        tracking_number: trackingNumber,
-        quality_check_image: qualityCheckImage,
-        fulfillment_notes: fulfillmentNotes
+  const handleSave = async () => {
+    try {
+      // Update order in database
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          tracking_number: trackingNumber,
+          quality_check_image: qualityCheckImage,
+          fulfillment_notes: fulfillmentNotes
+        })
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      if (onUpdate) {
+        onUpdate(order.id, {
+          tracking_number: trackingNumber,
+          quality_check_image: qualityCheckImage,
+          fulfillment_notes: fulfillmentNotes
+        });
+      }
+
+      toast({
+        title: "Order updated",
+        description: "Order details have been updated successfully",
+      });
+
+      onClose();
+    } catch (error: any) {
+      console.error('Error updating order:', error);
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update order",
+        variant: "destructive"
       });
     }
-    onClose();
   };
 
   const getStatusColor = (status: string) => {
@@ -169,8 +208,24 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
               )}
             </div>
             <div className="flex justify-between items-center pt-3 border-t">
-              <span className="font-semibold">Total</span>
+              <span className="font-semibold">Subtotal</span>
               <span className="font-bold text-lg">${order.order_total.toFixed(2)}</span>
+            </div>
+            {(order.credits_used && order.credits_used > 0) && (
+              <div className="flex justify-between items-center text-green-600">
+                <span>Credits Applied ({order.credits_used} credits)</span>
+                <span>-${(order.credits_used / 100).toFixed(2)}</span>
+              </div>
+            )}
+            {order.coupon_discount && (
+              <div className="flex justify-between items-center text-green-600">
+                <span>Coupon Discount</span>
+                <span>-${order.coupon_discount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-2 border-t font-bold">
+              <span>Final Total</span>
+              <span className="text-lg">${(order.order_total - (order.credits_used ? order.credits_used / 100 : 0) - (order.coupon_discount || 0)).toFixed(2)}</span>
             </div>
           </div>
 
@@ -199,31 +254,11 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="quality-image">Quality Check Image URL</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="quality-image"
-                  value={qualityCheckImage}
-                  onChange={(e) => setQualityCheckImage(e.target.value)}
-                  placeholder="Enter image URL for quality check"
-                />
-                {qualityCheckImage && (
-                  <Button variant="outline" size="icon" onClick={() => window.open(qualityCheckImage, '_blank')}>
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-              {qualityCheckImage && (
-                <div className="mt-2">
-                  <img 
-                    src={qualityCheckImage} 
-                    alt="Quality check preview" 
-                    className="max-w-full h-32 object-cover rounded border"
-                  />
-                </div>
-              )}
-            </div>
+            <ImageUpload
+              onImageUploaded={setQualityCheckImage}
+              currentImage={qualityCheckImage}
+              bucketName="products"
+            />
 
             <div>
               <Label htmlFor="notes">Fulfillment Notes</Label>
