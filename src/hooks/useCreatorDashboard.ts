@@ -10,6 +10,13 @@ interface CreatorStats {
   totalSalesDriven: number;
 }
 
+interface SocialConnection {
+  platform: string;
+  username: string;
+  follower_count: number;
+  verified_at: string;
+}
+
 interface CreatorProfile {
   name: string;
   profileImage: string;
@@ -17,6 +24,7 @@ interface CreatorProfile {
   couponCode: string;
   commissionRate: number;
   followers: number;
+  socialConnections: SocialConnection[];
 }
 
 interface CreditTransaction {
@@ -56,7 +64,8 @@ export const useCreatorDashboard = () => {
     tier: 1,
     couponCode: '',
     commissionRate: 0,
-    followers: 0
+    followers: 0,
+    socialConnections: []
   });
   const [stats, setStats] = useState<CreatorStats>({
     totalOrders: 0,
@@ -86,6 +95,14 @@ export const useCreatorDashboard = () => {
 
       if (profileError) throw profileError;
 
+      // Fetch verified social connections
+      const { data: socialConnections, error: socialError } = await supabase
+        .from('social_connections')
+        .select('platform, username, follower_count, verified_at')
+        .eq('user_id', user.id);
+
+      if (socialError) throw socialError;
+
       if (profileData) {
         setProfile({
           name: profileData.display_name || 'Creator',
@@ -93,7 +110,8 @@ export const useCreatorDashboard = () => {
           tier: profileData.creator_tier === 'tier3' ? 3 : profileData.creator_tier === 'tier2' ? 2 : 1,
           couponCode: profileData.coupon_code || '',
           commissionRate: (profileData.commission_rate || 0.1) * 100,
-          followers: 0 // Would come from social connections
+          followers: 0, // Legacy field
+          socialConnections: socialConnections || []
         });
       }
 

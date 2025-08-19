@@ -60,7 +60,12 @@ export default function CreatorDashboard() {
     return { tier: "Bronze", rate: 20 };
   };
 
-  const currentCreditTier = getCreditTier(profile.followers);
+  // Only show social data if verified connections exist
+  const hasVerifiedSocials = profile.socialConnections && profile.socialConnections.length > 0;
+  const highestFollowerCount = hasVerifiedSocials 
+    ? Math.max(...profile.socialConnections.map(conn => conn.follower_count))
+    : 0;
+  const currentCreditTier = getCreditTier(highestFollowerCount);
   const progressToNext = (stats.totalSalesDriven / tierThresholds[profile.tier].max) * 100;
 
   const addGoal = async () => {
@@ -336,30 +341,50 @@ export default function CreatorDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LinkIcon className="h-5 w-5 text-primary" />
-                Social Connection
+                Social Connections
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                 <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-                   {loading ? (
-                     <>
-                       <Skeleton className="h-8 w-16 mx-auto mb-2" />
-                       <Skeleton className="h-4 w-24 mx-auto mb-2" />
-                       <Skeleton className="h-6 w-20 mx-auto" />
-                     </>
-                     ) : (
-                       <>
-                         <p className="text-2xl font-bold text-foreground">{profile.followers.toLocaleString()}</p>
-                         <p className="text-sm text-muted-foreground">TikTok Followers</p>
-                         <Badge className="mt-2 bg-primary text-primary-foreground">${currentCreditTier.rate}/video</Badge>
-                       </>
-                     )}
-                 </div>
-                
-                <p className="text-sm text-center text-muted-foreground">
-                  Post more videos to upgrade your credit tier.
-                </p>
+                {loading ? (
+                  <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                    <Skeleton className="h-4 w-24 mx-auto mb-2" />
+                    <Skeleton className="h-6 w-20 mx-auto" />
+                  </div>
+                ) : hasVerifiedSocials ? (
+                  <div className="space-y-3">
+                    {profile.socialConnections.map((connection, index) => (
+                      <div key={index} className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm capitalize">{connection.platform}</p>
+                            <p className="text-xs text-muted-foreground">@{connection.username}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold">{connection.follower_count.toLocaleString()}</p>
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                              Verified
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="text-center p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <p className="text-sm font-medium">Current Payout Rate</p>
+                      <Badge className="mt-1 bg-primary text-primary-foreground">
+                        ${currentCreditTier.rate}/video
+                      </Badge>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-4 bg-muted/50 rounded-lg border border-border">
+                    <p className="font-medium text-sm mb-2">No Social Connections</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Connect and verify your social accounts to earn credits for videos
+                    </p>
+                  </div>
+                )}
                 
                 <Button 
                   className="w-full" 
@@ -367,7 +392,7 @@ export default function CreatorDashboard() {
                   onClick={() => setShowConnectSocials(true)}
                 >
                   <LinkIcon className="h-4 w-4 mr-2" />
-                  Connect Socials
+                  {hasVerifiedSocials ? "Add More Socials" : "Connect Socials"}
                 </Button>
               </div>
             </CardContent>
