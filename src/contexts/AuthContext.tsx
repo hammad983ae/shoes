@@ -50,7 +50,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.log('Session restored:', session?.user?.id || 'none');
           setSession(session);
           setUser(session?.user ?? null);
-          // Don't set loading false here - wait for profile to load
+          
+          // If no session, set loading false immediately
+          if (!session) {
+            setLoading(false);
+          }
+          // If session exists, let profile loading handle setLoading(false)
         }
       } catch (error) {
         console.error('Error restoring session:', error);
@@ -94,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
-      setLoading(false); // Set loading false when no user
+      // DON'T set loading false here - let session restoration handle it
       return;
     }
     
