@@ -382,14 +382,26 @@ export default function OrderHistory() {
                             modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
                             modal.onclick = () => modal.remove();
                             
-                            const mediaElement = selectedOrder.quality_check_image!.includes('.mp4') || 
-                                               selectedOrder.quality_check_image!.includes('.mov') || 
-                                               selectedOrder.quality_check_image!.includes('.avi') || 
-                                               selectedOrder.quality_check_image!.includes('.webm') 
-                              ? `<video src="${selectedOrder.quality_check_image}" controls class="max-w-full max-h-full object-contain" />`
-                              : `<img src="${selectedOrder.quality_check_image}" alt="Quality check fullscreen" class="max-w-full max-h-full object-contain" />`;
+                            const isVideo = selectedOrder.quality_check_image!.includes('.mp4') || 
+                                          selectedOrder.quality_check_image!.includes('.mov') || 
+                                          selectedOrder.quality_check_image!.includes('.avi') || 
+                                          selectedOrder.quality_check_image!.includes('.webm');
                             
-                            modal.innerHTML = mediaElement;
+                            modal.innerHTML = `
+                              <button 
+                                onclick="this.parentElement.remove()" 
+                                class="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                              </button>
+                              ${isVideo 
+                                ? `<video src="${selectedOrder.quality_check_image}" controls class="max-w-full max-h-full object-contain" onclick="event.stopPropagation()" />`
+                                : `<img src="${selectedOrder.quality_check_image}" alt="Quality check fullscreen" class="max-w-full max-h-full object-contain" onclick="event.stopPropagation()" />`
+                              }
+                            `;
+                            
                             document.body.appendChild(modal);
                           }}
                         >
