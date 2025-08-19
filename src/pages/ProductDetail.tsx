@@ -194,7 +194,14 @@ const ProductDetail = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                // Try to go back, but fallback to catalog if no history
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate('/catalog');
+                }
+              }}
               className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
             >
               <ArrowLeft className="w-4 h-4" />
