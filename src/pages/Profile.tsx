@@ -24,7 +24,8 @@ import {
   History,
   Coins,
   Bell,
-  Wallet
+  Wallet,
+  ArrowLeft
 } from 'lucide-react';
 import InteractiveParticles from '@/components/InteractiveParticles';
 
@@ -397,6 +398,21 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen page-gradient flex flex-col">
+      {/* Back Button */}
+      <div className="sticky top-0 z-40 w-full px-4 md:px-8 py-1">
+        <div className="flex items-center justify-start gap-2 max-w-screen-lg mx-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back</span>
+          </Button>
+        </div>
+      </div>
+      
       <div className="flex-1 flex items-center justify-center px-2 sm:px-4 py-4 sm:py-8 w-full">
         <div className="w-full max-w-xs sm:max-w-md mx-auto relative">
           <InteractiveParticles isActive={true} />

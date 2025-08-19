@@ -1,6 +1,27 @@
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+
 export default function Privacy() {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen page-gradient">
+      {/* Back Button */}
+      <div className="sticky top-0 z-40 w-full px-4 md:px-8 py-1">
+        <div className="flex items-center justify-start gap-2 max-w-screen-lg mx-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back</span>
+          </Button>
+        </div>
+      </div>
+      
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-8">
           <h1 className="text-4xl font-bold text-foreground mb-6">Privacy Policy</h1>
