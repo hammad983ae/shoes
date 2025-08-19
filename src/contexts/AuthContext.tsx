@@ -51,11 +51,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(session);
           setUser(session?.user ?? null);
           
-          // If no session, set loading false immediately
-          if (!session) {
-            setLoading(false);
-          }
-          // If session exists, let profile loading handle setLoading(false)
+          // CRITICAL FIX: Always set loading false after session check completes
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error restoring session:', error);
@@ -160,7 +157,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsCreator(false);
             setProfile(defaultProfile);
           }
-          setLoading(false); // Set loading false after handling error
           return;
         }
         
@@ -168,7 +164,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(data);
         setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
         setIsCreator(Boolean(data.is_creator));
-        setLoading(false); // Set loading false after successful profile load
       } catch (e) {
         console.error('Failed to load profile:', e);
         const defaultProfile = {
@@ -181,7 +176,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserRole('user');
         setIsCreator(false);
         setProfile(defaultProfile);
-        setLoading(false); // Set loading false after handling exception
       }
     };
     
