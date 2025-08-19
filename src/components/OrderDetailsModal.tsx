@@ -40,7 +40,14 @@ interface Order {
     state: string;
     zipCode: string;
   };
-  items?: OrderItem[];
+  items?: Array<{
+    id: string;
+    product_id: string;
+    quantity: number;
+    price_per_item: number;
+    size?: string;
+    product_title?: string;
+  }>;
 }
 
 interface OrderDetailsModalProps {
@@ -62,7 +69,20 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
       setTrackingNumber(order.tracking_number || "");
       setQualityCheckImage(order.quality_check_image || "");
       setFulfillmentNotes(order.fulfillment_notes || "");
-      fetchOrderItems();
+      
+      // Use items from the order if they exist, otherwise fetch them
+      if (order.items && order.items.length > 0) {
+        const formattedItems: OrderItem[] = order.items.map(item => ({
+          id: item.id,
+          product_name: item.product_title || 'Unknown Product',
+          quantity: item.quantity,
+          price_per_item: item.price_per_item,
+          size: item.size
+        }));
+        setOrderItems(formattedItems);
+      } else {
+        fetchOrderItems();
+      }
     }
   }, [order]);
 
