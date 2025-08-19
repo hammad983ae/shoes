@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DetailedUserEditModal } from "@/components/DetailedUserEditModal";
 import { AddCreatorModal } from "@/components/AddCreatorModal";
 import { InviteCreatorModal } from "@/components/InviteCreatorModal";
+import CreatorEditModal from "@/components/CreatorEditModal";
 import { useUsers } from "@/hooks/useUsers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +34,9 @@ export default function Users() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAddCreatorModal, setShowAddCreatorModal] = useState(false);
   const [showDetailedEditModal, setShowDetailedEditModal] = useState(false);
+  const [showCreatorEditModal, setShowCreatorEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedCreator, setSelectedCreator] = useState<any>(null);
   const { toast } = useToast();
 
   const handleExportUsers = async () => {
@@ -360,8 +363,8 @@ export default function Users() {
                           variant="outline" 
                           size="sm"
                           onClick={() => {
-                            setSelectedUser(creator);
-                            setShowDetailedEditModal(true);
+                            setSelectedCreator(creator);
+                            setShowCreatorEditModal(true);
                           }}
                         >
                           Edit
@@ -435,6 +438,21 @@ export default function Users() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Creator Edit Modal */}
+      <CreatorEditModal
+        creator={selectedCreator}
+        isOpen={showCreatorEditModal}
+        onClose={() => setShowCreatorEditModal(false)}
+        onSave={(creatorData) => {
+          console.log('Saving creator data:', creatorData);
+          toast({
+            title: "Creator Updated",
+            description: "Creator settings have been updated successfully.",
+          });
+          refetch();
+        }}
+      />
 
       <DetailedUserEditModal
         isOpen={showDetailedEditModal}

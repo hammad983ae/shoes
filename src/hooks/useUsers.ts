@@ -79,12 +79,18 @@ export const useUsers = () => {
         new Date(u.created_at) >= thisMonth
       ).length;
 
+      // Calculate LTV only for paying customers (users with total_spent > 0)
+      const payingCustomers = formattedUsers.filter(u => u.total_spent > 0);
+      const avgLTV = payingCustomers.length > 0 
+        ? payingCustomers.reduce((sum, user) => sum + user.total_spent, 0) / payingCustomers.length 
+        : 0;
+
       setSummary({
         totalUsers,
         activeUsers: totalUsers, // Simplified - would need activity tracking
         creators,
         newThisMonth,
-        avgLTV: totalUsers > 0 ? formattedUsers.reduce((sum, user) => sum + user.total_spent, 0) / totalUsers : 0
+        avgLTV
       });
 
     } catch (error) {
