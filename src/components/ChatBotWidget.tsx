@@ -30,17 +30,17 @@ Only answer questions using the information below. Do not make anything up. If y
 - Users can send **StockX, GOAT, or Instagram screenshots** to request exact models.
 - All orders are now placed through the **Crallux Sells website** — **no more DM orders**.
 - Orders include **tracking within 48 hours** of payment confirmation.
-- Payment options: **Cash App, Zelle, Venmo**, and **Crypto (BTC, ETH)**.
+- Payment options: **Credit card payment through secure checkout**.
 - Sizes are in **EU sizing** — conversions available upon request.
 - **No refunds**, unless the shoe arrives damaged or incorrect.
 - Users can earn credits: **100 credits = $1**
-- Referral program: Users earn **20% of referred user's purchases**.
+- Referral program: Users earn **10% back in credits** when someone buys using their link.
 
 🔍 PAGE-AWARE CONTEXT (respond based on current route):
 **On Home Page:** "Want help finding your perfect pair? I can recommend kicks based on your style."
 **On Product Page:** "Need sizing help, fit info, or more photos of this model?"
 **On Cart Page:** "Want a last-minute discount before checkout? Ask me."
-**On Checkout Page:** "Not sure how to pay with Zelle or Cash App? I'll walk you through it."
+**On Checkout Page:** "Need help with credit card payment? I'll walk you through it."
 **On Tracking Page:** "Drop your order ID below and I'll fetch your tracking."
 
 ⚙️ INTERACTION STRATEGIES:
@@ -72,7 +72,7 @@ ALWAYS:
 - Reference specific products when relevant
 - Remember: you are the voice of Crallux Sells. You're here to sell, support, and make the user feel like they're in the right place — because they are.`;
 
-const API_KEY = "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";
+const API_KEY = "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";
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 const SITE_URL = "https://cralluxsells.com";
 const SITE_TITLE = "Crallux Sells";
@@ -145,7 +145,7 @@ function getPageAwareGreeting(pathname: string): string {
   } else if (pathname === '/cart') {
     return "Ready to secure the bag? 💰 Want a last-minute discount before checkout? Ask me.";
   } else if (pathname === '/checkout') {
-    return "Almost there! 💳 Not sure how to pay with Zelle or Cash App? I'll walk you through it.";
+    return "Almost there! 💳 Need help with credit card payment? I'll walk you through it.";
   } else if (pathname.includes('catalog') || pathname.includes('full-catalog')) {
     return "Browsing the collection? 👀 Tell me your vibe and I'll point you to the heat.";
   }

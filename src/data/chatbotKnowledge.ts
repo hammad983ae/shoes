@@ -16,7 +16,7 @@ export const CHATBOT_KNOWLEDGE = {
       method: "Standard shipping via reliable carriers"
     },
     payment: {
-      methods: "Cash App, Zelle, Venmo, and Crypto (BTC, ETH)",
+      methods: "Credit card payment through secure checkout",
       security: "Secure payment processing",
       requirements: "Must be signed in to purchase",
       processing: "Payment processed securely at checkout"
@@ -32,8 +32,8 @@ export const CHATBOT_KNOWLEDGE = {
   features: {
     referral: {
       description: "Earn credits by sharing referral links",
-      percentage: "20% of referred user's purchases back in credits",
-      discount: "New customers get benefits using referral",
+      percentage: "10% back in credits when someone uses your link",
+      discount: "New customers get 10% off their first purchase using referral",
       link: "https://cralluxsells.com/ref/[code]",
       process: "Share your unique referral link, earn credits when friends purchase"
     },
@@ -68,11 +68,11 @@ export const FAQ_DATA = {
   },
   payment: {
     question: "What payment methods do you accept?",
-    answer: "We accept Cash App, Zelle, Venmo, and Crypto (BTC, ETH). Must be signed in to purchase."
+    answer: "We accept credit card payments through our secure checkout. Must be signed in to purchase."
   },
   referral: {
     question: "How does the referral system work?",
-    answer: "Share your referral link, earn 20% of referred user's purchases back in credits. Users earn credits: 100 credits = $1."
+    answer: "Share your referral link, earn 10% back in credits when someone uses your link to make a purchase. New customers get 10% off their first order."
   },
   credits: {
     question: "How do I use credits?",
