@@ -14,6 +14,7 @@ interface User {
   credits: number;
   coupon_code?: string;
   total_spent: number;
+  last_login_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -60,6 +61,7 @@ export const useUsers = () => {
         credits: user.credits || 0,
         coupon_code: user.coupon_code || undefined,
         total_spent: user.total_spent || 0,
+        last_login_at: user.last_login_at || undefined,
         created_at: user.created_at,
         updated_at: user.updated_at
       }));

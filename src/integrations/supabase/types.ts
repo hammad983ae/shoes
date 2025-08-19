@@ -1978,6 +1978,10 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: boolean
       }
+      sync_user_last_login: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       sync_user_total_spent: {
         Args: Record<PropertyKey, never>
         Returns: undefined
