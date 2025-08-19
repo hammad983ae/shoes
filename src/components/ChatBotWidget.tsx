@@ -139,17 +139,81 @@ ${JSON.stringify(FAQ_DATA, null, 2)}
 // Generate page-aware greeting based on current route
 function getPageAwareGreeting(pathname: string): string {
   if (pathname === '/') {
-    return "Welcome to Crallux Sells! 👟 Want help finding your perfect pair? I can recommend kicks based on your style.";
+    return "Welcome to Crallux Sells! 👟 Your premium sneaker plug is here. Looking for that perfect pair to complete your fit?";
   } else if (pathname.startsWith('/product/')) {
-    return "Looking at something fire? 🔥 Need sizing help, fit info, or more photos of this model?";
+    return "Found something fire? 🔥 I'm here to help with sizing, quality questions, or anything else about this drop.";
   } else if (pathname === '/cart') {
-    return "Ready to secure the bag? 💰 Want a last-minute discount before checkout? Ask me.";
+    return "Ready to secure the bag? 💰 Need help with credits, discounts, or have payment questions before checkout?";
   } else if (pathname === '/checkout') {
-    return "Almost there! 💳 Need help with credit card payment? I'll walk you through it.";
+    return "Almost there! 💳 I'll help you finish this order smooth - payment questions, shipping info, whatever you need.";
   } else if (pathname.includes('catalog') || pathname.includes('full-catalog')) {
-    return "Browsing the collection? 👀 Tell me your vibe and I'll point you to the heat.";
+    return "Browsing the heat collection? 👀 Tell me your style and I'll point you to the perfect kicks for your vibe.";
+  } else if (pathname.includes('credits') || pathname.includes('referral')) {
+    return "Getting that bag with referrals? 💸 Smart move! I'll help you maximize those credits and share links like a pro.";
+  } else if (pathname.includes('profile') || pathname.includes('settings')) {
+    return "Managing your account? ⚙️ I can help with profile updates, order history, or account questions.";
+  } else if (pathname.includes('order')) {
+    return "Checking on your orders? 📦 I can help with tracking, delivery info, or any order-related questions.";
   }
-  return "What's good! I'm your Crallux Sells plug. What can I get for you today? 🔥";
+  return "What's good! 🔥 I'm your Crallux Sells plug. Ready to help you find the perfect kicks or answer any questions!";
+}
+
+// Generate page-specific suggested questions
+function getPageSuggestedQuestions(pathname: string): string[] {
+  if (pathname === '/') {
+    return [
+      "Show me your bestsellers 🔥",
+      "How does shipping work? 📦",
+      "Tell me about referrals 💰"
+    ];
+  } else if (pathname.startsWith('/product/')) {
+    return [
+      "What sizes are available? 👟",
+      "How's the quality? ✨",
+      "When will this ship? 🚚"
+    ];
+  } else if (pathname === '/cart') {
+    return [
+      "How do I apply credits? 💳",
+      "Any discounts available? 🎯",
+      "What payment methods work? 💰"
+    ];
+  } else if (pathname === '/checkout') {
+    return [
+      "Is my payment secure? 🔒",
+      "How long is shipping? ⏰",
+      "Can I track my order? 📍"
+    ];
+  } else if (pathname.includes('catalog') || pathname.includes('full-catalog')) {
+    return [
+      "Help me choose shoes 👟",
+      "What's most popular? 🔥",
+      "Do you have Jordan's? 🏀"
+    ];
+  } else if (pathname.includes('credits') || pathname.includes('referral')) {
+    return [
+      "How do referrals work? 🔗",
+      "How do I use credits? 💰",
+      "How do I share my link? 📲"
+    ];
+  } else if (pathname.includes('profile') || pathname.includes('settings')) {
+    return [
+      "Update my shipping info 📮",
+      "Change my password 🔐",
+      "View order history 📋"
+    ];
+  } else if (pathname.includes('order')) {
+    return [
+      "Track my recent order 📦",
+      "When will it arrive? ⏰",
+      "Change delivery address 📍"
+    ];
+  }
+  return [
+    "What sneakers do you recommend? 👟",
+    "How does your site work? ❓",
+    "Tell me about your quality 🌟"
+  ];
 }
 
 export default function ChatBotWidget() {
@@ -158,12 +222,14 @@ export default function ChatBotWidget() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize with page-aware greeting
+  // Initialize with page-aware greeting and suggested questions
   useEffect(() => {
     setMessages([{ sender: 'ai', text: getPageAwareGreeting(location.pathname) }]);
+    setSuggestedQuestions(getPageSuggestedQuestions(location.pathname));
   }, [location.pathname]);
 
   useEffect(() => {
@@ -178,10 +244,27 @@ export default function ChatBotWidget() {
     }
   }, [open]);
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { sender: 'user', text: input };
+  const handleSuggestedQuestion = (question: string) => {
+    const cleanQuestion = question.replace(/[🔥👟💰🔗📦💳🎯✨🚚📍⏰🔒🏀📲📮🔐📋🌟❓]/g, '').trim();
+    setInput(cleanQuestion);
+    // Auto-send the question
+    const userMsg: Message = { sender: 'user', text: cleanQuestion };
     setMessages((msgs) => [...msgs, userMsg]);
+    setLoading(true);
+    
+    // Process the question
+    handleSendMessage(cleanQuestion);
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim() || loading) return;
+    
+    if (!messageText) {
+      const userMsg: Message = { sender: 'user', text: textToSend };
+      setMessages((msgs) => [...msgs, userMsg]);
+    }
+    
     setInput('');
     setLoading(true);
     try {
@@ -205,7 +288,7 @@ export default function ChatBotWidget() {
               role: m.sender === 'user' ? 'user' : 'assistant',
               content: m.text,
             })),
-            { role: 'user', content: input },
+            { role: 'user', content: textToSend },
           ],
           max_tokens: 512,
           temperature: 0.7,
@@ -226,6 +309,8 @@ export default function ChatBotWidget() {
     }
   };
 
+  const handleSend = () => handleSendMessage();
+
   return (
     <>
       {/* Chat Widget or Button at the very bottom right */}
@@ -245,6 +330,20 @@ export default function ChatBotWidget() {
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-background" style={{ minHeight: 0 }}>
+            {/* Suggested Questions */}
+            {messages.length === 1 && suggestedQuestions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {suggestedQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestedQuestion(question)}
+                    className="px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full transition-colors duration-200 text-foreground"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {/*
