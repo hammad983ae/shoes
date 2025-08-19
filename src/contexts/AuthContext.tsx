@@ -59,7 +59,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log('Auth state changed - user:', user?.id, 'userRole:', userRole);
     if (!user) {
       setUserRole(null);
       setIsCreator(false);
@@ -69,56 +68,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     const loadProfile = async () => {
       try {
-        console.log('Loading profile for user:', user.id, 'Current role:', userRole);
         const { data, error } = await supabase
           .from('profiles')
-          .select('role, is_creator, display_name, avatar_url')
+          .select('role, is_creator, display_name, avatar_url, bio, credits')
           .eq('user_id', user.id)
           .maybeSingle();
         
-        console.log('Profile data found:', { data, error, hasData: !!data });
-        
         if (error) {
           console.error('Profile query error:', error);
-          // Fallback to default values if profile query fails
           setUserRole('user');
           setIsCreator(false);
+          setProfile(null);
           return;
         }
         
         if (!data) {
-          console.log('No profile found, creating one...');
-          // If no profile exists, create one
+          // Create profile if it doesn't exist
+          const defaultProfile = {
+            user_id: user.id,
+            display_name: user.email?.split('@')[0] || 'User',
+            role: 'user',
+            is_creator: false,
+            bio: '',
+            credits: 0
+          };
+          
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert({
-              user_id: user.id,
-              display_name: user.email?.split('@')[0] || 'User',
-              role: 'user',
-              is_creator: false
-            })
-            .select()
+            .insert(defaultProfile)
+            .select('role, is_creator, display_name, avatar_url, bio, credits')
             .single();
             
           if (createError) {
             console.error('Failed to create profile:', createError);
             setUserRole('user');
             setIsCreator(false);
+            setProfile(defaultProfile);
           } else {
-            console.log('Created new profile:', newProfile);
+            setProfile(newProfile);
             setUserRole('user');
             setIsCreator(false);
           }
-          } else {
-            console.log('Setting user role from profile data:', data.role, data.is_creator);
-            setProfile(data);
-            setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
-            setIsCreator(Boolean(data.is_creator));
-          }
+        } else {
+          setProfile(data);
+          setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
+          setIsCreator(Boolean(data.is_creator));
+        }
       } catch (e) {
-        console.error('Failed to load profile role', e);
+        console.error('Failed to load profile:', e);
         setUserRole('user');
         setIsCreator(false);
+        setProfile(null);
       }
     };
     
@@ -212,6 +212,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUserRole(null);
       setIsCreator(false);
+      setProfile(null);
       
       // Clear localStorage
       localStorage.clear();

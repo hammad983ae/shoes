@@ -5,11 +5,13 @@ import { Sneaker } from '@/types/global';
 export const useDynamicProducts = () => {
   const [products, setProducts] = useState<Sneaker[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const fetchProducts = async () => {
+    if (hasLoaded) return; // Prevent duplicate fetches
+    
     try {
       setLoading(true);
-      console.log('Fetching products...');
       
       // Query with product_media join to get real photos
       const { data, error } = await supabase
@@ -20,13 +22,11 @@ export const useDynamicProducts = () => {
         `)
         .order('created_at', { ascending: false });
 
-      console.log('Products query result:', { data, error });
       if (error) {
         console.error('Products query error:', error);
         throw error;
       }
 
-      console.log('Formatting products, data length:', data?.length);
       const formattedProducts: Sneaker[] = (data || []).map(product => {
         // Sort all media by display_order to maintain consistent ordering
         const sortedMedia = (product.product_media || [])
@@ -45,8 +45,8 @@ export const useDynamicProducts = () => {
         const allImages = primaryImage ? [primaryImage, ...galleryImages] : galleryImages;
 
         return {
-          id: product.id, // Keep UUID for internal operations
-          slug: product.slug || undefined, // Convert null to undefined for TypeScript compatibility
+          id: product.id,
+          slug: product.slug || undefined,
           name: product.title,
           price: `$${product.price}`,
           slashed_price: product.slashed_price || undefined,
@@ -67,15 +67,15 @@ export const useDynamicProducts = () => {
           infinite_stock: product.infinite_stock || false,
           type: product.category?.toLowerCase().includes('high') ? 'high-top' : 'low-top',
           colors: product.color ? product.color.split(',').map(c => c.trim()).filter(Boolean) : [],
-          keywords: [] // Could be extracted from filters
+          keywords: []
         };
       });
 
-      console.log('Final formatted products:', formattedProducts);
       setProducts(formattedProducts);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setProducts([]); // Set empty array on error
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -88,6 +88,9 @@ export const useDynamicProducts = () => {
   return {
     products,
     loading,
-    refetch: fetchProducts
+    refetch: () => {
+      setHasLoaded(false);
+      fetchProducts();
+    }
   };
 };
