@@ -84,7 +84,7 @@ export const useUsers = () => {
         activeUsers: totalUsers, // Simplified - would need activity tracking
         creators,
         newThisMonth,
-        avgLTV: 0 // Would need order history calculation
+        avgLTV: totalUsers > 0 ? formattedUsers.reduce((sum, user) => sum + user.total_spent, 0) / totalUsers : 0
       });
 
     } catch (error) {
