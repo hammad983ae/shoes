@@ -102,10 +102,10 @@ const App = () => (
                         </RouteGuard>
                       } />
                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </GlobalCartProvider>
-                  <ReferralDiscountNotification />
-                  <CartAddNotification />
+                   </Routes>
+                   <ReferralDiscountNotification />
+                   <CartAddNotification /> {/* Add this line */}
+                 </GlobalCartProvider>
                </Layout>
              </BrowserRouter>
            </TooltipProvider>
