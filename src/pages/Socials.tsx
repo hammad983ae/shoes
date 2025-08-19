@@ -115,15 +115,18 @@ const Socials = () => {
                    </div>
                  </a>
 
-                <div 
-                  className="flex items-center gap-3 p-4 rounded-lg border border-border cursor-not-allowed opacity-60"
+                <a 
+                  href="https://t.me/+4qmUyM8MsPU0ZTRh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-primary/10 transition-colors border border-border"
                 >
                   <Send className="w-6 h-6 text-blue-500" />
                   <div>
                     <p className="font-semibold">Telegram</p>
-                    <p className="text-sm text-muted-foreground">Coming Soon</p>
+                    <p className="text-sm text-muted-foreground">Join our community</p>
                   </div>
-                </div>
+                </a>
               </CardContent>
             </Card>
           </div>
