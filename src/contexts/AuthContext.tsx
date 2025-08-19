@@ -54,6 +54,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log("🌀 Supabase auth event:", event);
         console.log("📦 Session from event:", session?.user?.email || 'none');
         
+        // 🔍 DIAGNOSTIC: Log session details for debugging
+        if (session) {
+          const now = Math.floor(Date.now() / 1000);
+          console.log("🕐 Session expires at:", new Date(session.expires_at! * 1000).toISOString());
+          console.log("⏰ Time until expiry:", Math.floor((session.expires_at! - now) / 60), "minutes");
+          console.log("🔑 Access token length:", session.access_token?.length);
+          console.log("🔄 Refresh token exists:", !!session.refresh_token);
+        } else {
+          console.log("❌ No session in event");
+        }
+        
         // Handle ALL auth events properly
         switch (event) {
           case 'INITIAL_SESSION':
@@ -71,7 +82,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             break;
             
           case 'SIGNED_OUT':
-            console.log("👋 User signed out");
+            console.log("👋 User signed out - Event triggered by:", event);
+            console.log("📍 Current URL:", window.location.href);
             setSession(null);
             setUser(null);
             setUserRole(null);
@@ -82,6 +94,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             
           case 'TOKEN_REFRESHED':
             console.log("🔄 Token refreshed successfully");
+            if (session) {
+              const now = Math.floor(Date.now() / 1000);
+              console.log("✨ New token expires at:", new Date(session.expires_at! * 1000).toISOString());
+              console.log("⏰ New expiry in:", Math.floor((session.expires_at! - now) / 60), "minutes");
+            }
             // CRITICAL: Update session with new tokens
             setSession(session);
             setUser(session?.user ?? null);
@@ -98,20 +115,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (session) {
               setSession(session);
               setUser(session?.user ?? null);
+            } else {
+              console.log("⚠️ Unknown event with no session - possible session drop");
             }
         }
       }
     );
 
     // Get initial session AFTER setting up listener
-    supabase.auth.getSession().then(({ error }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('❌ Error getting initial session:', error);
         setLoading(false);
         return;
       }
       
-      // Initial session is handled by INITIAL_SESSION event
+      // 🔍 DIAGNOSTIC: Log initial session state
+      if (session) {
+        console.log("📦 Initial session found for:", session.user?.email);
+        const now = Math.floor(Date.now() / 1000);
+        console.log("🕐 Initial session expires:", new Date(session.expires_at! * 1000).toISOString());
+        console.log("⏰ Minutes until expiry:", Math.floor((session.expires_at! - now) / 60));
+      } else {
+        console.log("📦 No initial session found");
+      }
+      
       console.log("📦 Initial session check complete");
     });
 
@@ -133,6 +161,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     console.log('Loading profile for user:', user.id);
     
+    // 🔧 FIX: Defer profile loading to prevent session interference
     const loadProfile = async () => {
       try {
         const { data, error } = await supabase
@@ -210,7 +239,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     
-    loadProfile();
+    // 🔧 FIX: Defer profile loading to prevent auth cycle interference
+    const timeoutId = setTimeout(() => {
+      loadProfile();
+    }, 100); // Small delay to ensure auth state is stable
+    
+    return () => clearTimeout(timeoutId);
   }, [user]);
 
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {

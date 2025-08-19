@@ -14,6 +14,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    debug: false
+    debug: true // 🔍 Enable debug mode to catch refresh errors
+  }
+});
+
+// 🔍 DIAGNOSTIC: Global error handler for auth failures
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' && !session) {
+    console.log("🚨 CRITICAL: Unexpected SIGNED_OUT event detected");
+    console.log("📍 Location:", window.location.href);
+    console.log("🕐 Timestamp:", new Date().toISOString());
+    
+    // Check localStorage for any remaining auth data
+    const authKeys = Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('supabase'));
+    console.log("🔑 Auth keys in localStorage:", authKeys);
   }
 });
