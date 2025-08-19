@@ -41,18 +41,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST to catch all events
+    // Initialize session first - REQUIRED on app load
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          console.log('Session restored:', session?.user?.id || 'none');
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        if (mounted) setLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state change:', event, session?.user?.id);
-        
-        // Update auth state immediately
+        console.log('Auth state change:', event, session?.user?.id || 'none');
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Clear state on sign out
         if (event === 'SIGNED_OUT' || !session) {
           setUserRole(null);
           setIsCreator(false);
@@ -63,33 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Get initial session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          if (mounted) setLoading(false);
-          return;
-        }
-        
-        if (mounted) {
-          if (session) {
-            console.log('Initial session found:', session.user.id);
-            setSession(session);
-            setUser(session.user);
-          } else {
-            console.log('No initial session');
-          }
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        if (mounted) setLoading(false);
-      }
-    };
-
+    // Initialize session on mount
     initializeAuth();
 
     return () => {
