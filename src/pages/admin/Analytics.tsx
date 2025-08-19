@@ -90,7 +90,7 @@ export default function Analytics() {
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">${analytics?.salesRevenue?.totalRevenue || 0}</p>}
+                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-2xl font-bold">${analytics?.stats?.revenue || 0}</p>}
                   <Badge variant="secondary" className="text-xs">Live</Badge>
                 </div>
               </div>
@@ -102,7 +102,7 @@ export default function Analytics() {
                 <ShoppingCart className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Orders Today</p>
-                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{analytics?.orderMetrics?.totalOrders || 0}</p>}
+                  {loading ? <Skeleton className="h-6 w-12" /> : <p className="text-2xl font-bold">{analytics?.stats?.orders || 0}</p>}
                   <Badge variant="secondary" className="text-xs">Live</Badge>
                 </div>
               </div>

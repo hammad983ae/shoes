@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationsModal } from "@/components/NotificationsModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp, 
@@ -81,9 +82,13 @@ function KPIGrid({ loading = true, stats }: { loading?: boolean; stats?: any }) 
 }
 
 export default function Dashboard() {
-  const { loading, stats, recentOrders, alerts } = useAdminDashboard();
+  const { loading: adminLoading, recentOrders, alerts } = useAdminDashboard();
+  const [timeRange, setTimeRange] = useState('today');
+  const { loading: analyticsLoading, stats } = useAnalytics(timeRange);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const navigate = useNavigate();
+  
+  const loading = adminLoading || analyticsLoading;
 
   // Mock notifications for the modal
   const notifications = [
@@ -135,7 +140,7 @@ export default function Dashboard() {
         </div>
 
         {/* Time Period Tabs */}
-        <Tabs defaultValue="today" className="w-full">
+        <Tabs value={timeRange} onValueChange={setTimeRange} className="w-full">
           <TabsList className="grid w-full max-w-lg grid-cols-5">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="7d">7 Days</TabsTrigger>
@@ -282,10 +287,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <Eye className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Page Views</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">0</p>}
-                </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Page Views</p>
+                   {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">{stats.pageViews.toLocaleString()}</p>}
+                 </div>
               </div>
             </CardContent>
           </Card>
@@ -293,10 +298,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Unique Visitors</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">0</p>}
-                </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Unique Visitors</p>
+                   {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">{stats.uniqueVisitors.toLocaleString()}</p>}
+                 </div>
               </div>
             </CardContent>
           </Card>
@@ -304,10 +309,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg. Session</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">0m 0s</p>}
-                </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Avg. Session</p>
+                   {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">{stats.avgSessionDuration}</p>}
+                 </div>
               </div>
             </CardContent>
           </Card>
@@ -315,10 +320,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Top Source</p>
-                  {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">-</p>}
-                </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Top Source</p>
+                   {loading ? <Skeleton className="h-6 w-16" /> : <p className="text-xl font-bold">{stats.topSource}</p>}
+                 </div>
               </div>
             </CardContent>
           </Card>

@@ -10,6 +10,8 @@ import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { usePostHog } from '@/contexts/PostHogProvider';
+import { trackPurchase, trackCheckoutStarted } from '@/hooks/useAnalytics';
 
 const countries = [
   'United States', 'Canada', 'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands',
@@ -27,6 +29,7 @@ export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const posthog = usePostHog();
   const [submitting, setSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState('');
@@ -81,6 +84,22 @@ export default function Checkout() {
   const tax = discountedSubtotal * 0.0875; // 8.75% tax
   const shippingCost = 0; // Free shipping
   const total = Math.max(0, discountedSubtotal + tax + shippingCost);
+
+  // Track checkout started on component mount
+  useEffect(() => {
+    if (items.length > 0 && posthog) {
+      trackCheckoutStarted(posthog, {
+        cartTotal: total,
+        itemCount: totalQuantity,
+        items: items.map(item => ({
+          product_id: item.id,
+          name: item.name,
+          price: parseFloat(item.price.replace('$', '')),
+          quantity: item.quantity
+        }))
+      });
+    }
+  }, [items, posthog, total, totalQuantity]);
 
   // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
@@ -210,6 +229,25 @@ export default function Checkout() {
 
             if (orderError) throw orderError;
 
+            // Track successful purchase with PostHog
+            if (posthog && user) {
+              const orderItems = items.map(item => ({
+                product_id: item.id,
+                name: item.name,
+                category: 'Sneakers',
+                price: parseFloat(item.price.replace('$', '')),
+                quantity: item.quantity
+              }));
+
+              trackPurchase(posthog, {
+                orderId: response.ssl_txn_id || 'unknown',
+                amount: total,
+                items: orderItems,
+                userId: user.id,
+                couponCode: appliedCoupon?.code
+              });
+            }
+
             // Deduct credits if used
             if (appliedCredits > 0 && user) {
               const { data: userCreditsData } = await supabase
@@ -316,6 +354,25 @@ export default function Checkout() {
       });
 
       if (orderError) throw orderError;
+
+      // Track successful free purchase with PostHog
+      if (posthog && user) {
+        const orderItems = items.map(item => ({
+          product_id: item.id,
+          name: item.name,
+          category: 'Sneakers',
+          price: parseFloat(item.price.replace('$', '')),
+          quantity: item.quantity
+        }));
+
+        trackPurchase(posthog, {
+          orderId: 'free-order-' + Date.now(),
+          amount: 0,
+          items: orderItems,
+          userId: user.id,
+          couponCode: appliedCoupon?.code
+        });
+      }
 
       // Deduct credits if used
       if (appliedCredits > 0) {

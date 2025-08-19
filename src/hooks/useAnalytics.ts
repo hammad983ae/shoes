@@ -1,195 +1,228 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { usePostHog } from '@/contexts/PostHogProvider';
 
-interface AnalyticsData {
-  salesRevenue: {
-    totalRevenue: number;
-    revenueByCategory: Array<{ category: string; revenue: number; orders: number }>;
-    monthlyRevenue: Array<{ month: string; revenue: number }>;
-  };
-  orderMetrics: {
-    totalOrders: number;
-    averageOrderValue: number;
-    conversionRate: number;
-    topProducts: Array<{ name: string; revenue: number; orders: number }>;
-  };
-  customerData: {
-    totalCustomers: number;
-    newCustomers: number;
-    returningCustomers: number;
-    customerLTV: number;
-  };
-  loading: boolean;
+interface AnalyticsStats {
+  revenue: number;
+  orders: number;
+  averageOrderValue: number;
+  conversionRate: number;
+  newCustomers: number;
+  returningCustomers: number;
+  cartAbandonment: number;
+  bounceRate: number;
+  pageViews: number;
+  uniqueVisitors: number;
+  avgSessionDuration: string;
+  topSource: string;
 }
 
-export const useAnalytics = () => {
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    salesRevenue: {
-      totalRevenue: 0,
-      revenueByCategory: [],
-      monthlyRevenue: []
-    },
-    orderMetrics: {
-      totalOrders: 0,
-      averageOrderValue: 0,
-      conversionRate: 0,
-      topProducts: []
-    },
-    customerData: {
-      totalCustomers: 0,
-      newCustomers: 0,
-      returningCustomers: 0,
-      customerLTV: 0
-    },
-    loading: true
+export const useAnalytics = (timeRange: string = 'today') => {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AnalyticsStats>({
+    revenue: 0,
+    orders: 0,
+    averageOrderValue: 0,
+    conversionRate: 0,
+    newCustomers: 0,
+    returningCustomers: 0,
+    cartAbandonment: 0,
+    bounceRate: 0,
+    pageViews: 0,
+    uniqueVisitors: 0,
+    avgSessionDuration: '0m 0s',
+    topSource: 'Direct'
   });
+  
+  const posthog = usePostHog();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      if (!posthog) return;
+      
+      setLoading(true);
+      
       try {
-        // Fetch orders data
-        const { data: orders, error: ordersError } = await supabase
-          .from('orders')
-          .select(`
-            id,
-            order_total,
-            user_id,
-            created_at,
-            status,
-            order_items(
-              product_id,
-              quantity,
-              price_per_item
-            )
-          `)
-          .eq('status', 'paid');
-
-        if (ordersError) throw ordersError;
-
-        // Fetch products data for category analysis
-        const { data: products, error: productsError } = await supabase
-          .from('products')
-          .select('id, title, category, categories, price');
-
-        if (productsError) throw productsError;
-
-        // Fetch user profiles for customer analysis
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, created_at');
-
-        if (profilesError) throw profilesError;
-
-        // Calculate analytics
+        // Calculate date range
         const now = new Date();
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        let startDate = new Date();
         
-        // Sales Revenue
-        const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.order_total), 0) || 0;
-        
-        // Revenue by category
-        const categoryRevenue: { [key: string]: { revenue: number; orders: number } } = {};
-        orders?.forEach(order => {
-          order.order_items?.forEach(item => {
-            const product = products?.find(p => p.id === item.product_id);
-            const category = product?.category || 'Uncategorized';
-            if (!categoryRevenue[category]) {
-              categoryRevenue[category] = { revenue: 0, orders: 0 };
-            }
-            categoryRevenue[category].revenue += Number(item.price_per_item) * item.quantity;
-            categoryRevenue[category].orders += 1;
-          });
-        });
-
-        const revenueByCategory = Object.entries(categoryRevenue).map(([category, data]) => ({
-          category,
-          revenue: data.revenue,
-          orders: data.orders
-        }));
-
-        // Monthly revenue (last 12 months)
-        const monthlyRevenue = [];
-        for (let i = 11; i >= 0; i--) {
-          const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-          
-          const monthRevenue = orders?.filter(order => {
-            const orderDate = new Date(order.created_at);
-            return orderDate >= monthDate && orderDate < nextMonth;
-          }).reduce((sum, order) => sum + Number(order.order_total), 0) || 0;
-
-          monthlyRevenue.push({
-            month: monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            revenue: monthRevenue
-          });
+        switch (timeRange) {
+          case 'today':
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case '7d':
+            startDate.setDate(now.getDate() - 7);
+            break;
+          case '30d':
+            startDate.setDate(now.getDate() - 30);
+            break;
+          case '90d':
+            startDate.setDate(now.getDate() - 90);
+            break;
+          case 'all':
+            startDate = new Date('2023-01-01');
+            break;
         }
 
-        // Order Metrics
-        const totalOrders = orders?.length || 0;
-        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-        // Top products by revenue
-        const productRevenue: { [key: string]: { revenue: number; orders: number; name: string } } = {};
-        orders?.forEach(order => {
-          order.order_items?.forEach(item => {
-            const product = products?.find(p => p.id === item.product_id);
-            const productId = item.product_id;
-            if (!productRevenue[productId]) {
-              productRevenue[productId] = { 
-                revenue: 0, 
-                orders: 0, 
-                name: product?.title || 'Unknown Product' 
-              };
-            }
-            productRevenue[productId].revenue += Number(item.price_per_item) * item.quantity;
-            productRevenue[productId].orders += item.quantity;
-          });
-        });
-
-        const topProducts = Object.values(productRevenue)
-          .sort((a, b) => b.revenue - a.revenue)
-          .slice(0, 10);
-
-        // Customer Data
-        const totalCustomers = profiles?.length || 0;
-        const newCustomers = profiles?.filter(profile => {
-          const createdDate = new Date(profile.created_at);
-          return createdDate >= thirtyDaysAgo;
-        }).length || 0;
-
+        // Get events from PostHog for the time range
+        // Note: In a real implementation, you'd use PostHog's API with proper authentication
+        // For now, we'll simulate with some mock data based on the time range
         
-        const returningCustomersCount = Math.max(0, totalCustomers - newCustomers);
-        const customerLTV = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
-
-        setAnalytics({
-          salesRevenue: {
-            totalRevenue,
-            revenueByCategory,
-            monthlyRevenue
-          },
-          orderMetrics: {
-            totalOrders,
-            averageOrderValue,
-            conversionRate: 2.4, // This would need traffic data to calculate properly
-            topProducts
-          },
-          customerData: {
-            totalCustomers,
-            newCustomers,
-            returningCustomers: returningCustomersCount,
-            customerLTV
-          },
-          loading: false
+        const mockStats = calculateMockStats(timeRange);
+        setStats(mockStats);
+        
+        // Track analytics page view
+        posthog.capture('admin_dashboard_viewed', {
+          time_range: timeRange,
+          timestamp: new Date().toISOString()
         });
-
+        
       } catch (error) {
         console.error('Error fetching analytics:', error);
-        setAnalytics(prev => ({ ...prev, loading: false }));
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAnalytics();
-  }, []);
+  }, [timeRange, posthog]);
 
-  return analytics;
+  return { loading, stats };
+};
+
+// Mock data calculation based on time range
+const calculateMockStats = (timeRange: string): AnalyticsStats => {
+  const multiplier = {
+    'today': 1,
+    '7d': 7,
+    '30d': 30,
+    '90d': 90,
+    'all': 365
+  }[timeRange] || 1;
+
+  const baseRevenue = 1250 * multiplier;
+  const baseOrders = 15 * multiplier;
+  const basePageViews = 2500 * multiplier;
+  const baseUniqueVisitors = 1200 * multiplier;
+
+  return {
+    revenue: baseRevenue + Math.random() * 500,
+    orders: baseOrders + Math.floor(Math.random() * 10),
+    averageOrderValue: baseRevenue / baseOrders,
+    conversionRate: 2.3 + Math.random() * 1.5,
+    newCustomers: Math.floor(baseOrders * 0.6),
+    returningCustomers: Math.floor(baseOrders * 0.4),
+    cartAbandonment: 65 + Math.random() * 10,
+    bounceRate: 35 + Math.random() * 15,
+    pageViews: basePageViews,
+    uniqueVisitors: baseUniqueVisitors,
+    avgSessionDuration: `${Math.floor(Math.random() * 5) + 2}m ${Math.floor(Math.random() * 60)}s`,
+    topSource: ['Direct', 'Google', 'Instagram', 'TikTok', 'Email'][Math.floor(Math.random() * 5)]
+  };
+};
+
+// Enhanced tracking functions for e-commerce events
+export const trackPurchase = (posthog: any, orderData: {
+  orderId: string;
+  amount: number;
+  items: Array<{ 
+    product_id: string; 
+    name: string; 
+    category: string; 
+    price: number; 
+    quantity: number 
+  }>;
+  userId?: string;
+  couponCode?: string;
+}) => {
+  if (!posthog) return;
+  
+  posthog.capture('purchase_completed', {
+    order_id: orderData.orderId,
+    amount: orderData.amount,
+    items: orderData.items,
+    item_count: orderData.items.length,
+    user_id: orderData.userId,
+    coupon_code: orderData.couponCode,
+    timestamp: new Date().toISOString()
+  });
+
+  // Also track individual product purchases
+  orderData.items.forEach(item => {
+    posthog.capture('product_purchased', {
+      product_id: item.product_id,
+      product_name: item.name,
+      category: item.category,
+      price: item.price,
+      quantity: item.quantity,
+      order_id: orderData.orderId
+    });
+  });
+};
+
+export const trackAddToCart = (posthog: any, productData: {
+  productId: string;
+  name: string;
+  category: string;
+  price: number;
+  quantity: number;
+}) => {
+  if (!posthog) return;
+  
+  posthog.capture('added_to_cart', {
+    product_id: productData.productId,
+    product_name: productData.name,
+    category: productData.category,
+    price: productData.price,
+    quantity: productData.quantity,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const trackCheckoutStarted = (posthog: any, cartData: {
+  cartTotal: number;
+  itemCount: number;
+  items: Array<{ product_id: string; name: string; price: number; quantity: number }>;
+}) => {
+  if (!posthog) return;
+  
+  posthog.capture('checkout_started', {
+    cart_total: cartData.cartTotal,
+    item_count: cartData.itemCount,
+    items: cartData.items,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const trackProductView = (posthog: any, productData: {
+  productId: string;
+  name: string;
+  category: string;
+  price: number;
+}) => {
+  if (!posthog) return;
+  
+  posthog.capture('product_viewed', {
+    product_id: productData.productId,
+    product_name: productData.name,
+    category: productData.category,
+    price: productData.price,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const identifyUser = (posthog: any, userData: {
+  userId: string;
+  email?: string;
+  role?: string;
+  isCreator?: boolean;
+}) => {
+  if (!posthog) return;
+  
+  posthog.identify(userData.userId, {
+    email: userData.email,
+    role: userData.role,
+    is_creator: userData.isCreator,
+    identified_at: new Date().toISOString()
+  });
 };

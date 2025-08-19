@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useCartPersistence } from '@/hooks/useCartPersistence';
+import { usePostHog } from '@/contexts/PostHogProvider';
+import { trackAddToCart } from '@/hooks/useAnalytics';
 
 interface CartItem {
   id: string; // Changed from number to string to support UUIDs
@@ -34,6 +36,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [onItemAdded, setOnItemAdded] = useState<(() => void) | undefined>();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const posthog = usePostHog();
 
   // Use cart persistence hook for Supabase sync
   const { clearCartFromSupabase } = useCartPersistence(items, setItems);
@@ -53,6 +56,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               : item
           )
         : [...prevItems, { ...newItem, quantity: 1 }];
+
+      // Track add to cart event with PostHog
+      if (!existingItem) {
+        trackAddToCart(posthog, {
+          productId: newItem.id,
+          name: newItem.name,
+          category: 'Sneakers', // You might want to pass this as a parameter
+          price: parseFloat(newItem.price.replace('$', '')),
+          quantity: 1
+        });
+      }
 
       // Trigger notification only on item addition
       setShowNotification(true);
