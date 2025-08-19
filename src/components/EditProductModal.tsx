@@ -280,10 +280,10 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="brand">Brand *</Label>
               <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
-                <SelectTrigger className="bg-background border shadow-sm">
+                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-[100] max-h-60 overflow-y-auto">
+                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001] max-h-60 overflow-y-auto">
                   <SelectItem value="Nike">Nike</SelectItem>
                   <SelectItem value="Jordan">Jordan</SelectItem>
                   <SelectItem value="Adidas">Adidas</SelectItem>
@@ -329,10 +329,10 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="category">Category</Label>
               <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                <SelectTrigger className="bg-background border shadow-sm">
+                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-[100] max-h-60 overflow-y-auto">
+                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001] max-h-60 overflow-y-auto">
                   <SelectItem value="High-Top">High-Top</SelectItem>
                   <SelectItem value="Low-Top">Low-Top</SelectItem>
                   <SelectItem value="Mid-Top">Mid-Top</SelectItem>
@@ -357,7 +357,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 modules={quillModules}
                 formats={quillFormats}
                 placeholder="Enter a detailed product description with rich formatting..."
-                style={{ height: '200px', marginBottom: '50px' }}
+                style={{ height: '120px', marginBottom: '50px' }}
               />
             </div>
           </div>
@@ -378,10 +378,10 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
             <div>
               <Label htmlFor="size_type">Size Type</Label>
               <Select value={formData.size_type} onValueChange={(value) => handleInputChange('size_type', value)}>
-                <SelectTrigger className="bg-background border shadow-sm">
+                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-[100]">
+                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001]">
                   <SelectItem value="US">US</SelectItem>
                   <SelectItem value="EU">EU</SelectItem>
                   <SelectItem value="UK">UK</SelectItem>
@@ -395,10 +395,10 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 onValueChange={(value) => handleInputChange('availability', value)}
                 disabled={formData.infinite_stock}
               >
-                <SelectTrigger className="bg-background border shadow-sm">
+                <SelectTrigger className="bg-white border border-gray-300 shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-[100]">
+                <SelectContent className="bg-white border border-gray-300 shadow-xl z-[10001]">
                   <SelectItem value="In Stock">In Stock</SelectItem>
                   <SelectItem value="Low Stock">Low Stock</SelectItem>
                   <SelectItem value="Out of Stock">Out of Stock</SelectItem>
