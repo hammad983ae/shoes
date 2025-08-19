@@ -62,22 +62,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener for token refresh and sign out events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state change:', event, session?.user?.id || 'none');
-        setSession(session);
-        setUser(session?.user ?? null);
+        
+        // Handle all session changes including token refresh
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          console.log('Token refreshed or user signed in, updating session');
+        }
         
         if (event === 'SIGNED_OUT' || !session) {
+          setSession(null);
+          setUser(null);
           setUserRole(null);
           setIsCreator(false);
           setProfile(null);
           setLoading(false);
+          console.log('User signed out, clearing all state');
         }
-        // Don't set loading false here either - let profile effect handle it
       }
     );
 
