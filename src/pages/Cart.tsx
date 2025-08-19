@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PostPurchaseModal from '@/components/PostPurchaseModal';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useToast } from '@/hooks/use-toast';
+import FirstTimeDiscountModal from '@/components/FirstTimeDiscountModal';
 
 const Cart = () => {
   const { items, updateQuantity, removeItem, addItem } = useCart();
@@ -25,6 +26,9 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
   const [credits, setCredits] = useState(0);
+  const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
+  const [hasFirstTimeDiscount, setHasFirstTimeDiscount] = useState(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''));
@@ -33,29 +37,58 @@ const Cart = () => {
 
   const creditsDiscount = appliedCredits / 100; // Convert credits to dollars (100 credits = $1)
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-  const totalDiscount = creditsDiscount + couponDiscount;
+  const firstTimeDiscount = hasFirstTimeDiscount ? subtotal * 0.1 : 0; // 10% off for first time
+  const totalDiscount = creditsDiscount + couponDiscount + firstTimeDiscount;
   const discountedSubtotal = Math.max(0, subtotal - totalDiscount);
   const tax = discountedSubtotal * 0.0875; // 8.75% tax
   const total = discountedSubtotal + tax;
 
-  // Fetch user credits from database
+  // Fetch user credits and check if first time user
   useEffect(() => {
-    const fetchUserCredits = async () => {
+    const fetchUserData = async () => {
       if (user) {
-        const { data, error } = await supabase
-          .from('user_credits')
-          .select('current_balance')
+        // Fetch credits
+        const { data: creditsData, error: creditsError } = await supabase
+          .from('profiles')
+          .select('credits')
           .eq('user_id', user.id)
           .single();
         
-        if (data && !error) {
-          setCredits(data.current_balance || 0);
+        if (creditsData && !creditsError) {
+          setCredits(creditsData.credits || 0);
+        }
+
+        // Check if user has ever placed an order
+        const { data: ordersData } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        const isFirstTime = !ordersData || ordersData.length === 0;
+        setIsFirstTimeUser(isFirstTime);
+
+        // Check localStorage for first-time discount preference
+        const savedFirstTimeDiscount = localStorage.getItem(`firstTimeDiscount_${user.id}`);
+        if (savedFirstTimeDiscount === 'applied' && isFirstTime) {
+          setHasFirstTimeDiscount(true);
         }
       }
     };
 
-    fetchUserCredits();
+    fetchUserData();
   }, [user]);
+
+  // Show first-time discount modal when user has items and is first time
+  useEffect(() => {
+    if (user && isFirstTimeUser && items.length > 0 && !hasFirstTimeDiscount) {
+      const modalShown = localStorage.getItem(`firstTimeModalShown_${user.id}`);
+      if (!modalShown) {
+        setShowFirstTimeModal(true);
+        localStorage.setItem(`firstTimeModalShown_${user.id}`, 'true');
+      }
+    }
+  }, [user, isFirstTimeUser, items.length, hasFirstTimeDiscount]);
   
   // For size editing - handle both EU and US sizes
   const getSizesForItem = (item: any) => {
@@ -163,6 +196,17 @@ const Cart = () => {
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
+  };
+
+  const handleApplyFirstTimeDiscount = () => {
+    setHasFirstTimeDiscount(true);
+    setAppliedCoupon(null); // Remove coupon if applying first-time discount
+    setAppliedCredits(0); // Remove credits if applying first-time discount
+    localStorage.setItem(`firstTimeDiscount_${user?.id}`, 'applied');
+    toast({
+      title: "First-Time Discount Applied!",
+      description: "10% off has been applied to your order.",
+    });
   };
 
   const handleCheckout = () => {
@@ -299,6 +343,12 @@ const Cart = () => {
                     <span>-${appliedCoupon.discount.toFixed(2)}</span>
                   </div>
                 )}
+                {hasFirstTimeDiscount && (
+                  <div className="flex justify-between text-green-600">
+                    <span>First-Time Discount (10%):</span>
+                    <span>-${firstTimeDiscount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Tax:</span>
                   <span>${tax.toFixed(2)}</span>
@@ -413,6 +463,12 @@ const Cart = () => {
         isOpen={showPostPurchase}
         onClose={() => setShowPostPurchase(false)}
         purchasedItems={purchasedItems}
+      />
+
+      <FirstTimeDiscountModal
+        isOpen={showFirstTimeModal}
+        onClose={() => setShowFirstTimeModal(false)}
+        onApplyDiscount={handleApplyFirstTimeDiscount}
       />
       
       {/* Credits Modal */}

@@ -28,6 +28,7 @@ interface Order {
   created_at: string;
   estimated_delivery: string | null;
   tracking_number: string | null;
+  quality_check_image?: string | null;
   product_details: any[] | null;
   order_images: string[] | null;
   shipping_address: any;
@@ -291,6 +292,41 @@ export default function OrderHistory() {
                       <p className="font-medium text-blue-600">{selectedOrder.tracking_number}</p>
                     </div>
                   )}
+                </div>
+
+                {/* Quality Check Image */}
+                {selectedOrder.quality_check_image && (
+                  <div>
+                    <h4 className="font-medium mb-2">Quality Check</h4>
+                    <div className="border rounded-lg overflow-hidden">
+                      <img 
+                        src={selectedOrder.quality_check_image} 
+                        alt="Quality check"
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Package Status */}
+                <div>
+                  <h4 className="font-medium mb-2">Package Status</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(selectedOrder.status)}
+                      <span className="font-medium">{selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}</span>
+                    </div>
+                    {selectedOrder.tracking_number && (
+                      <div className="text-sm text-muted-foreground">
+                        Tracking: <span className="text-blue-600 font-mono">{selectedOrder.tracking_number}</span>
+                      </div>
+                    )}
+                    {selectedOrder.estimated_delivery && (
+                      <div className="text-sm text-muted-foreground">
+                        Expected delivery: {format(new Date(selectedOrder.estimated_delivery), 'MMM dd, yyyy')}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Products */}

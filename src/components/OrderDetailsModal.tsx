@@ -214,6 +214,15 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
                   </Button>
                 )}
               </div>
+              {qualityCheckImage && (
+                <div className="mt-2">
+                  <img 
+                    src={qualityCheckImage} 
+                    alt="Quality check preview" 
+                    className="max-w-full h-32 object-cover rounded border"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
