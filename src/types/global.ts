@@ -31,6 +31,7 @@ export interface Sneaker {
   type?: string;
   availability?: string;
   is_limited?: boolean;
+  infinite_stock?: boolean;
 }
 
 export interface SocialConnection {

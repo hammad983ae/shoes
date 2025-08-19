@@ -270,8 +270,17 @@ const ProductDetail = () => {
                 {product.slashed_price && (
                   <p className="text-lg text-muted-foreground line-through">${product.slashed_price}</p>
                 )}
+                {(product as any).is_limited && (
+                  <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                    LIMITED
+                  </span>
+                )}
               </div>
-              <span className="text-xs sm:text-sm text-muted-foreground">{product.stock || 'In Stock'}</span>
+              {!(product as any).infinite_stock && (product as any).stock > 0 && (
+                <span className="text-xs sm:text-sm text-orange-500 font-medium">
+                  There are only {(product as any).stock} units of the product remaining!
+                </span>
+              )}
             </div>
 
             {/* Ratings */}
