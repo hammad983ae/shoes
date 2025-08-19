@@ -46,6 +46,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     console.log("🔄 Initializing auth session...");
 
+    // Wake-up ping to prevent backend sleep issues
+    const warmUpBackend = async () => {
+      try {
+        console.log("🔥 Sending backend wake-up ping...");
+        await supabase.from('profiles').select('id').limit(1);
+        console.log("✅ Backend wake-up ping successful");
+      } catch (err) {
+        console.warn("⚠️ Backend wake-up ping failed:", err);
+      }
+    };
+
+    // Manual session refresh for when backend wakes up
+    const refreshSessionOnWakeUp = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (!session || error) {
+        console.warn("🔁 No session or error on wake — refreshing session manually...");
+        const result = await supabase.auth.refreshSession();
+        console.log("🔄 Session refresh result:", result);
+      }
+    };
+
+    // Set up wake-up handlers
+    window.addEventListener("focus", refreshSessionOnWakeUp);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === 'visible') {
+        refreshSessionOnWakeUp();
+      }
+    });
+
+    // Send initial wake-up ping
+    warmUpBackend();
+
     // Set up auth state listener FIRST to catch all events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -146,12 +178,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.removeEventListener("focus", refreshSessionOnWakeUp);
+      window.removeEventListener("visibilitychange", refreshSessionOnWakeUp);
     };
   }, []); // Empty deps - run only once!
 
   useEffect(() => {
-    if (!user) {
-      console.log('No user, clearing profile state');
+    if (!user || !session) {
+      console.log('No user or session, clearing profile state');
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
@@ -245,7 +279,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, 100); // Small delay to ensure auth state is stable
     
     return () => clearTimeout(timeoutId);
-  }, [user]);
+  }, [user, session]); // Include session in deps for better session checking
 
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
     try {
