@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { useDynamicProducts } from '@/hooks/useDynamicProducts';
 
 const SneakerCarousel = () => {
-  const { products } = useDynamicProducts();
+  const { products, loading } = useDynamicProducts();
   const navigate = useNavigate();
+
+  console.log('SneakerCarousel render:', { products, loading, productsLength: products.length });
 
   const handleShopAll = () => {
     navigate('/full-catalog?category=Shoes');
@@ -37,16 +39,28 @@ const SneakerCarousel = () => {
 
       {/* Horizontal Scrollable Container */}
       <div className="relative">
-        <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80" style={{ touchAction: 'pan-x pan-y' }}>
-          {products.map((sneaker, index) => (
-            <div key={sneaker.id} className="flex-shrink-0 snap-center w-48 sm:w-56 md:w-64">
-              <ProductCard 
-                sneaker={sneaker} 
-                index={index}
-              />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex gap-4 animate-pulse">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex-shrink-0 w-48 sm:w-56 md:w-64 h-64 bg-muted rounded-lg" />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No products found</p>
+          </div>
+        ) : (
+          <div className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-track-muted/20 scrollbar-thumb-muted-foreground/50 hover:scrollbar-thumb-muted-foreground/80" style={{ touchAction: 'pan-x pan-y' }}>
+            {products.map((sneaker, index) => (
+              <div key={sneaker.id} className="flex-shrink-0 snap-center w-48 sm:w-56 md:w-64">
+                <ProductCard 
+                  sneaker={sneaker} 
+                  index={index}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
