@@ -14,6 +14,7 @@ import CreatorEditModal from "@/components/CreatorEditModal";
 import { useUsers } from "@/hooks/useUsers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PendingSocialRequestsModal from "@/components/PendingSocialRequestsModal";
 import { 
   Users as UsersIcon,
   Search,
@@ -30,6 +31,7 @@ import {
 
 export default function Users() {
   const { loading, users, summary, refetch } = useUsers();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAddCreatorModal, setShowAddCreatorModal] = useState(false);
@@ -37,7 +39,8 @@ export default function Users() {
   const [showCreatorEditModal, setShowCreatorEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedCreator, setSelectedCreator] = useState<any>(null);
-  const { toast } = useToast();
+  const [showPendingSocials, setShowPendingSocials] = useState(false);
+  const [payoutLoading, setPayoutLoading] = useState<string | null>(null);
 
   const handleExportUsers = async () => {
     try {
@@ -70,6 +73,33 @@ export default function Users() {
     }
   };
 
+  const handleVideoPayout = async (userId: string) => {
+    setPayoutLoading(userId);
+    try {
+      const { data, error } = await supabase.rpc('payout_video_credits', {
+        creator_user_id: userId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Video payout completed! Added ${(data as any)?.credits_added || 'unknown'} credits.`
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Error processing video payout:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process video payout. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPayoutLoading(null);
+    }
+  };
+
 
   const filteredUsers = users.filter(user => 
     user.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,6 +121,9 @@ export default function Users() {
             <Button variant="outline" size="sm" onClick={handleExportUsers}>
               <Download className="w-4 h-4 mr-2" />
               Export Users
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowPendingSocials(true)}>
+              Pending Social Requests
             </Button>
             <Button size="sm" onClick={() => setShowInviteModal(true)}>
               <UserPlus className="w-4 h-4 mr-2" />
@@ -369,6 +402,14 @@ export default function Users() {
                         >
                           Edit
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleVideoPayout(creator.user_id)}
+                          disabled={payoutLoading === creator.user_id}
+                        >
+                          {payoutLoading === creator.user_id ? "Processing..." : "Payout 1 Video"}
+                        </Button>
                         {creator.coupon_code && (
                           <Badge variant="secondary">{creator.coupon_code}</Badge>
                         )}
@@ -483,6 +524,11 @@ export default function Users() {
             description: "Creator invite has been sent successfully",
           });
         }}
+      />
+
+      <PendingSocialRequestsModal
+        isOpen={showPendingSocials}
+        onClose={() => setShowPendingSocials(false)}
       />
     </DashboardLayout>
   );

@@ -1458,33 +1458,78 @@ export type Database = {
       social_connections: {
         Row: {
           created_at: string
+          follower_count: number
           id: string
-          is_verified: boolean | null
+          payout_tier_credits: number
           platform: string
-          profile_url: string | null
           updated_at: string
           user_id: string
           username: string
+          verified_at: string
         }
         Insert: {
           created_at?: string
+          follower_count?: number
           id?: string
-          is_verified?: boolean | null
+          payout_tier_credits?: number
           platform: string
-          profile_url?: string | null
           updated_at?: string
           user_id: string
           username: string
+          verified_at?: string
         }
         Update: {
           created_at?: string
+          follower_count?: number
           id?: string
-          is_verified?: boolean | null
+          payout_tier_credits?: number
           platform?: string
-          profile_url?: string | null
           updated_at?: string
           user_id?: string
           username?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
+      social_verification_requests: {
+        Row: {
+          created_at: string
+          follower_count: number | null
+          id: string
+          platform: string
+          rejection_reason: string | null
+          screenshot_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          username: string
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          follower_count?: number | null
+          id?: string
+          platform: string
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          username: string
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          follower_count?: number | null
+          id?: string
+          platform?: string
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -1894,6 +1939,10 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_social_verification: {
+        Args: { request_id: string; verified_follower_count?: number }
+        Returns: boolean
+      }
       calculate_creator_tier: {
         Args: { monthly_revenue: number }
         Returns: {
@@ -1914,6 +1963,10 @@ export type Database = {
           commission_rate: number
           tier: string
         }[]
+      }
+      calculate_payout_tier_credits: {
+        Args: { follower_count: number }
+        Returns: number
       }
       calculate_top_performers: {
         Args: Record<PropertyKey, never>
@@ -1969,6 +2022,10 @@ export type Database = {
       nudge_browsing_now: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      payout_video_credits: {
+        Args: { creator_user_id: string }
+        Returns: Json
       }
       promote_to_creator: {
         Args: { target_user_id: string }

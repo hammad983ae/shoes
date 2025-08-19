@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Instagram, Twitter, Youtube, Plus, X } from 'lucide-react';
+import { Instagram, Twitter, Youtube, Plus, Minus } from 'lucide-react';
 
 interface Creator {
   id: string;
@@ -36,34 +37,53 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
     payout_tier_override: '',
     socials: [] as { platform: string; username: string; verified: boolean }[]
   });
+  
+  const [socialConnections, setSocialConnections] = useState<any[]>([]);
+  const [loadingSocials, setLoadingSocials] = useState(true);
+
+  useEffect(() => {
+    if (creator?.user_id && isOpen) {
+      fetchSocialConnections();
+      setFormData(prev => ({
+        ...prev,
+        coupon_code: creator?.coupon_code || '',
+        creator_tier: creator?.creator_tier || 'tier1',
+        credits: creator?.credits || 0
+      }));
+    }
+  }, [creator, isOpen]);
+
+  const fetchSocialConnections = async () => {
+    if (!creator?.user_id) return;
+    
+    setLoadingSocials(true);
+    try {
+      const { data, error } = await supabase
+        .from('social_connections')
+        .select('*')
+        .eq('user_id', creator.user_id);
+      
+      if (error) throw error;
+      setSocialConnections(data || []);
+    } catch (error) {
+      console.error('Error fetching social connections:', error);
+    } finally {
+      setLoadingSocials(false);
+    }
+  };
 
   const handleSave = () => {
     onSave(formData);
     onClose();
   };
 
-  const addSocialConnection = () => {
+  const adjustCredits = (amount: number) => {
     setFormData(prev => ({
       ...prev,
-      socials: [...prev.socials, { platform: 'instagram', username: '', verified: false }]
+      credits: Math.max(0, prev.credits + amount)
     }));
   };
 
-  const removeSocialConnection = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      socials: prev.socials.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateSocialConnection = (index: number, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      socials: prev.socials.map((social, i) => 
-        i === index ? { ...social, [field]: value } : social
-      )
-    }));
-  };
 
   const getSocialIcon = (platform: string) => {
     switch (platform) {
@@ -119,24 +139,47 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="credits">Current Credits</Label>
-                  <Input
-                    id="credits"
-                    type="number"
-                    value={formData.credits}
-                    onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => adjustCredits(-100)}
+                      disabled={formData.credits <= 0}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <Input
+                      id="credits"
+                      type="number"
+                      value={formData.credits}
+                      onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}
+                      className="text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => adjustCredits(100)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div>
-                  <Label htmlFor="payout_tier">Payout Tier Override</Label>
+                  <Label htmlFor="payout_tier">Credits Per Video Tier</Label>
                   <Select value={formData.payout_tier_override} onValueChange={(value) => setFormData(prev => ({ ...prev, payout_tier_override: value }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="No override" />
+                      <SelectValue placeholder="Auto (based on followers)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No override</SelectItem>
-                      <SelectItem value="standard">Standard Payout</SelectItem>
-                      <SelectItem value="priority">Priority Payout</SelectItem>
-                      <SelectItem value="instant">Instant Payout</SelectItem>
+                      <SelectItem value="none">Auto (based on followers)</SelectItem>
+                      <SelectItem value="2000">Under 10K: $20 (2000 credits)</SelectItem>
+                      <SelectItem value="3500">10K–50K: $35 (3500 credits)</SelectItem>
+                      <SelectItem value="5000">50K–100K: $50 (5000 credits)</SelectItem>
+                      <SelectItem value="7500">100K–500K: $75 (7500 credits)</SelectItem>
+                      <SelectItem value="10000">500K–1M: $100 (10000 credits)</SelectItem>
+                      <SelectItem value="15000">1M+: $150 (15000 credits)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -149,49 +192,31 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Connected Socials</CardTitle>
-                <Button size="sm" variant="outline" onClick={addSocialConnection}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Social
-                </Button>
+                <span className="text-sm text-muted-foreground">Read-only view</span>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {formData.socials.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No social connections added</p>
+              {loadingSocials ? (
+                <p className="text-sm text-muted-foreground">Loading social connections...</p>
+              ) : socialConnections.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No verified social connections</p>
               ) : (
-                formData.socials.map((social, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                socialConnections.map((social) => (
+                  <div key={social.id} className="flex items-center gap-3 p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
                     <div className="flex items-center gap-2">
                       {getSocialIcon(social.platform)}
-                      <Select 
-                        value={social.platform} 
-                        onValueChange={(value) => updateSocialConnection(index, 'platform', value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="instagram">Instagram</SelectItem>
-                          <SelectItem value="twitter">Twitter</SelectItem>
-                          <SelectItem value="youtube">YouTube</SelectItem>
-                          <SelectItem value="tiktok">TikTok</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <span className="font-medium capitalize">{social.platform}</span>
                     </div>
-                    <Input
-                      placeholder="@username"
-                      value={social.username}
-                      onChange={(e) => updateSocialConnection(index, 'username', e.target.value)}
-                      className="flex-1"
-                    />
-                    {social.verified && <Badge variant="secondary">Verified</Badge>}
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => removeSocialConnection(index)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                    <span className="flex-1">@{social.username}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {social.follower_count?.toLocaleString()} followers
+                    </span>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                      Verified
+                    </Badge>
+                    <span className="text-sm font-medium">
+                      ${(social.payout_tier_credits / 100).toFixed(0)}/video
+                    </span>
                   </div>
                 ))
               )}

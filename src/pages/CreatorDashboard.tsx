@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ConnectSocialsModal from "@/components/ConnectSocialsModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export default function CreatorDashboard() {
   
   const [copiedCode, setCopiedCode] = useState(false);
   const [newGoal, setNewGoal] = useState("");
+  const [showConnectSocials, setShowConnectSocials] = useState(false);
 
   const tierThresholds: Record<number, { min: number; max: number; commission: number }> = {
     1: { min: 0, max: 5000, commission: 10 },
@@ -359,9 +361,13 @@ export default function CreatorDashboard() {
                   Post more videos to upgrade your credit tier.
                 </p>
                 
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setShowConnectSocials(true)}
+                >
                   <LinkIcon className="h-4 w-4 mr-2" />
-                  Connect More Socials
+                  Connect Socials
                 </Button>
               </div>
             </CardContent>
@@ -643,6 +649,15 @@ export default function CreatorDashboard() {
           </Card>
         </div>
       </div>
+
+      <ConnectSocialsModal 
+        isOpen={showConnectSocials}
+        onClose={() => setShowConnectSocials(false)}
+        onSuccess={() => {
+          // Refresh dashboard data when social connection is added
+          // This could trigger a refetch of social connections
+        }}
+      />
     </div>
   );
 }
