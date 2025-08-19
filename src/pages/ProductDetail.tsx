@@ -324,7 +324,20 @@ const ProductDetail = () => {
                   <Button
                     key={size}
                     variant={selectedSize === size ? 'default' : 'outline'}
-                    onClick={() => setSelectedSize(size)}
+                    onClick={() => {
+                      setSelectedSize(size);
+                      // Immediately add to cart when size is selected
+                      for (let i = 0; i < parseInt(quantity); i++) {
+                        addItem({
+                          id: product.id.toString(),
+                          name: product.name,
+                          price: product.price,
+                          image: product.images[currentIndex],
+                          size: size,
+                          size_type: 'EU'
+                        });
+                      }
+                    }}
                     className="h-10 text-xs"
                   >
                     {size} EU
