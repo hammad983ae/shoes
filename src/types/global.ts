@@ -30,6 +30,7 @@ export interface Sneaker {
   colors?: string[];
   type?: string;
   availability?: string;
+  is_limited?: boolean;
 }
 
 export interface SocialConnection {

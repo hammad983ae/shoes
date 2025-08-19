@@ -120,7 +120,7 @@ const ProductCard = ({ sneaker, index, onViewProduct }: ProductCardProps) => {
           </div>
           
           {/* Sale/Limited Badges */}
-          {(sneaker.price.includes('$') && parseInt(sneaker.price.replace('$', '')) < 200) && (
+          {(sneaker as any).is_limited && (
             <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold z-20">
               LIMITED
             </div>
