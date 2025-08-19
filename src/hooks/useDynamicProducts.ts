@@ -56,6 +56,8 @@ export const useDynamicProducts = () => {
           inStock: (product.stock || 0) > 0,
           stock: (product.stock || 0).toString(),
           limited: product.limited,
+          is_limited: product.is_limited,
+          infinite_stock: product.infinite_stock,
           type: product.category?.toLowerCase().includes('high') ? 'high-top' : 'low-top',
           colors: [], // Could be extracted from filters
           keywords: [] // Could be extracted from filters
