@@ -125,14 +125,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onFocus = async () => {
+      console.log("🔍 Tab focus - checking session...");
       const { data: { session: activeSession } } = await supabase.auth.getSession();
+      
       if (!activeSession) {
+        console.log("❌ No active session found, attempting recovery...");
         const { data: { session: recovered }, error } = await supabase.auth.refreshSession();
         if (recovered) {
+          console.log("✅ Session recovered successfully");
           setUser(recovered.user);
           setSession(recovered);
+          await loadUserProfile(recovered.user.id);
         } else {
-          console.warn("Session could not be recovered:", error);
+          console.warn("⚠️ Session could not be recovered:", error);
+        }
+      } else {
+        console.log("✅ Active session found, updating state");
+        // Session exists but make sure React state is updated
+        setUser(activeSession.user);
+        setSession(activeSession);
+        
+        // Check if session is about to expire (within 5 minutes)
+        const expiresAt = activeSession.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        
+        if (expiresAt) {
+          const timeUntilExpiry = expiresAt - now;
+          
+          if (timeUntilExpiry < 300) { // Less than 5 minutes
+            console.log("⏰ Session expiring soon, refreshing...");
+            const { data: { session: refreshed }, error } = await supabase.auth.refreshSession();
+            if (refreshed) {
+              console.log("✅ Session refreshed successfully");
+              setUser(refreshed.user);
+              setSession(refreshed);
+            } else {
+              console.warn("⚠️ Session refresh failed:", error);
+            }
+          }
         }
       }
     };
