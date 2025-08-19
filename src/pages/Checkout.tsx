@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +68,7 @@ export default function Checkout() {
   }, [user]);
 
   // Calculate order totals with discounts from cart
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(item.price.replace('$', ''));
     return sum + (price * item.quantity);
@@ -78,7 +79,8 @@ export default function Checkout() {
   const discount = creditsDiscount + couponDiscount;
   const discountedSubtotal = Math.max(0, subtotal - discount);
   const tax = discountedSubtotal * 0.0875; // 8.75% tax
-  const total = Math.max(0, discountedSubtotal + tax);
+  const shippingCost = 0; // Free shipping
+  const total = Math.max(0, discountedSubtotal + tax + shippingCost);
 
   // Chiron payment handler
   const handleChironPayment = async (e: React.FormEvent) => {
@@ -366,12 +368,26 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Back Button */}
+      <div className="sticky top-0 z-40 w-full px-4 md:px-8 py-1">
+        <div className="flex items-center justify-start gap-2 max-w-screen-lg mx-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back</span>
+          </Button>
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           
           {/* Left Side - Checkout Form */}
           <div className="space-y-8">
-            <h1 className="text-2xl font-bold">sani</h1>
             
 
             {total > 0 ? (
@@ -399,7 +415,7 @@ export default function Checkout() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <label className="text-sm font-medium">Contact</label>
+                    <h3 className="text-lg font-medium">Contact</h3>
                     <div className="flex items-center gap-3 p-4 border rounded-md bg-muted/50">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={userProfile?.avatar_url} />
@@ -618,7 +634,7 @@ export default function Checkout() {
               
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal • {items.length} item{items.length > 1 ? 's' : ''}</span>
+                  <span>Subtotal • {totalQuantity} item{totalQuantity > 1 ? 's' : ''}</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 
@@ -638,12 +654,17 @@ export default function Checkout() {
                 
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
-                  <span>$14.71</span>
+                  <span>FREE</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>Tax</span>
+                  <span>${tax.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between font-semibold text-lg pt-3 border-t">
                   <span>Total</span>
-                  <span>USD ${(total + 14.71).toFixed(2)}</span>
+                  <span>USD ${total.toFixed(2)}</span>
                 </div>
               </div>
 
