@@ -304,5 +304,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
   };
 
+  // Block rendering until session is fully restored
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Restoring session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
