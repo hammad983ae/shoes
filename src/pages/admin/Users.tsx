@@ -485,13 +485,38 @@ export default function Users() {
         creator={selectedCreator}
         isOpen={showCreatorEditModal}
         onClose={() => setShowCreatorEditModal(false)}
-        onSave={(creatorData) => {
-          console.log('Saving creator data:', creatorData);
-          toast({
-            title: "Creator Updated",
-            description: "Creator settings have been updated successfully.",
-          });
-          refetch();
+        onSave={async (creatorData) => {
+          try {
+            console.log('Saving creator data:', creatorData);
+            
+            // Update the creator's profile in the database
+            const { error } = await supabase
+              .from('profiles')
+              .update({
+                coupon_code: creatorData.coupon_code,
+                creator_tier: creatorData.creator_tier,
+                credits: creatorData.credits,
+                commission_rate: creatorData.creator_tier === 'tier3' ? 0.20 : 
+                               creatorData.creator_tier === 'tier2' ? 0.15 : 0.10,
+                admin_notes: creatorData.admin_notes
+              })
+              .eq('user_id', selectedCreator?.user_id);
+
+            if (error) throw error;
+
+            toast({
+              title: "Creator Updated",
+              description: "Creator settings have been updated successfully.",
+            });
+            refetch();
+          } catch (error) {
+            console.error('Error updating creator:', error);
+            toast({
+              title: "Update Failed",
+              description: "Failed to update creator settings. Please try again.",
+              variant: "destructive",
+            });
+          }
         }}
       />
 
