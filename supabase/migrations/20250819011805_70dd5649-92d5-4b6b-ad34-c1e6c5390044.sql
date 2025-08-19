@@ -1,0 +1,1 @@
+UPDATE products SET is_limited = true WHERE title = 'Travis Scott x Air Jordan 1 Retro Low OG ''Reverse Mocha''';
