@@ -92,35 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 🎯 SESSION VALIDATION & REFRESH CHECK
-  const validateAndRefreshSession = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (!session || error) {
-        console.warn("🔁 No session or error detected, attempting refresh...");
-        await refreshSession();
-        return false;
-      }
-
-      // Check if session is expiring soon (within 5 minutes)
-      const expiresAt = session.expires_at;
-      const now = Math.floor(Date.now() / 1000);
-      const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
-      
-      if (timeUntilExpiry < 300) { // Less than 5 minutes
-        console.log("⏰ Session expiring soon, refreshing preemptively...");
-        await refreshSession();
-        return false;
-      }
-
-      console.log(`✅ Session valid, expires in ${Math.floor(timeUntilExpiry / 60)} minutes`);
-      return true;
-    } catch (error) {
-      console.error("💥 Session validation failed:", error);
-      return false;
-    }
-  };
 
   // 🎯 INITIAL AUTH SETUP
   useEffect(() => {
@@ -241,30 +212,139 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeoutId);
   }, [user, session]);
 
-  // 🔁 SESSION REFRESH ON FOCUS/VISIBILITY
+  // 🔁 ENHANCED SESSION RECOVERY ON FOCUS/VISIBILITY
   useEffect(() => {
-    const handleFocus = async () => {
-      if (!session) return;
-      
-      console.log("👁️ Window focused, validating session...");
-      await validateAndRefreshSession();
-    };
+    let sessionCheckInterval: NodeJS.Timeout | null = null;
 
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible' && session) {
-        console.log("👁️ Tab became visible, validating session...");
-        await validateAndRefreshSession();
+    const handleTabFocus = async () => {
+      console.log("🔍 Tab focused - checking session health...");
+      
+      try {
+        // Step 1: Get current session
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("❌ Error getting session on focus:", error);
+          return;
+        }
+
+        if (!currentSession) {
+          console.warn("⚠️ No session found on tab focus - attempting recovery...");
+          
+          // Step 2: Try to refresh session
+          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (refreshError) {
+            console.error("❌ Session refresh failed on tab focus:", refreshError);
+            // Clear auth state if refresh fails
+            setSession(null);
+            setUser(null);
+            setUserRole(null);
+            setIsCreator(false);
+            setProfile(null);
+            setAuthStable(false);
+            return;
+          }
+
+          if (refreshedSession) {
+            console.log("✅ Session recovered successfully on tab focus");
+            setSession(refreshedSession);
+            setUser(refreshedSession.user);
+            // onAuthStateChange will handle the rest
+          } else {
+            console.warn("⚠️ Session refresh returned null - user may need to re-login");
+          }
+          return;
+        }
+
+        // Step 3: Check if session is expiring soon
+        const expiresAt = currentSession.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
+        
+        console.log(`📊 Session check on focus - expires in ${Math.floor(timeUntilExpiry / 60)} minutes`);
+        
+        if (timeUntilExpiry < 300) { // Less than 5 minutes
+          console.log("⏰ Session expiring soon on tab focus - refreshing preemptively...");
+          const { error: preemptiveRefreshError } = await supabase.auth.refreshSession();
+          
+          if (preemptiveRefreshError) {
+            console.error("❌ Preemptive refresh failed:", preemptiveRefreshError);
+          } else {
+            console.log("✅ Preemptive session refresh successful");
+          }
+        } else {
+          console.log("✅ Session healthy on tab focus");
+        }
+
+      } catch (error) {
+        console.error("💥 Tab focus session check failed:", error);
       }
     };
 
-    window.addEventListener("focus", handleFocus);
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log("👁️ Tab became visible - initiating session recovery...");
+        await handleTabFocus();
+      } else {
+        console.log("🙈 Tab hidden - session will be checked when visible again");
+      }
+    };
+
+    // Background session health pinging (every 60 seconds)
+    const startSessionPing = () => {
+      if (sessionCheckInterval) return;
+      
+      sessionCheckInterval = setInterval(async () => {
+        if (!session || document.visibilityState !== 'visible') return;
+        
+        try {
+          console.log("💓 Background session ping...");
+          const { data: { session: pingSession }, error } = await supabase.auth.getSession();
+          
+          if (error || !pingSession) {
+            console.warn("⚠️ Background ping detected session issue - will recover on next focus");
+          } else {
+            const expiresAt = pingSession.expires_at;
+            const now = Math.floor(Date.now() / 1000);
+            const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
+            
+            if (timeUntilExpiry < 600) { // Less than 10 minutes
+              console.log("⏰ Background ping triggering early refresh...");
+              await supabase.auth.refreshSession();
+            }
+          }
+        } catch (error) {
+          console.warn("⚠️ Background session ping failed:", error);
+        }
+      }, 60000); // Every 60 seconds
+    };
+
+    const stopSessionPing = () => {
+      if (sessionCheckInterval) {
+        clearInterval(sessionCheckInterval);
+        sessionCheckInterval = null;
+      }
+    };
+
+    // Start background pinging if we have a session
+    if (session) {
+      startSessionPing();
+    } else {
+      stopSessionPing();
+    }
+
+    // Add event listeners
+    window.addEventListener("focus", handleTabFocus);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Cleanup function
     return () => {
-      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("focus", handleTabFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      stopSessionPing();
     };
-  }, [session]);
+  }, [session]); // Re-run when session changes
 
   // 🔥 AUTH FUNCTIONS
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
