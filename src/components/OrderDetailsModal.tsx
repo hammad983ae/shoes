@@ -55,14 +55,48 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
   const [qualityCheckImage, setQualityCheckImage] = useState(order?.quality_check_image || "");
   const [fulfillmentNotes, setFulfillmentNotes] = useState(order?.fulfillment_notes || "");
   const { toast } = useToast();
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
   useEffect(() => {
     if (order) {
       setTrackingNumber(order.tracking_number || "");
       setQualityCheckImage(order.quality_check_image || "");
       setFulfillmentNotes(order.fulfillment_notes || "");
+      fetchOrderItems();
     }
   }, [order]);
+
+  const fetchOrderItems = async () => {
+    if (!order) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select(`
+          id,
+          product_id,
+          quantity,
+          price_per_item,
+          size,
+          products(title)
+        `)
+        .eq('order_id', order.id);
+
+      if (error) throw error;
+
+      const items: OrderItem[] = (data || []).map(item => ({
+        id: item.id,
+        product_name: (item.products as any)?.title || 'Unknown Product',
+        quantity: item.quantity,
+        price_per_item: item.price_per_item,
+        size: item.size || undefined
+      }));
+
+      setOrderItems(items);
+    } catch (error) {
+      console.error('Error fetching order items:', error);
+    }
+  };
 
   if (!order) return null;
 
@@ -192,8 +226,8 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
               <h3 className="font-semibold">Order Items</h3>
             </div>
             <div className="space-y-3">
-              {order.items && order.items.length > 0 ? (
-                order.items.map((item) => (
+              {orderItems.length > 0 ? (
+                orderItems.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{item.product_name}</p>
@@ -206,12 +240,14 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground">No items found</p>
+                <p className="text-muted-foreground">Loading items...</p>
               )}
             </div>
             <div className="flex justify-between items-center pt-3 border-t">
               <span className="font-semibold">Subtotal</span>
-              <span className="font-bold text-lg">${order.order_total.toFixed(2)}</span>
+              <span className="font-bold text-lg">
+                ${(orderItems.reduce((sum, item) => sum + (item.price_per_item * item.quantity), 0)).toFixed(2)}
+              </span>
             </div>
             {(order.credits_used && order.credits_used > 0) && (
               <div className="flex justify-between items-center text-green-600">
@@ -256,11 +292,14 @@ export function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDet
               </div>
             </div>
 
-            <ImageUpload
-              onImageUploaded={setQualityCheckImage}
-              currentImage={qualityCheckImage}
-              bucketName="products"
-            />
+            <div>
+              <Label htmlFor="quality-check">Quality Check Image</Label>
+              <ImageUpload
+                onImageUploaded={setQualityCheckImage}
+                currentImage={qualityCheckImage}
+                bucketName="products"
+              />
+            </div>
 
             <div>
               <Label htmlFor="notes">Fulfillment Notes</Label>

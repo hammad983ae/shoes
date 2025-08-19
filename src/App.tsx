@@ -20,9 +20,10 @@ import CartAddNotification from "./components/CartAddNotification";
    import Settings from "./pages/Settings";
    import Wallet from "./pages/Wallet";
    import Feed from "./pages/Feed";
-   import Privacy from "./pages/Privacy";
-   import Terms from "./pages/Terms";
-   import ResetPassword from "./pages/ResetPassword";
+    import Privacy from "./pages/Privacy";
+    import Terms from "./pages/Terms";
+    import ResetPassword from "./pages/ResetPassword";
+    import ReviewOrder from "./pages/ReviewOrder";
    import Catalog from "./pages/Catalog";
    import FullCatalog from "./pages/FullCatalog";
    import ProductDetail from "./pages/ProductDetail";
@@ -73,7 +74,8 @@ const App = () => (
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/checkout" element={<Checkout />} />
                       <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                      <Route path="/order-history" element={<OrderHistory />} />
+                       <Route path="/order-history" element={<OrderHistory />} />
+                       <Route path="/review-order/:orderId" element={<ReviewOrder />} />
                       <Route path="/signin" element={<SignIn />} />
                      <Route path="/reset-password" element={<ResetPassword />} />
                      <Route path="/privacy" element={<Privacy />} />

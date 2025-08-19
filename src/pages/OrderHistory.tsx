@@ -20,6 +20,7 @@ import {
   Eye,
   ArrowLeft
 } from 'lucide-react';
+import { OrderStatusTracker } from '@/components/OrderStatusTracker';
 
 interface Order {
   id: string;
@@ -43,12 +44,52 @@ export default function OrderHistory() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [hasReviews, setHasReviews] = useState<{[orderId: string]: boolean}>({});
 
   useEffect(() => {
     if (user) {
       fetchOrders();
+      checkReviewStatus();
     }
   }, [user]);
+
+  const checkReviewStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: reviews, error } = await supabase
+        .from('product_reviews')
+        .select('product_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Get all orders with their items to check which orders have reviews
+      const { data: ordersWithItems, error: ordersError } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          order_items(product_id)
+        `)
+        .eq('user_id', user.id);
+
+      if (ordersError) throw ordersError;
+
+      const reviewedProducts = new Set(reviews?.map(r => r.product_id) || []);
+      const orderReviewStatus: {[orderId: string]: boolean} = {};
+
+      ordersWithItems?.forEach(order => {
+        const hasAnyReviews = order.order_items?.some(item => 
+          reviewedProducts.has(item.product_id)
+        );
+        orderReviewStatus[order.id] = !!hasAnyReviews;
+      });
+
+      setHasReviews(orderReviewStatus);
+    } catch (error) {
+      console.error('Error checking review status:', error);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -262,13 +303,12 @@ export default function OrderHistory() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Order Status */}
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(selectedOrder.status)}
-                  <Badge className={getStatusColor(selectedOrder.status)}>
-                    {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
-                  </Badge>
-                </div>
+                {/* Order Status Tracker */}
+                <OrderStatusTracker 
+                  currentStatus={selectedOrder.status}
+                  onLeaveReview={() => navigate(`/review-order/${selectedOrder.id}`)}
+                  isReviewed={hasReviews[selectedOrder.id]}
+                />
 
                 {/* Order Summary */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -286,18 +326,18 @@ export default function OrderHistory() {
                       <p className="font-medium">{format(new Date(selectedOrder.estimated_delivery), 'MMM dd, yyyy')}</p>
                     </div>
                   )}
-                  {selectedOrder.tracking_number && (
-                    <div>
-                      <p className="text-muted-foreground">Tracking Number</p>
-                      <p className="font-medium text-blue-600">{selectedOrder.tracking_number}</p>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-muted-foreground">Tracking Number</p>
+                    <p className="font-medium text-blue-600">
+                      {selectedOrder.tracking_number || 'Not available yet'}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Quality Check Image */}
-                {selectedOrder.quality_check_image && (
-                  <div>
-                    <h4 className="font-medium mb-2">Quality Check</h4>
+                <div>
+                  <h4 className="font-medium mb-2">Quality Check</h4>
+                  {selectedOrder.quality_check_image ? (
                     <div className="border rounded-lg overflow-hidden">
                       <img 
                         src={selectedOrder.quality_check_image} 
@@ -305,8 +345,12 @@ export default function OrderHistory() {
                         className="w-full h-48 object-cover"
                       />
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      Quality check image will appear here once your order is processed
+                    </p>
+                  )}
+                </div>
 
                 {/* Package Status */}
                 <div>
