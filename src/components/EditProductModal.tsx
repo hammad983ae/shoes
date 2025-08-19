@@ -19,6 +19,7 @@ interface Product {
   description?: string;
   brand: string;
   category: string;
+  color?: string;
   price: number;
   slashed_price?: number;
   stock: number;
@@ -49,6 +50,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     description: '',
     brand: '',
     category: '',
+    color: '',
     price: 0,
     slashed_price: 0,
     stock: 0,
@@ -94,6 +96,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
         description: product.description || '',
         brand: product.brand,
         category: product.category,
+        color: product.color || '',
         price: product.price,
         slashed_price: product.slashed_price || 0,
         stock: product.stock,
@@ -190,6 +193,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
           description: formData.description,
           brand: formData.brand,
           category: formData.category,
+          color: formData.color || null,
           price: formData.price,
           slashed_price: formData.slashed_price || null,
           stock: formData.stock,
@@ -310,15 +314,11 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
                   <SelectItem value="Nike" className="text-white hover:bg-gray-700 focus:bg-gray-700">Nike</SelectItem>
-                  <SelectItem value="Jordan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jordan</SelectItem>
-                  <SelectItem value="Adidas" className="text-white hover:bg-gray-700 focus:bg-gray-700">Adidas</SelectItem>
                   <SelectItem value="Rick Owens" className="text-white hover:bg-gray-700 focus:bg-gray-700">Rick Owens</SelectItem>
                   <SelectItem value="Maison Margiela" className="text-white hover:bg-gray-700 focus:bg-gray-700">Maison Margiela</SelectItem>
-                  <SelectItem value="Travis Scott" className="text-white hover:bg-gray-700 focus:bg-gray-700">Travis Scott</SelectItem>
-                  <SelectItem value="Yeezy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Yeezy</SelectItem>
-                  <SelectItem value="New Balance" className="text-white hover:bg-gray-700 focus:bg-gray-700">New Balance</SelectItem>
-                  <SelectItem value="Converse" className="text-white hover:bg-gray-700 focus:bg-gray-700">Converse</SelectItem>
-                  <SelectItem value="Other" className="text-white hover:bg-gray-700 focus:bg-gray-700">Other</SelectItem>
+                  <SelectItem value="Jordan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jordan</SelectItem>
+                  <SelectItem value="Adidas" className="text-white hover:bg-gray-700 focus:bg-gray-700">Adidas</SelectItem>
+                  <SelectItem value="Stone Island" className="text-white hover:bg-gray-700 focus:bg-gray-700">Stone Island</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,14 +359,18 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                     <SelectValue placeholder="Select categories" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
-                    <SelectItem value="High-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">High-Top</SelectItem>
-                    <SelectItem value="Low-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Low-Top</SelectItem>
-                    <SelectItem value="Mid-Top" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mid-Top</SelectItem>
-                    <SelectItem value="Basketball" className="text-white hover:bg-gray-700 focus:bg-gray-700">Basketball</SelectItem>
-                    <SelectItem value="Running" className="text-white hover:bg-gray-700 focus:bg-gray-700">Running</SelectItem>
-                    <SelectItem value="Casual" className="text-white hover:bg-gray-700 focus:bg-gray-700">Casual</SelectItem>
-                    <SelectItem value="Designer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Designer</SelectItem>
-                    <SelectItem value="Limited Edition" className="text-white hover:bg-gray-700 focus:bg-gray-700">Limited Edition</SelectItem>
+                    <SelectItem value="Shoes" className="text-white hover:bg-gray-700 focus:bg-gray-700">Shoes</SelectItem>
+                    <SelectItem value="Shirts" className="text-white hover:bg-gray-700 focus:bg-gray-700">Shirts</SelectItem>
+                    <SelectItem value="Hoodies" className="text-white hover:bg-gray-700 focus:bg-gray-700">Hoodies</SelectItem>
+                    <SelectItem value="Jackets" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jackets</SelectItem>
+                    <SelectItem value="Pants" className="text-white hover:bg-gray-700 focus:bg-gray-700">Pants</SelectItem>
+                    <SelectItem value="Jeans" className="text-white hover:bg-gray-700 focus:bg-gray-700">Jeans</SelectItem>
+                    <SelectItem value="Sweatpants" className="text-white hover:bg-gray-700 focus:bg-gray-700">Sweatpants</SelectItem>
+                    <SelectItem value="Shorts" className="text-white hover:bg-gray-700 focus:bg-gray-700">Shorts</SelectItem>
+                    <SelectItem value="Sweaters/Knits" className="text-white hover:bg-gray-700 focus:bg-gray-700">Sweaters/Knits</SelectItem>
+                    <SelectItem value="Hats" className="text-white hover:bg-gray-700 focus:bg-gray-700">Hats</SelectItem>
+                    <SelectItem value="Accessories" className="text-white hover:bg-gray-700 focus:bg-gray-700">Accessories</SelectItem>
+                    <SelectItem value="Socks" className="text-white hover:bg-gray-700 focus:bg-gray-700">Socks</SelectItem>
                   </SelectContent>
                 </Select>
                 
@@ -392,7 +396,38 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
                 )}
               </div>
             </div>
-            <div></div>
+            <div>
+              <Label htmlFor="color">Color</Label>
+              <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
+                <SelectTrigger className="bg-gray-800 border border-gray-600 shadow-sm text-white">
+                  <SelectValue placeholder="Select color" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border border-gray-600 shadow-xl z-[10001] max-h-60 overflow-y-auto">
+                  <SelectItem value="Black" className="text-white hover:bg-gray-700 focus:bg-gray-700">Black</SelectItem>
+                  <SelectItem value="White" className="text-white hover:bg-gray-700 focus:bg-gray-700">White</SelectItem>
+                  <SelectItem value="Grey" className="text-white hover:bg-gray-700 focus:bg-gray-700">Grey</SelectItem>
+                  <SelectItem value="Silver" className="text-white hover:bg-gray-700 focus:bg-gray-700">Silver</SelectItem>
+                  <SelectItem value="Charcoal" className="text-white hover:bg-gray-700 focus:bg-gray-700">Charcoal</SelectItem>
+                  <SelectItem value="Off-White/Cream" className="text-white hover:bg-gray-700 focus:bg-gray-700">Off-White/Cream</SelectItem>
+                  <SelectItem value="Brown" className="text-white hover:bg-gray-700 focus:bg-gray-700">Brown</SelectItem>
+                  <SelectItem value="Tan" className="text-white hover:bg-gray-700 focus:bg-gray-700">Tan</SelectItem>
+                  <SelectItem value="Beige" className="text-white hover:bg-gray-700 focus:bg-gray-700">Beige</SelectItem>
+                  <SelectItem value="Navy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Navy</SelectItem>
+                  <SelectItem value="Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Blue</SelectItem>
+                  <SelectItem value="Light Blue" className="text-white hover:bg-gray-700 focus:bg-gray-700">Light Blue</SelectItem>
+                  <SelectItem value="Green" className="text-white hover:bg-gray-700 focus:bg-gray-700">Green</SelectItem>
+                  <SelectItem value="Olive" className="text-white hover:bg-gray-700 focus:bg-gray-700">Olive</SelectItem>
+                  <SelectItem value="Yellow" className="text-white hover:bg-gray-700 focus:bg-gray-700">Yellow</SelectItem>
+                  <SelectItem value="Orange" className="text-white hover:bg-gray-700 focus:bg-gray-700">Orange</SelectItem>
+                  <SelectItem value="Red" className="text-white hover:bg-gray-700 focus:bg-gray-700">Red</SelectItem>
+                  <SelectItem value="Burgundy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Burgundy</SelectItem>
+                  <SelectItem value="Pink" className="text-white hover:bg-gray-700 focus:bg-gray-700">Pink</SelectItem>
+                  <SelectItem value="Purple" className="text-white hover:bg-gray-700 focus:bg-gray-700">Purple</SelectItem>
+                  <SelectItem value="Gold" className="text-white hover:bg-gray-700 focus:bg-gray-700">Gold</SelectItem>
+                  <SelectItem value="Multicolor/Pattern" className="text-white hover:bg-gray-700 focus:bg-gray-700">Multicolor/Pattern</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>

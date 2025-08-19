@@ -40,9 +40,9 @@ const FilterPanel = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Available filter options
-  const brands = ['All', 'Nike', 'Rick Owens', 'Maison Margiela'];
-  const colors = ['All', 'black', 'white', 'mocha', 'brown'];
-  const types = ['All', 'low-top', 'high-top'];
+  const brands = ['All', 'Nike', 'Rick Owens', 'Maison Margiela', 'Jordan', 'Adidas', 'Stone Island'];
+  const colors = ['All', 'Black', 'White', 'Grey', 'Silver', 'Charcoal', 'Off-White/Cream', 'Brown', 'Tan', 'Beige', 'Navy', 'Blue', 'Light Blue', 'Green', 'Olive', 'Yellow', 'Orange', 'Red', 'Burgundy', 'Pink', 'Purple', 'Gold', 'Multicolor/Pattern'];
+  const categories = ['All', 'Shoes', 'Shirts', 'Hoodies', 'Jackets', 'Pants', 'Jeans', 'Sweatpants', 'Shorts', 'Sweaters/Knits', 'Hats', 'Accessories', 'Socks'];
   const sortOptions = [
     { value: 'name-asc', label: 'Name A–Z' },
     { value: 'name-desc', label: 'Name Z–A' },
@@ -68,13 +68,6 @@ const FilterPanel = ({
     }
   };
 
-  const handleTypeChange = (type: string) => {
-    if (type === 'All') {
-      setSelectedTypes([]);
-    } else {
-      setSelectedTypes([type]);
-    }
-  };
 
   const clearAllFilters = () => {
     setSelectedCategory('All');
@@ -142,6 +135,25 @@ const FilterPanel = ({
 
           <Separator />
 
+          {/* Category Filter */}
+          <div>
+            <Label className="text-base font-semibold">Category</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
           {/* Brand Filter */}
           <div>
             <Label className="text-base font-semibold">Brand</Label>
@@ -172,25 +184,6 @@ const FilterPanel = ({
                 {colors.map((color) => (
                   <SelectItem key={color} value={color}>
                     {color.charAt(0).toUpperCase() + color.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          {/* Type Filter */}
-          <div>
-            <Label className="text-base font-semibold">Type</Label>
-            <Select value={selectedTypes.length === 0 ? 'All' : selectedTypes[0]} onValueChange={handleTypeChange}>
-              <SelectTrigger className="mt-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {types.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type === 'All' ? 'All Types' : type === 'low-top' ? 'Low-Top' : 'High-Top'}
                   </SelectItem>
                 ))}
               </SelectContent>
