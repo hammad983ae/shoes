@@ -188,7 +188,7 @@ export default function ImageUpload({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Gift className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Share & Earn 1000 Free Credits!</span>
+                  <span className="text-sm font-medium">Post and Tag Us to Earn 1000 Credits!</span>
                 </div>
                 <Button
                   variant="outline"
@@ -270,12 +270,12 @@ export default function ImageUpload({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5 text-primary" />
-              Earn 1000 Free Credits!
+              Post and Tag Us to Earn 1000 Credits!
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Share your quality check media on social platforms and tag us to earn 1000 free credits! 
+              Share your quality check media on social platforms and tag us to earn 1000 credits! 
               Perfect for showcasing your latest pickup.
             </p>
             <div className="flex gap-2">

@@ -377,10 +377,46 @@ export default function OrderHistory() {
                           variant="secondary"
                           size="sm"
                           onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = selectedOrder.quality_check_image!;
-                            link.download = `quality-check-${selectedOrder.id.slice(-8)}`;
-                            link.click();
+                            // Create fullscreen modal functionality here
+                            const modal = document.createElement('div');
+                            modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
+                            modal.onclick = () => modal.remove();
+                            
+                            const mediaElement = selectedOrder.quality_check_image!.includes('.mp4') || 
+                                               selectedOrder.quality_check_image!.includes('.mov') || 
+                                               selectedOrder.quality_check_image!.includes('.avi') || 
+                                               selectedOrder.quality_check_image!.includes('.webm') 
+                              ? `<video src="${selectedOrder.quality_check_image}" controls class="max-w-full max-h-full object-contain" />`
+                              : `<img src="${selectedOrder.quality_check_image}" alt="Quality check fullscreen" class="max-w-full max-h-full object-contain" />`;
+                            
+                            modal.innerHTML = mediaElement;
+                            document.body.appendChild(modal);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(selectedOrder.quality_check_image!);
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              const isVideo = selectedOrder.quality_check_image!.includes('.mp4') || 
+                                            selectedOrder.quality_check_image!.includes('.mov') || 
+                                            selectedOrder.quality_check_image!.includes('.avi') || 
+                                            selectedOrder.quality_check_image!.includes('.webm');
+                              link.download = `quality-check-${selectedOrder.id.slice(-8)}.${isVideo ? 'mp4' : 'jpg'}`;
+                              document.body.appendChild(link);
+                              link.click();
+                              window.URL.revokeObjectURL(url);
+                              document.body.removeChild(link);
+                            } catch (error) {
+                              console.error('Download failed:', error);
+                            }
                           }}
                         >
                           <Download className="h-4 w-4" />
@@ -388,11 +424,11 @@ export default function OrderHistory() {
                       </div>
                       {/* Credits Promotion */}
                       <div className="p-3 bg-gradient-to-r from-primary/10 to-secondary/10">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Gift className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">Share & Earn 1000 Credits!</span>
-                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Gift className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium">Post and Tag Us to Earn 1000 Credits!</span>
+                            </div>
                           <Button
                             variant="outline"
                             size="sm"
