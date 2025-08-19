@@ -123,58 +123,85 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [user, session]);
 
+  // Enhanced session recovery with mutex and proper visibility handling
   useEffect(() => {
-    const onFocus = async () => {
-      console.log("🔍 Tab focus - checking session...");
-      const { data: { session: activeSession } } = await supabase.auth.getSession();
-      
-      if (!activeSession) {
-        console.log("❌ No active session found, attempting recovery...");
-        const { data: { session: recovered }, error } = await supabase.auth.refreshSession();
-        if (recovered) {
-          console.log("✅ Session recovered successfully");
-          setUser(recovered.user);
-          setSession(recovered);
-          await loadUserProfile(recovered.user.id);
+    let isRefreshing = false;
+    let sessionInterval: NodeJS.Timeout | null = null;
+
+    const refreshIfNeeded = async () => {
+      if (isRefreshing) return;
+      isRefreshing = true;
+
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
+
+        if (error || !session) {
+          console.warn("No session found on visibilitychange, attempting refresh...");
+          const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Refresh session failed", refreshError);
+            setUser(null);
+            setSession(null);
+          } else {
+            console.log("Session refreshed on tab focus:", refreshedData.session);
+            setUser(refreshedData.session?.user || null);
+            setSession(refreshedData.session);
+            if (refreshedData.session?.user) {
+              await loadUserProfile(refreshedData.session.user.id);
+            }
+          }
         } else {
-          console.warn("⚠️ Session could not be recovered:", error);
-        }
-      } else {
-        console.log("✅ Active session found, updating state");
-        // Session exists but make sure React state is updated
-        setUser(activeSession.user);
-        setSession(activeSession);
-        
-        // Check if session is about to expire (within 5 minutes)
-        const expiresAt = activeSession.expires_at;
-        const now = Math.floor(Date.now() / 1000);
-        
-        if (expiresAt) {
-          const timeUntilExpiry = expiresAt - now;
-          
-          if (timeUntilExpiry < 300) { // Less than 5 minutes
-            console.log("⏰ Session expiring soon, refreshing...");
-            const { data: { session: refreshed }, error } = await supabase.auth.refreshSession();
-            if (refreshed) {
-              console.log("✅ Session refreshed successfully");
-              setUser(refreshed.user);
-              setSession(refreshed);
-            } else {
-              console.warn("⚠️ Session refresh failed:", error);
+          const now = Date.now() / 1000;
+          const expiresIn = session.expires_at ? session.expires_at - now : 0;
+
+          console.log("Session is valid, expires in", Math.floor(expiresIn), "seconds");
+
+          // Update React state to ensure it's in sync
+          setUser(session.user);
+          setSession(session);
+
+          if (expiresIn < 300) { // Less than 5 minutes
+            console.log("Token expiring soon, refreshing...");
+            const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshedData.session) {
+              setUser(refreshedData.session.user);
+              setSession(refreshedData.session);
+            } else if (refreshError) {
+              console.error("Token refresh failed:", refreshError);
             }
           }
         }
+      } catch (error) {
+        console.error("Session check failed:", error);
+      } finally {
+        isRefreshing = false;
       }
     };
 
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === 'visible') onFocus();
-    });
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        console.log("[Auth] Tab is visible — checking session");
+        refreshIfNeeded();
+      }
+    };
+
+    // Listen for tab focus with visibilitychange (more reliable than focus)
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // Optional: 60s interval while tab is visible for proactive session monitoring
+    sessionInterval = setInterval(() => {
+      if (document.visibilityState === "visible" && !isRefreshing) {
+        refreshIfNeeded();
+      }
+    }, 60000); // every 60s
+
+    // Initial session check
+    refreshIfNeeded();
 
     return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      if (sessionInterval) clearInterval(sessionInterval);
     };
   }, []);
 
