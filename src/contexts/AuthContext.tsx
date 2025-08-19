@@ -62,7 +62,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsCreator(false);
       return;
     }
-    setTimeout(async () => {
+    
+    const loadProfile = async () => {
       try {
         console.log('Loading profile for user:', user.id);
         const { data, error } = await supabase
@@ -75,17 +76,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (error) {
           console.error('Profile query error:', error);
+          // Fallback to default values if profile query fails
+          setUserRole('user');
+          setIsCreator(false);
           return;
         }
         
-        setUserRole((data?.role as 'user' | 'creator' | 'admin') ?? 'user');
-        setIsCreator(Boolean(data?.is_creator));
+        if (!data) {
+          console.log('No profile found, creating one...');
+          // If no profile exists, create one
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              display_name: user.email?.split('@')[0] || 'User',
+              role: 'user',
+              is_creator: false
+            })
+            .select()
+            .single();
+            
+          if (createError) {
+            console.error('Failed to create profile:', createError);
+            setUserRole('user');
+            setIsCreator(false);
+          } else {
+            console.log('Created new profile:', newProfile);
+            setUserRole('user');
+            setIsCreator(false);
+          }
+        } else {
+          setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
+          setIsCreator(Boolean(data.is_creator));
+        }
       } catch (e) {
         console.error('Failed to load profile role', e);
         setUserRole('user');
         setIsCreator(false);
       }
-    }, 0);
+    };
+    
+    loadProfile();
   }, [user]);
 
   const signUp = async (email: string, password: string, displayName?: string, referralCode?: string, acceptedTerms?: boolean) => {
