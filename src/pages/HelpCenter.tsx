@@ -21,7 +21,7 @@ const faqData: FAQ[] = [
   {
     category: 'Orders & Shipping',
     question: 'How long does shipping take?',
-    answer: 'Standard shipping takes 5-9 business days within the US. International orders typically take 7-14 business days. We use reliable carriers and provide tracking information once your order ships.'
+    answer: 'Orders take up to 3 business days to process. After that, shipping typically takes 5–9 business days globally for the U.S. and Europe. Orders to South America, Africa, Asia, and Australia may take up to 14 business days depending on customs and location.'
   },
   {
     category: 'Orders & Shipping',
@@ -31,7 +31,7 @@ const faqData: FAQ[] = [
   {
     category: 'Orders & Shipping',
     question: 'What do I do if my order hasn\'t arrived?',
-    answer: 'If your order is more than 2 days past the estimated delivery date, please contact our support team with your order number. We\'ll investigate with the carrier and provide a resolution.'
+    answer: 'Check your tracking number for the most up-to-date status. If your tracking hasn\'t updated or your order is significantly delayed, contact our support team.'
   },
   {
     category: 'Orders & Shipping',
@@ -48,7 +48,7 @@ const faqData: FAQ[] = [
   {
     category: 'Account & Credits',
     question: 'How do I use store credits?',
-    answer: 'Store credits are automatically applied at checkout when you\'re logged in. You can choose to use all or partial credits during the payment process. Credits never expire.'
+    answer: 'Store credits must be manually applied on the cart page, before proceeding to checkout. Credits cannot be applied once you\'re already in checkout.'
   },
   {
     category: 'Account & Credits',
@@ -63,7 +63,7 @@ const faqData: FAQ[] = [
   {
     category: 'Account & Credits',
     question: 'Can I combine coupon codes with credits?',
-    answer: 'Yes! You can use coupon codes along with store credits. The coupon discount is applied first, then credits are used for the remaining balance.'
+    answer: 'No. You can only use one: either a coupon code or store credits, not both in the same order.'
   },
   {
     category: 'Account & Credits',
@@ -80,7 +80,7 @@ const faqData: FAQ[] = [
   {
     category: 'Payments & Pricing',
     question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit cards, PayPal, Apple Pay, Google Pay, and various buy-now-pay-later options. For special orders, we may also accept CashApp or Zelle - contact us for details.'
+    answer: 'We currently accept all major credit cards. Apple Pay is coming soon. We do not accept PayPal, Google Pay, or Buy Now Pay Later at this time.'
   },
   {
     category: 'Payments & Pricing',
@@ -94,25 +94,20 @@ const faqData: FAQ[] = [
   },
   {
     category: 'Payments & Pricing',
-    question: 'Can I pay later / in installments?',
-    answer: 'Yes! We offer several buy-now-pay-later options at checkout including Sezzle, Afterpay, and Klarna. These let you split your purchase into interest-free payments.'
-  },
-  {
-    category: 'Payments & Pricing',
     question: 'Do you offer refunds to the original method or just store credit?',
-    answer: 'For returns, we typically issue store credits for faster processing. However, we can process refunds to your original payment method upon request - this may take 5-10 business days.'
+    answer: 'You may choose between a store credit refund (processed instantly) or a refund to your original payment method (processed within 5–10 business days) once your return is approved.'
   },
 
   // Product Info & Sizing
   {
     category: 'Product Info & Sizing',
     question: 'Are your shoes true to size?',
-    answer: 'Most of our footwear runs true to size, but sizing can vary by brand and style. Each product page includes detailed size charts and customer reviews mentioning fit to help you choose.'
+    answer: 'Most of our shoes run true to size, but we recommend checking the Top Posts tab and the product description for sizing tips and fit suggestions. Certain styles may suggest sizing up.'
   },
   {
     category: 'Product Info & Sizing',
     question: 'Do you provide a size chart?',
-    answer: 'Yes! Every product page includes a comprehensive size chart with measurements in US, EU, and UK sizing. We also provide foot length measurements for the most accurate fit.'
+    answer: 'Yes. Every product includes a size chart located next to the size selection menu. Charts include US, EU, and UK conversions for accurate fit.'
   },
   {
     category: 'Product Info & Sizing',
@@ -129,7 +124,7 @@ const faqData: FAQ[] = [
   {
     category: 'Promotions & Discounts',
     question: 'How do I use a coupon code?',
-    answer: 'Enter your coupon code at checkout in the "Discount Code" field before completing payment. The discount will be applied automatically if the code is valid and active.'
+    answer: 'Enter your coupon code on the cart page, not the checkout page. Once applied, your discount will carry over to checkout automatically.'
   },
   {
     category: 'Promotions & Discounts',
