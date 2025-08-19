@@ -325,7 +325,6 @@ const ProductDetail = () => {
                     key={size}
                     variant={selectedSize === size ? 'default' : 'outline'}
                     onClick={() => {
-                      console.log('Adding size to cart:', size);
                       setSelectedSize(size);
                       // Immediately add to cart when size is selected
                       for (let i = 0; i < parseInt(quantity); i++) {
