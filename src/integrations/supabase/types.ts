@@ -1114,6 +1114,7 @@ export type Database = {
           care_instructions: string | null
           categories: string[] | null
           category: string
+          color: string | null
           created_at: string | null
           description: string | null
           filters: Json | null
@@ -1139,6 +1140,7 @@ export type Database = {
           care_instructions?: string | null
           categories?: string[] | null
           category: string
+          color?: string | null
           created_at?: string | null
           description?: string | null
           filters?: Json | null
@@ -1164,6 +1166,7 @@ export type Database = {
           care_instructions?: string | null
           categories?: string[] | null
           category?: string
+          color?: string | null
           created_at?: string | null
           description?: string | null
           filters?: Json | null
