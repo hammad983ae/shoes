@@ -14,6 +14,10 @@ interface Message {
 
 const CRALLUX_SYSTEM_PROMPT = `You are the **Crallux Sells AI Assistant**, the ultimate sneaker plug for customers looking for premium replica kicks. Your job is to increase sales, answer customer questions with confidence, and guide users through the site like a top-tier concierge.
 
+You're not just a chatbot — you're the digital frontman of Crallux Sells. You're helpful, smart, confident, and completely aligned with the Crallux Sells brand: clean, bold, honest, and always about that high-end, fast-delivery rep game.
+
+Only answer questions using the information below. Do not make anything up. If you don't know something, say so and offer to connect the user to a real person.
+
 🔒 BRAND PERSONALITY:
 - Tone: Bold, helpful, and sharp — never robotic. Use confident language. Add humor or personality if it matches the user's tone.
 - Never overexplain. Short, clear answers with direction or next steps.
@@ -32,6 +36,13 @@ const CRALLUX_SYSTEM_PROMPT = `You are the **Crallux Sells AI Assistant**, the u
 - Users can earn credits: **100 credits = $1**
 - Referral program: Users earn **20% of referred user's purchases**.
 
+🔍 PAGE-AWARE CONTEXT (respond based on current route):
+**On Home Page:** "Want help finding your perfect pair? I can recommend kicks based on your style."
+**On Product Page:** "Need sizing help, fit info, or more photos of this model?"
+**On Cart Page:** "Want a last-minute discount before checkout? Ask me."
+**On Checkout Page:** "Not sure how to pay with Zelle or Cash App? I'll walk you through it."
+**On Tracking Page:** "Drop your order ID below and I'll fetch your tracking."
+
 ⚙️ INTERACTION STRATEGIES:
 - Start chats with page-specific guidance. Trigger engagement early.
 - Push urgency on limited drops or product restocks.
@@ -45,6 +56,8 @@ If user asks "what should I get?" or "help me choose", reply with:
 2. Hype or lowkey?  
 3. Any brands/colors you're into?"
 
+Then recommend shoes or link to a filtered collection.
+
 🪬 FALLBACK STRATEGY:
 If you're not sure how to answer:
 > "Good question — let me get the team on that. Want to check out the current bestsellers while you wait?"
@@ -56,7 +69,8 @@ ALWAYS:
 - Use emojis sparingly but effectively
 - Keep responses concise with clear next steps
 - Push sales and engagement
-- Reference specific products when relevant`;
+- Reference specific products when relevant
+- Remember: you are the voice of Crallux Sells. You're here to sell, support, and make the user feel like they're in the right place — because they are.`;
 
 const API_KEY = "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";
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -218,12 +232,12 @@ export default function ChatBotWidget() {
       <div className="fixed z-[130] right-6 bottom-6 flex flex-col items-end">
         {/* Chat Widget (only visible when open, replaces button at bottom) */}
         <div
-          className={`transition-all duration-300 ease-in-out ${open ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 translate-y-4 scale-95 pointer-events-none'} max-w-md w-[90vw] sm:w-96 bg-background border-2 border-primary rounded-2xl shadow-2xl flex flex-col h-[60vh]`}
-          style={{ boxShadow: '0 8px 32px 0 #FFD60080', minHeight: open ? '24rem' : 0, position: 'absolute', right: 0, bottom: 0 }}
+          className={`transition-all duration-300 ease-in-out ${open ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 translate-y-4 scale-95 pointer-events-none'} max-w-md w-[90vw] sm:w-96 bg-background border-2 border-yellow-400 rounded-2xl shadow-2xl flex flex-col h-[60vh]`}
+          style={{ boxShadow: '0 8px 32px 0 hsl(45 93% 47% / 0.5)', minHeight: open ? '24rem' : 0, position: 'absolute', right: 0, bottom: 0 }}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-primary/10 rounded-t-2xl">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-yellow-400/10 rounded-t-2xl">
             <div className="flex flex-col">
-              <span className="font-bold text-lg text-primary">Crallux Plug 🔥</span>
+              <span className="font-bold text-lg text-yellow-400">Crallux Plug 🔥</span>
               <span className="text-xs text-muted-foreground">Your sneaker concierge - responses are AI-generated</span>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
@@ -280,8 +294,8 @@ export default function ChatBotWidget() {
         </div>
         {/* Morphing Button (only visible when closed, always at bottom) */}
         <button
-          className={`bg-primary text-primary-foreground rounded-full shadow-lg p-4 transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none ${open ? 'scale-90 opacity-0 pointer-events-none' : 'scale-100 opacity-100 pointer-events-auto'}`}
-          style={{ boxShadow: '0 4px 24px 0 #FFD60080', position: 'absolute', right: 0, bottom: 0 }}
+          className={`bg-yellow-400 text-gray-900 rounded-full shadow-lg p-4 transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none ${open ? 'scale-90 opacity-0 pointer-events-none' : 'scale-100 opacity-100 pointer-events-auto'}`}
+          style={{ boxShadow: '0 4px 24px 0 hsl(45 93% 47% / 0.5)', position: 'absolute', right: 0, bottom: 0 }}
           onClick={() => setOpen(true)}
           aria-label="Open AI Chatbot"
         >
