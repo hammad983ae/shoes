@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCouponCode } from '@/hooks/useCouponCode';
 
 interface UserProfile {
   id: string;
@@ -45,6 +46,7 @@ interface UserCredits {
 const Settings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const { toast } = useToast();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -437,6 +439,34 @@ const Settings = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Coupon Code Section (for creators) */}
+              {couponCodeData && (
+                <div className="space-y-2">
+                  <Label>Creator Coupon Code</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 p-2 bg-muted rounded-md font-mono text-sm">
+                      {couponCodeData.code}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(couponCodeData.code);
+                        toast({
+                          title: "Copied!",
+                          description: "Coupon code copied to clipboard.",
+                        });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share this code with customers to earn commissions
+                  </p>
+                </div>
+              )}
 
               <Button variant="outline" className="justify-start" onClick={handleDownloadData}>
                 <Download className="h-4 w-4 mr-2" />

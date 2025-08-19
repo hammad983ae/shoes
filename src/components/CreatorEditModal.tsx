@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Instagram, Twitter, Youtube, Plus, Minus } from 'lucide-react';
+import { useCouponCode } from '@/hooks/useCouponCode';
 
 interface Creator {
   id: string;
@@ -29,8 +30,9 @@ interface CreatorEditModalProps {
 }
 
 const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModalProps) => {
+  const { couponCode: couponCodeData, updateCouponCode } = useCouponCode(creator?.user_id);
   const [formData, setFormData] = useState({
-    coupon_code: creator?.coupon_code || '',
+    coupon_code: '',
     creator_tier: creator?.creator_tier || 'tier1',
     credits: creator?.credits || 0,
     admin_notes: '',
@@ -41,18 +43,19 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
   const [socialConnections, setSocialConnections] = useState<any[]>([]);
   const [loadingSocials, setLoadingSocials] = useState(true);
   const [editingSocials, setEditingSocials] = useState(false);
+  const [updatingCouponCode, setUpdatingCouponCode] = useState(false);
 
   useEffect(() => {
     if (creator?.user_id && isOpen) {
       fetchSocialConnections();
       setFormData(prev => ({
         ...prev,
-        coupon_code: creator?.coupon_code || '',
+        coupon_code: couponCodeData?.code || '',
         creator_tier: creator?.creator_tier || 'tier1',
         credits: creator?.credits || 0
       }));
     }
-  }, [creator, isOpen]);
+  }, [creator, isOpen, couponCodeData]);
 
   const fetchSocialConnections = async () => {
     if (!creator?.user_id) return;
@@ -73,7 +76,19 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Update coupon code if it has changed
+    if (formData.coupon_code !== couponCodeData?.code && formData.coupon_code.trim()) {
+      setUpdatingCouponCode(true);
+      const result = await updateCouponCode(formData.coupon_code);
+      setUpdatingCouponCode(false);
+      
+      if (!result.success) {
+        console.error('Failed to update coupon code:', result.error);
+        // Still proceed with other updates
+      }
+    }
+    
     onSave(formData);
     onClose();
   };
@@ -136,9 +151,15 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
                   <Input
                     id="coupon_code"
                     value={formData.coupon_code}
-                    onChange={(e) => setFormData(prev => ({ ...prev, coupon_code: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, coupon_code: e.target.value.toUpperCase() }))}
                     placeholder="Enter coupon code"
+                    disabled={updatingCouponCode}
                   />
+                  {couponCodeData && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Current: {couponCodeData.code} • Uses: {couponCodeData.totalUses}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="creator_tier">Creator Tier</Label>
@@ -282,8 +303,8 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              Save Changes
+            <Button onClick={handleSave} disabled={updatingCouponCode}>
+              {updatingCouponCode ? 'Updating...' : 'Save Changes'}
             </Button>
           </div>
         </div>

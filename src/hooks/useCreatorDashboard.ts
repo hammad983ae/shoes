@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCouponCode } from './useCouponCode';
 
 interface CreatorStats {
   totalOrders: number;
@@ -57,6 +58,7 @@ interface ChecklistItem {
 
 export const useCreatorDashboard = () => {
   const { user } = useAuth();
+  const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<CreatorProfile>({
     name: '',
@@ -108,7 +110,7 @@ export const useCreatorDashboard = () => {
           name: profileData.display_name || 'Creator',
           profileImage: profileData.avatar_url || '/placeholder.svg',
           tier: profileData.creator_tier === 'tier3' ? 3 : profileData.creator_tier === 'tier2' ? 2 : 1,
-          couponCode: profileData.coupon_code || '',
+          couponCode: couponCodeData?.code || 'No code set',
           commissionRate: (profileData.commission_rate || 0.1) * 100,
           followers: 0, // Legacy field
           socialConnections: socialConnections || []
@@ -267,7 +269,7 @@ export const useCreatorDashboard = () => {
     if (user?.id) {
       fetchCreatorData();
     }
-  }, [user?.id]);
+  }, [user?.id, couponCodeData?.code]); // Re-fetch when coupon code changes
 
   return {
     loading,

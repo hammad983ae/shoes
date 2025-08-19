@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCouponCode } from './useCouponCode';
 
 interface CreatorStats {
   totalEarnings: number;
@@ -27,6 +28,7 @@ interface RecentOrder {
 
 export const useCreatorDashboardEnhanced = () => {
   const { user } = useAuth();
+  const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<CreatorStats>({
     totalEarnings: 0,
@@ -141,7 +143,7 @@ export const useCreatorDashboardEnhanced = () => {
         conversionRate: 0, // Would need traffic data
         tier: profile.creator_tier || 'tier1',
         commissionRate: profile.commission_rate || 0.10,
-        couponCode: profile.coupon_code || '',
+        couponCode: couponCodeData?.code || 'No code set',
         weeklyRanking,
         totalCreators
       });
@@ -157,7 +159,7 @@ export const useCreatorDashboardEnhanced = () => {
 
   useEffect(() => {
     fetchCreatorDashboard();
-  }, [user]);
+  }, [user, couponCodeData?.code]); // Re-fetch when coupon code changes
 
   return {
     loading,
