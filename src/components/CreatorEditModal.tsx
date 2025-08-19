@@ -35,11 +35,12 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
     credits: creator?.credits || 0,
     admin_notes: '',
     payout_tier_override: '',
-    socials: [] as { platform: string; username: string; verified: boolean }[]
+    socials: [] as { platform: string; username: string; verified: boolean; follower_count: number }[]
   });
   
   const [socialConnections, setSocialConnections] = useState<any[]>([]);
   const [loadingSocials, setLoadingSocials] = useState(true);
+  const [editingSocials, setEditingSocials] = useState(false);
 
   useEffect(() => {
     if (creator?.user_id && isOpen) {
@@ -82,6 +83,24 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
       ...prev,
       credits: Math.max(0, prev.credits + amount)
     }));
+  };
+
+  const updateSocialFollowerCount = async (index: number, newCount: number) => {
+    const updatedConnections = [...socialConnections];
+    updatedConnections[index] = { ...updatedConnections[index], follower_count: newCount };
+    setSocialConnections(updatedConnections);
+
+    // Update in database
+    try {
+      const { error } = await supabase
+        .from('social_connections')
+        .update({ follower_count: newCount })
+        .eq('id', updatedConnections[index].id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating follower count:', error);
+    }
   };
 
 
@@ -192,7 +211,13 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Connected Socials</CardTitle>
-                <span className="text-sm text-muted-foreground">Read-only view</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingSocials(!editingSocials)}
+                >
+                  {editingSocials ? 'Done' : 'Edit'}
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -201,16 +226,28 @@ const CreatorEditModal = ({ creator, isOpen, onClose, onSave }: CreatorEditModal
               ) : socialConnections.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No verified social connections</p>
               ) : (
-                socialConnections.map((social) => (
+                socialConnections.map((social, index) => (
                   <div key={social.id} className="flex items-center gap-3 p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
                     <div className="flex items-center gap-2">
                       {getSocialIcon(social.platform)}
                       <span className="font-medium capitalize">{social.platform}</span>
                     </div>
                     <span className="flex-1">@{social.username}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {social.follower_count?.toLocaleString()} followers
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {editingSocials ? (
+                        <Input
+                          type="number"
+                          value={social.follower_count || 0}
+                          onChange={(e) => updateSocialFollowerCount(index, parseInt(e.target.value) || 0)}
+                          className="w-24 h-8 text-sm"
+                          placeholder="Followers"
+                        />
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          {social.follower_count?.toLocaleString()} followers
+                        </span>
+                      )}
+                    </div>
                     <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                       Verified
                     </Badge>
