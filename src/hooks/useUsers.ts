@@ -42,29 +42,88 @@ export const useUsers = () => {
     try {
       setLoading(true);
 
-      // Use the edge function that can access both profiles and auth.users to get emails
-      const { data, error } = await supabase.functions.invoke('admin-users-with-emails');
+      // Try the edge function first, with fallback to direct query
+      let formattedUsers: User[] = [];
+      
+      try {
+        console.log('Attempting to use edge function...');
+        const { data, error } = await supabase.functions.invoke('admin-users-with-emails');
+        
+        if (error) {
+          console.warn('Edge function failed, using fallback:', error);
+          throw error;
+        }
 
-      if (error) throw error;
+        formattedUsers = (data?.users || []).map((user: any) => ({
+          id: user.id,
+          user_id: user.id,
+          display_name: user.display_name || 'Anonymous',
+          email: user.email || 'No email',
+          role: user.role,
+          is_creator: user.is_creator,
+          creator_tier: user.creator_tier || 'tier1',
+          commission_rate: user.commission_rate || 0.1,
+          referrals_count: user.referrals_count || 0,
+          credits: user.credits || 0,
+          coupon_code: user.coupon_code || undefined,
+          total_spent: user.total_spent || 0,
+          last_login_at: user.last_login_at || undefined,
+          created_at: user.created_at,
+          updated_at: user.created_at
+        }));
+        
+        console.log('Edge function succeeded, got users:', formattedUsers.length);
+        
+      } catch (edgeFunctionError) {
+        console.log('Edge function failed, using direct database query fallback...');
+        
+        // Fallback: Direct query to profiles table
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select(`
+            user_id,
+            display_name,
+            role,
+            is_creator,
+            creator_tier,
+            commission_rate,
+            referrals_count,
+            credits,
+            coupon_code,
+            total_spent,
+            last_login_at,
+            created_at,
+            updated_at
+          `)
+          .order('created_at', { ascending: false });
 
-      const formattedUsers: User[] = (data?.users || []).map((user: any) => ({
-        id: user.id,
-        user_id: user.id,
-        display_name: user.display_name || 'Anonymous',
-        email: user.email || 'No email',
-        role: user.role,
-        is_creator: user.is_creator,
-        creator_tier: user.creator_tier || 'tier1',
-        commission_rate: user.commission_rate || 0.1,
-        referrals_count: user.referrals_count || 0,
-        credits: user.credits || 0,
-        coupon_code: user.coupon_code || undefined,
-        total_spent: user.total_spent || 0,
-        last_login_at: user.last_login_at || undefined,
-        created_at: user.created_at,
-        updated_at: user.created_at
-      }));
+        if (profilesError) {
+          console.error('Direct profiles query failed:', profilesError);
+          throw profilesError;
+        }
 
+        console.log('Direct query succeeded, got profiles:', profilesData?.length || 0);
+
+        formattedUsers = (profilesData || []).map((profile: any) => ({
+          id: profile.user_id,
+          user_id: profile.user_id,
+          display_name: profile.display_name || 'Anonymous',
+          email: 'Email unavailable (direct query)', // Can't get emails without edge function
+          role: profile.role || 'user',
+          is_creator: profile.is_creator || false,
+          creator_tier: profile.creator_tier || 'tier1',
+          commission_rate: profile.commission_rate || 0.1,
+          referrals_count: profile.referrals_count || 0,
+          credits: profile.credits || 0,
+          coupon_code: profile.coupon_code || undefined,
+          total_spent: profile.total_spent || 0,
+          last_login_at: profile.last_login_at || undefined,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at || profile.created_at
+        }));
+      }
+
+      console.log('Final formatted users:', formattedUsers.length);
       setUsers(formattedUsers);
 
       // Calculate summary
