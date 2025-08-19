@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_, session) => {
+      (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -60,11 +62,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!user) {
+      console.log('No user, clearing profile state');
       setUserRole(null);
       setIsCreator(false);
       setProfile(null);
       return;
     }
+    
+    console.log('Loading profile for user:', user.id);
     
     const loadProfile = async () => {
       try {
@@ -74,51 +79,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .eq('user_id', user.id)
           .maybeSingle();
         
+        console.log('Profile query result:', { data, error });
+        
         if (error) {
           console.error('Profile query error:', error);
-          setUserRole('user');
-          setIsCreator(false);
-          setProfile(null);
-          return;
-        }
-        
-        if (!data) {
-          // Create profile if it doesn't exist
+          // Set defaults if query fails
           const defaultProfile = {
-            user_id: user.id,
             display_name: user.email?.split('@')[0] || 'User',
             role: 'user',
             is_creator: false,
             bio: '',
             credits: 0
           };
-          
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert(defaultProfile)
-            .select('role, is_creator, display_name, avatar_url, bio, credits')
-            .single();
-            
-          if (createError) {
-            console.error('Failed to create profile:', createError);
-            setUserRole('user');
-            setIsCreator(false);
-            setProfile(defaultProfile);
-          } else {
-            setProfile(newProfile);
-            setUserRole('user');
-            setIsCreator(false);
-          }
+          setProfile(defaultProfile);
+          setUserRole('user');
+          setIsCreator(false);
+          return;
+        }
+        
+        if (!data) {
+          console.log('No profile found, using defaults');
+          const defaultProfile = {
+            display_name: user.email?.split('@')[0] || 'User',
+            role: 'user',
+            is_creator: false,
+            bio: '',
+            credits: 0
+          };
+          setProfile(defaultProfile);
+          setUserRole('user');
+          setIsCreator(false);
         } else {
+          console.log('Profile loaded:', data);
           setProfile(data);
           setUserRole((data.role as 'user' | 'creator' | 'admin') ?? 'user');
           setIsCreator(Boolean(data.is_creator));
         }
       } catch (e) {
         console.error('Failed to load profile:', e);
+        const defaultProfile = {
+          display_name: user.email?.split('@')[0] || 'User',
+          role: 'user',
+          is_creator: false,
+          bio: '',
+          credits: 0
+        };
+        setProfile(defaultProfile);
         setUserRole('user');
         setIsCreator(false);
-        setProfile(null);
       }
     };
     
