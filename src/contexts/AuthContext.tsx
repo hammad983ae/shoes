@@ -62,28 +62,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Set up auth state listener for ALL auth events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state change:', event, session?.user?.id || 'none');
-        
-        // Always update session state for any session change
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Clear state on sign out or null session
-        if (event === 'SIGNED_OUT' || !session) {
-          setUserRole(null);
-          setIsCreator(false);
-          setProfile(null);
-          console.log('User signed out, clearing profile state');
-        }
-        
-        console.log(`Auth event: ${event}, Session: ${session ? 'present' : 'null'}`);
+    // Set up auth state listener - handles ALL auth events consistently
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      
+      console.log('Auth state change:', _event, session?.user?.id || 'none');
+      
+      // Always update session and user state for any auth event
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      // Clear profile state only when session is null
+      if (!session) {
+        setUserRole(null);
+        setIsCreator(false);
+        setProfile(null);
+        console.log('Session cleared, resetting profile state');
       }
-    );
+    });
 
     // Initialize session on mount
     initializeAuth();
