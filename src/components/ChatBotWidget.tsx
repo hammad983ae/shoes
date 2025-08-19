@@ -330,35 +330,37 @@ export default function ChatBotWidget() {
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-background" style={{ minHeight: 0 }}>
-            {/* Suggested Questions */}
-            {messages.length === 1 && suggestedQuestions.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {suggestedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestedQuestion(question)}
-                    className="px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full transition-colors duration-200 text-foreground"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            )}
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {/*
-                  For AI messages, render as sanitized HTML to allow links/formatting.
-                  For user messages, render as plain text.
-                  DOMPurify is used to prevent XSS attacks.
-                */}
-                {msg.sender === 'ai' ? (
-                  <div
-                    className={`rounded-xl px-3 py-2 max-w-[80%] text-sm bg-card text-foreground border border-border prose prose-invert break-words`}
-                    dangerouslySetInnerHTML={{ __html: markdownToHtml(msg.text) }}
-                  />
-                ) : (
-                  <div className={`rounded-xl px-3 py-2 max-w-[80%] text-sm bg-primary text-primary-foreground break-words`}>
-                    {msg.text}
+              <div key={i}>
+                <div className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {/*
+                    For AI messages, render as sanitized HTML to allow links/formatting.
+                    For user messages, render as plain text.
+                    DOMPurify is used to prevent XSS attacks.
+                  */}
+                  {msg.sender === 'ai' ? (
+                    <div
+                      className={`rounded-xl px-3 py-2 max-w-[80%] text-sm bg-card text-foreground border border-border prose prose-invert break-words`}
+                      dangerouslySetInnerHTML={{ __html: markdownToHtml(msg.text) }}
+                    />
+                  ) : (
+                    <div className={`rounded-xl px-3 py-2 max-w-[80%] text-sm bg-primary text-primary-foreground break-words`}>
+                      {msg.text}
+                    </div>
+                  )}
+                </div>
+                {/* Show suggested questions after the first AI message */}
+                {i === 0 && msg.sender === 'ai' && messages.length === 1 && suggestedQuestions.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3 justify-start">
+                    {suggestedQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestedQuestion(question)}
+                        className="px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full transition-colors duration-200 text-foreground"
+                      >
+                        {question}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
