@@ -369,13 +369,13 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-background">
       {/* Back Button */}
-      <div className="sticky top-0 z-40 w-full px-4 md:px-8 py-1">
-        <div className="flex items-center justify-start gap-2 max-w-screen-lg mx-auto">
+      <div className="w-full px-4 md:px-8 pt-6 pb-4">
+        <div className="flex items-center justify-start max-w-7xl mx-auto">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/60 rounded-full border border-border/50"
+            className="flex items-center gap-2 hover:bg-muted/50 backdrop-blur-md bg-background/80 rounded-full border border-border/50"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Back</span>
@@ -383,7 +383,7 @@ export default function Checkout() {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 pb-8 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           
           {/* Left Side - Checkout Form */}
