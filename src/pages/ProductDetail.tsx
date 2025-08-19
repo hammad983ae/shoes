@@ -39,7 +39,7 @@ const ProductDetail = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState('1');
   const [searchTerm, setSearchTerm] = useState('');
   const [addToCartState, setAddToCartState] = useState<'idle' | 'loading' | 'success'>('idle');
@@ -143,12 +143,24 @@ const ProductDetail = () => {
     );
   }
 
-  const sizes = [37, 38, 39, 40, 41, 42, 43, 44, 45]; // EU sizes only
+  const sizes = ['EU37', 'EU38', 'EU39', 'EU40', 'EU41', 'EU42', 'EU43', 'EU44', 'EU45']; // EU sizes only
 
   const quantities = ['1','2','3','4','5'];
 
   const handleAddToCart = async () => {
-    if (!selectedSize) return;
+    if (!selectedSize) {
+      // Shake the size section to draw attention
+      alert("Please select a size first!");
+      return;
+    }
+    
+    // Validate that the selected size is allowed
+    const allowedSizes = ['EU37', 'EU38', 'EU39', 'EU40', 'EU41', 'EU42', 'EU43', 'EU44', 'EU45'];
+    if (!allowedSizes.includes(selectedSize)) {
+      alert("Invalid size selected!");
+      return;
+    }
+    
     setAddToCartState('loading');
     
     // Add items to cart one by one to ensure proper notification
@@ -158,7 +170,7 @@ const ProductDetail = () => {
         name: product.name,
         price: product.price,
         image: product.images[currentIndex],
-        size: selectedSize,
+        size: selectedSize, // Will be one of the valid EU sizes
         size_type: 'EU' // EU sizing only
       });
     }
@@ -324,23 +336,10 @@ const ProductDetail = () => {
                   <Button
                     key={size}
                     variant={selectedSize === size ? 'default' : 'outline'}
-                    onClick={() => {
-                      setSelectedSize(size);
-                      // Immediately add to cart when size is selected
-                      for (let i = 0; i < parseInt(quantity); i++) {
-                        addItem({
-                          id: product.id.toString(),
-                          name: product.name,
-                          price: product.price,
-                          image: product.images[currentIndex],
-                          size: size,
-                          size_type: 'EU'
-                        });
-                      }
-                    }}
+                    onClick={() => setSelectedSize(size)}
                     className="h-10 text-xs"
                   >
-                    {size} EU
+                    {size}
                   </Button>
                 ))}
               </div>
