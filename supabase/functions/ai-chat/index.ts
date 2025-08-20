@@ -26,7 +26,7 @@ function isRateLimited(identifier: string): boolean {
     return false;
   }
   
-  if (limit.count >= 5) { // 5 requests per minute
+  if (limit.count >= 3) { // Reduced to 3 requests per minute
     return true;
   }
   

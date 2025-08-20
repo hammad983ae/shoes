@@ -45,11 +45,29 @@ export default function ImageUpload({
       return;
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+    // Validate file type with stricter checks
+    const allowedTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/mov', 'video/avi', 'video/webm'
+    ];
+    
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
       toast({
         title: "Invalid file type",
-        description: "Please select an image or video file",
+        description: "Please select a valid image (JPEG, PNG, WebP, GIF) or video file (MP4, MOV, AVI, WebM)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Additional security: Check file extension matches MIME type
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'mov', 'avi', 'webm'];
+    
+    if (!fileExt || !validExtensions.includes(fileExt)) {
+      toast({
+        title: "Invalid file extension",
+        description: "File extension doesn't match expected format",
         variant: "destructive"
       });
       return;

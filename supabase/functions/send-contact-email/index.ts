@@ -6,6 +6,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+const isRateLimited = (identifier: string): boolean => {
+  const now = Date.now();
+  const windowMs = 5 * 60 * 1000; // 5 minutes
+  const maxRequests = 3;
+
+  const current = rateLimitStore.get(identifier);
+  if (!current || now > current.resetTime) {
+    rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
+    return false;
+  }
+
+  if (current.count >= maxRequests) {
+    return true;
+  }
+
+  current.count++;
+  return false;
+};
+
+const sanitizeInput = (input: string): string => {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -13,7 +44,26 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting by IP
+    const clientIP = req.headers.get('x-forwarded-for') || 
+                    req.headers.get('x-real-ip') || 
+                    'unknown';
+    
+    if (isRateLimited(clientIP)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     const { name, email, message, requestId } = await req.json()
+
+    // Sanitize inputs to prevent XSS
+    const safeName = sanitizeInput(name);
+    const safeMessage = sanitizeInput(message);
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -39,11 +89,11 @@ serve(async (req) => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #FFD700;">Thank you for contacting Crallux!</h2>
-          <p>Hi ${name},</p>
+          <p>Hi ${safeName},</p>
           <p>We've received your message and will get back to you as soon as possible.</p>
           <p><strong>Your message:</strong></p>
           <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #FFD700; margin: 20px 0;">
-            <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+            <p style="margin: 0; white-space: pre-wrap;">${safeMessage}</p>
           </div>
           <p>We'll respond to this email thread with our reply.</p>
           <p>Best regards,<br>The Crallux Team</p>
@@ -65,11 +115,11 @@ serve(async (req) => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #FFD700;">New Contact Request</h2>
-          <p><strong>From:</strong> ${name} (${email})</p>
+          <p><strong>From:</strong> ${safeName} (${email})</p>
           <p><strong>Request ID:</strong> ${requestId}</p>
           <p><strong>Message:</strong></p>
           <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #FFD700; margin: 20px 0;">
-            <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+            <p style="margin: 0; white-space: pre-wrap;">${safeMessage}</p>
           </div>
           <p><strong>Received:</strong> ${new Date().toLocaleString()}</p>
         </div>
