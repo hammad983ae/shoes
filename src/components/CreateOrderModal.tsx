@@ -148,58 +148,13 @@ export const CreateOrderModal = ({ isOpen, onClose, onOrderCreated }: CreateOrde
 
     setLoading(true);
     try {
-      const orderTotal = calculateTotal();
-      
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: selectedCustomer.id,
-          order_total: orderTotal,
-          status: paymentMethod === 'mark_paid' ? 'paid' : 'pending',
-          shipping_address: shippingAddress,
-          coupon_code: couponCode || null,
-          credits_used: creditsToUse,
-          payment_method: paymentMethod === 'mark_paid' ? 'admin_created' : 'card',
-          fulfillment_notes: orderNotes
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItemsData = orderItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price_per_item: item.price,
-        size: item.size
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsData);
-
-      if (itemsError) throw itemsError;
-
-      // Deduct credits if used
-      if (creditsToUse > 0) {
-        const { error: creditsError } = await supabase
-          .from('profiles')
-          .update({ 
-            credits: Math.max(0, selectedCustomer.credits - creditsToUse) 
-          })
-          .eq('user_id', selectedCustomer.id);
-
-        if (creditsError) throw creditsError;
-      }
-
+      // Temporarily disable order creation while rebuilding database
       toast({
-        title: "Order created successfully",
-        description: `Order #${order.id.slice(-6)} has been created`,
+        title: "Feature Temporarily Disabled",
+        description: "Order creation is being rebuilt. Please try again later.",
+        variant: "destructive"
       });
-
+      
       onOrderCreated();
       onClose();
       resetForm();

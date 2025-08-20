@@ -14,7 +14,7 @@ import CartAddNotification from "./components/CartAddNotification";
    import GetFreeCredits from "./pages/GetFreeCredits";
    import Socials from "./pages/Socials";
    import Cart from "./pages/Cart";
-   import SignIn from "./pages/SignIn";
+   import Auth from "./pages/Auth";
    import Profile from "./pages/Profile";
    import EditProfile from "./pages/EditProfile";
    import Settings from "./pages/Settings";
@@ -77,7 +77,8 @@ const App = () => (
                       <Route path="/order-confirmation" element={<OrderConfirmation />} />
                        <Route path="/order-history" element={<OrderHistory />} />
                        <Route path="/review-order/:orderId" element={<ReviewOrder />} />
-                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/signin" element={<Auth />} />
                      <Route path="/reset-password" element={<ResetPassword />} />
                      <Route path="/privacy" element={<Privacy />} />
                      <Route path="/terms" element={<Terms />} />

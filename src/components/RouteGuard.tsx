@@ -22,7 +22,7 @@ const RouteGuard = ({
     if (loading) return;
     
     if (!user) {
-      navigate('/signin');
+      navigate('/auth');
       return;
     }
 

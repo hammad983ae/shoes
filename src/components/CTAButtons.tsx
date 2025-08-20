@@ -20,14 +20,15 @@ const CTAButtons = ({ onShopNow, onViewSocials }: CTAButtonsProps) => {
   // Fetch global browsing count from Supabase
   const fetchBrowsingCount = async () => {
     try {
+      // Temporarily use site_settings instead of site_metrics
       const { data, error } = await supabase
-        .from('site_metrics')
+        .from('site_settings')
         .select('value')
         .eq('key', 'browsing_now')
         .single();
       
       if (error) throw error;
-      setBrowsingCount(data?.value ?? 37);
+      setBrowsingCount(parseInt(data?.value ?? '37'));
     } catch (error) {
       console.error('Error fetching browsing count:', error);
       // Fallback to current value

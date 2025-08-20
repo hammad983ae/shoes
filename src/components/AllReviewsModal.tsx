@@ -47,14 +47,20 @@ export const AllReviewsModal = ({ isOpen, productId, onClose }: AllReviewsModalP
       if (reviewsError) throw reviewsError;
 
       if (reviewsData && reviewsData.length > 0) {
-        setReviews(reviewsData);
+        setReviews(reviewsData.map(review => ({
+          ...review,
+          review_text: review.comment || '',
+          user_id: review.user_id || '',
+          product_id: review.product_id || '',
+          created_at: review.created_at || ''
+        })));
 
         // Fetch user profiles for all reviews
         const userIds = [...new Set(reviewsData.map(review => review.user_id))];
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('user_id, display_name')
-          .in('user_id', userIds);
+          .in('user_id', userIds.filter(id => id !== null) as string[]);
 
         if (profilesError) throw profilesError;
 
