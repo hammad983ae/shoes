@@ -14,6 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_requests: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          subject: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          subject?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          subject?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      product_media: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          product_id: string | null
+          role: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          product_id?: string | null
+          role?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          product_id?: string | null
+          role?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_media_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          availability: string | null
+          brand: string | null
+          category: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          infinite_stock: boolean | null
+          limited: boolean | null
+          price: number
+          size_type: string | null
+          slashed_price: number | null
+          slug: string | null
+          stock: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: string | null
+          brand?: string | null
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          infinite_stock?: boolean | null
+          limited?: boolean | null
+          price: number
+          size_type?: string | null
+          slashed_price?: number | null
+          slug?: string | null
+          stock?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: string | null
+          brand?: string | null
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          infinite_stock?: boolean | null
+          limited?: boolean | null
+          price?: number
+          size_type?: string | null
+          slashed_price?: number | null
+          slug?: string | null
+          stock?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -65,6 +232,122 @@ export type Database = {
           total_spent?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          product_id: string | null
+          rating: number
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating: number
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating?: number
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string | null
+        }
+        Relationships: []
+      }
+      social_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string | null
+          follower_count: number | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          platform: string
+          profile_url: string | null
+          screenshot_url: string | null
+          updated_at: string | null
+          user_id: string | null
+          username: string
+          verified_at: string | null
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          platform: string
+          profile_url?: string | null
+          screenshot_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username: string
+          verified_at?: string | null
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          platform?: string
+          profile_url?: string | null
+          screenshot_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
