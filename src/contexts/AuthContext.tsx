@@ -226,10 +226,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthStable(false);
   };
 
-  if (!session && !loading && user) {
-    return <div className="min-h-screen flex items-center justify-center">Session Lost. Please refresh.</div>;
-  }
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading session...</div>;
   }

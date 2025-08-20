@@ -7,7 +7,7 @@ import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
 import AnnouncementBar from './AnnouncementBar';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateSession, wakeUpBackend } from '@/integrations/supabase/client';
+import { wakeUpBackend } from '@/integrations/supabase/client';
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,18 +19,13 @@ const Layout = ({ children }: LayoutProps) => {
   const isHomePage = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 🔄 SESSION VALIDATION ON ROUTE CHANGES
+  // 🔄 WAKE UP BACKEND ON ROUTE CHANGES
   useEffect(() => {
     const handleRouteChange = async () => {
       if (!session) return;
       
       console.log(`🛣️ Route changed to: ${location.pathname}`);
       await wakeUpBackend();
-      
-      const isValid = await validateSession();
-      if (!isValid) {
-        console.warn("⚠️ Session invalid after route change");
-      }
     };
 
     handleRouteChange();
