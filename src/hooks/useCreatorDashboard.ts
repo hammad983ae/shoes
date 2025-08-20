@@ -90,7 +90,7 @@ export const useCreatorDashboard = () => {
       return;
     }
 
-    console.log('✅ Session validated, fetching creator data for user:', user.id);
+    console.log('✅ Fetching creator data for user:', user.id);
 
     try {
       setLoading(true);
@@ -124,7 +124,7 @@ export const useCreatorDashboard = () => {
         });
       }
 
-      // Set placeholder stats for now (no orders table yet)
+      // Set placeholder stats for now (orders table exists now but no data)
       setStats({
         totalOrders: 0,
         averageOrderValue: 0,
@@ -133,10 +133,10 @@ export const useCreatorDashboard = () => {
         totalSalesDriven: 0
       });
 
-      // Set placeholder credits (no user_credits table yet)
+      // Set credits from profile
       setCredits({ balance: profileData.credits || 0 });
 
-      // Set placeholder histories (no related tables yet)
+      // Set placeholder histories (tables exist now but no data)
       setCreditsHistory([]);
       setPayoutHistory([]);
       setRecentVideos([]);
@@ -150,18 +150,52 @@ export const useCreatorDashboard = () => {
   };
 
   const addChecklistItem = async (text: string) => {
-    // Placeholder - no checklist_items table yet
-    console.log('Add checklist item:', text);
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('checklist_items')
+        .insert([{ profile_id: user.id, text, completed: false }]);
+
+      if (error) throw error;
+      await fetchCreatorData(); // Refresh data
+    } catch (error) {
+      console.error('Error adding checklist item:', error);
+    }
   };
 
   const toggleChecklistItem = async (itemId: string, completed: boolean) => {
-    // Placeholder - no checklist_items table yet
-    console.log('Toggle checklist item:', itemId, completed);
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('checklist_items')
+        .update({ completed })
+        .eq('profile_id', user.id)
+        .eq('id', itemId);
+
+      if (error) throw error;
+      await fetchCreatorData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating checklist item:', error);
+    }
   };
 
   const deleteChecklistItem = async (itemId: string) => {
-    // Placeholder - no checklist_items table yet
-    console.log('Delete checklist item:', itemId);
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('checklist_items')
+        .delete()
+        .eq('profile_id', user.id)
+        .eq('id', itemId);
+
+      if (error) throw error;
+      await fetchCreatorData(); // Refresh data
+    } catch (error) {
+      console.error('Error deleting checklist item:', error);
+    }
   };
 
   useEffect(() => {

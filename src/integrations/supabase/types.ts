@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      checklist_items: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          id: string
+          profile_id: string | null
+          text: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          profile_id?: string | null
+          text: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          profile_id?: string | null
+          text?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           created_at: string | null
@@ -53,6 +77,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credits_history: {
+        Row: {
+          action: string
+          created_at: string
+          credits: number
+          id: string
+          profile_id: string | null
+          type: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          credits: number
+          id?: string
+          profile_id?: string | null
+          type?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          credits?: number
+          id?: string
+          profile_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string | null
@@ -86,6 +137,111 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          price_per_item: number
+          product_id: string | null
+          quantity: number
+          size: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          price_per_item: number
+          product_id?: string | null
+          quantity?: number
+          size?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          price_per_item?: number
+          product_id?: string | null
+          quantity?: number
+          size?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          commission_amount_at_purchase: number | null
+          created_at: string
+          creator_id: string | null
+          id: string
+          order_total: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commission_amount_at_purchase?: number | null
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          order_total?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commission_amount_at_purchase?: number | null
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          order_total?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          profile_id: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string
+          profile_id?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          profile_id?: string | null
+          status?: string
         }
         Relationships: []
       }
@@ -276,6 +432,33 @@ export type Database = {
           },
         ]
       }
+      site_metrics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string | null
@@ -348,6 +531,102 @@ export type Database = {
           user_id?: string | null
           username?: string
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      social_verification_requests: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          screenshot_url: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          created_at: string
+          current_balance: number
+          id: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_balance?: number
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_balance?: number
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          comments: number | null
+          created_at: string
+          id: string
+          likes: number | null
+          platform: string
+          profile_id: string | null
+          title: string
+          views: number | null
+        }
+        Insert: {
+          comments?: number | null
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform: string
+          profile_id?: string | null
+          title: string
+          views?: number | null
+        }
+        Update: {
+          comments?: number | null
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform?: string
+          profile_id?: string | null
+          title?: string
+          views?: number | null
         }
         Relationships: []
       }
