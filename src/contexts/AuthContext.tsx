@@ -83,6 +83,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // 🛡️ BRUTE-FORCE SESSION FALLBACK - Forces hard reload on invalid sessions
+  useEffect(() => {
+    const checkSessionAndPossiblyReload = async () => {
+      console.log("🔍 [Session Check] Tab focused, checking session...");
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const now = Math.floor(Date.now() / 1000);
+
+      if (!session) {
+        console.warn("❌ No session found, reloading...");
+        sessionStorage.setItem('scrollY', window.scrollY.toString());
+        window.location.reload();
+        return;
+      }
+
+      const expiresIn = session.expires_at! - now;
+      console.log(`⏰ Session expires in ${expiresIn} seconds`);
+
+      if (expiresIn < 60) {
+        console.log("🔄 Session near expiry, trying to refresh...");
+        const { error, data } = await supabase.auth.refreshSession();
+        if (error || !data.session) {
+          console.error("⚠️ Refresh failed or session still invalid, reloading...");
+          sessionStorage.setItem('scrollY', window.scrollY.toString());
+          window.location.reload();
+        } else {
+          console.log("✅ Session refreshed successfully");
+        }
+      } else {
+        console.log("✅ Session is valid and not expiring soon");
+      }
+    };
+
+    const restoreScroll = () => {
+      const scrollY = sessionStorage.getItem('scrollY');
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY, 10));
+        sessionStorage.removeItem('scrollY'); // Clean up after restore
+        console.log(`📜 Restored scroll position to ${scrollY}px`);
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("👁️ [Session Check] Tab became visible, checking session...");
+        checkSessionAndPossiblyReload();
+      }
+    };
+
+    const onFocus = () => {
+      console.log("🎯 [Session Check] Window focused, checking session...");
+      checkSessionAndPossiblyReload();
+    };
+
+    const onUnload = () => {
+      sessionStorage.setItem('scrollY', window.scrollY.toString());
+      console.log("💾 Stored scroll position before unload");
+    };
+
+    // Restore scroll position on initial load
+    restoreScroll();
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('beforeunload', onUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('beforeunload', onUnload);
+    };
+  }, []);
+
   // Session management effect - runs once on mount
   useEffect(() => {
     const updateSession = async () => {
