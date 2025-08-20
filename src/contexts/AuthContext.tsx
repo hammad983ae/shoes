@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { setupSessionRecovery } from '@/utils/sessionRecovery';
 
 interface Profile {
   role: string;
@@ -182,45 +183,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, session]);
 
   useEffect(() => {
-    let isRefreshing = false;
-    let sessionInterval: NodeJS.Timeout | null = null;
+    // 🔧 SET UP SESSION RECOVERY UTILITY
+    const cleanupSessionRecovery = setupSessionRecovery();
 
-    const refreshIfNeeded = async () => {
-      if (isRefreshing) return;
-      isRefreshing = true;
-
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        const session = data?.session;
-
-        if (error || !session) {
-          console.warn("No session found on visibilitychange, attempting refresh...");
-          await refreshSession();
-        } else {
-          const now = Date.now() / 1000;
-          const expiresIn = session.expires_at ? session.expires_at - now : 0;
-
-          console.log("Session is valid, expires in", Math.floor(expiresIn), "seconds");
-          
-          // Update state if different
-          if (!user || user.id !== session.user.id) {
-            setUser(session.user);
-            setSession(session);
-          }
-
-          if (expiresIn < 300) {
-            console.log("Token expiring soon, refreshing...");
-            await refreshSession();
-          }
-        }
-      } catch (error) {
-        console.error("Session check failed:", error);
-      } finally {
-        isRefreshing = false;
-      }
-    };
-
-    // 🔄 CROSS-TAB SESSION SYNCHRONIZATION
+    // 🔄 CROSS-TAB SESSION SYNCHRONIZATION (preserved)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'supabase-session-backup' && e.newValue) {
         try {
@@ -236,29 +202,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        console.log("[Auth] Tab is visible — checking session");
-        refreshIfNeeded();
-      }
-    };
-
-    // Set up event listeners
-    document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("storage", handleStorageChange);
-    
-    sessionInterval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        refreshIfNeeded();
-      }
-    }, 60000);
-
-    refreshIfNeeded();
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
+      cleanupSessionRecovery();
       window.removeEventListener("storage", handleStorageChange);
-      if (sessionInterval) clearInterval(sessionInterval);
     };
   }, []);
 
