@@ -49,7 +49,9 @@ export const useUsers = () => {
       
       try {
         console.log('Attempting to use edge function...');
-        const { data, error } = await supabase.functions.invoke('admin-users-with-emails');
+        const { data, error } = await supabase.functions.invoke('admin-users-with-emails', {
+          method: 'GET'
+        });
         
         if (error) {
           console.warn('Edge function failed, using fallback:', error);
