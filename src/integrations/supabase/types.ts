@@ -1987,21 +1987,6 @@ export type Database = {
         }
         Relationships: []
       }
-      unified_credits: {
-        Row: {
-          commission_rate: number | null
-          creator_tier: string | null
-          current_balance: number | null
-          earned_from_referrals: number | null
-          is_creator: boolean | null
-          lifetime_video_credits: number | null
-          total_earned: number | null
-          total_spent: number | null
-          user_id: string | null
-          video_credits_this_month: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       admin_find_user_by_email: {
@@ -2094,6 +2079,21 @@ export type Database = {
       get_profile_role: {
         Args: { _user_id: string }
         Returns: string
+      }
+      get_unified_credits: {
+        Args: { _user_id?: string }
+        Returns: {
+          commission_rate: number
+          creator_tier: string
+          current_balance: number
+          earned_from_referrals: number
+          is_creator: boolean
+          lifetime_video_credits: number
+          total_earned: number
+          total_spent: number
+          user_id: string
+          video_credits_this_month: number
+        }[]
       }
       grant_user_credits: {
         Args: {
