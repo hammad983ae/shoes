@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, Home, TrendingUp, Laptop, Settings, HelpCircle } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,8 +18,6 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [userProfile, setUserProfile] = useState<{ avatar_url?: string | null; display_name?: string | null } | null>(null);
   const { user, signOut, userRole, isCreator } = useAuth();
   const { unreadCount } = useNotifications();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -68,26 +65,7 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const filteredLinks = allLinks;
 
   const handleSignOut = async () => {
-    try {
-      console.log('🚪 Logging out user...');
-      await signOut();
-      console.log('✅ Logout successful');
-      
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
-      });
-      
-      // Navigate to home page after logout
-      navigate('/');
-    } catch (error) {
-      console.error('❌ Logout error:', error);
-      toast({
-        title: "Logout Error", 
-        description: "There was an issue logging you out. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await signOut();
   };
 
   return (

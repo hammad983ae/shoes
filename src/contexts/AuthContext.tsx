@@ -83,25 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 🔁 BRUTE FORCE: Reload entire app on tab focus to reset Supabase session
-  useEffect(() => {
-    // Preserve scroll position and route on reload
-    if (typeof window !== 'undefined') {
-      history.scrollRestoration = 'auto';
-    }
-
-    const handleFocus = () => {
-      console.log('🔁 Tab focused — forcing full reload to reset Supabase session');
-      window.location.reload();
-    };
-
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, []);
-
   // Main session management effect
   useEffect(() => {
     const updateSession = async () => {
@@ -126,7 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // 1. Re-fetch on visibility change (tab return) - but focus will reload anyway
+    // 1. Re-fetch on window focus
+    window.addEventListener('focus', updateSession);
+
+    // 2. Re-fetch on visibility change (tab return)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('👁️ Tab visible - syncing session...');
@@ -135,10 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 2. Initial session fetch on mount
+    // 3. Initial session fetch on mount
     updateSession();
 
-    // 3. Subscribe to auth state changes
+    // 4. Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔔 Auth event:', event, session ? '✅ Session' : '❌ No Session');
       
@@ -164,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // 4. Cross-tab session synchronization
+    // 5. Cross-tab session synchronization
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'supabase-session-backup' && e.newValue) {
         try {
@@ -187,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Cleanup all listeners and subscriptions
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('focus', updateSession);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener("storage", handleStorageChange);
     };
@@ -228,43 +213,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    try {
-      console.log('🚪 Starting logout process...');
-      
-      // Clear local session backup
-      localStorage.removeItem('supabase-session-backup');
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('❌ Supabase signOut error:', error);
-        throw error;
-      }
-      
-      // Clear all auth state
-      setUser(null);
-      setSession(null);
-      setUserRole(null);
-      setIsCreator(false);
-      setProfile(null);
-      setAuthStable(false);
-      
-      console.log('✅ Logout completed successfully');
-    } catch (error) {
-      console.error('❌ SignOut error:', error);
-      
-      // Force clear state even if Supabase signOut fails
-      setUser(null);
-      setSession(null);
-      setUserRole(null);
-      setIsCreator(false);
-      setProfile(null);
-      setAuthStable(false);
-      localStorage.removeItem('supabase-session-backup');
-      
-      throw error;
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setUserRole(null);
+    setIsCreator(false);
+    setProfile(null);
+    setAuthStable(false);
   };
 
   if (!session && !loading && user) {
