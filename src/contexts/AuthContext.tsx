@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Main session management effect
+  // Session management effect - runs once on mount
   useEffect(() => {
     const updateSession = async () => {
       console.log('🔄 Re-fetching session from Supabase...');
@@ -91,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error('❌ Error getting session:', error);
+        setSession(null);
+        setUser(null);
         return;
       }
       
@@ -104,11 +106,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           session,
           timestamp: Date.now()
         }));
+      } else {
+        localStorage.removeItem('supabase-session-backup');
       }
     };
 
     // 1. Re-fetch on window focus
-    window.addEventListener('focus', updateSession);
+    const handleFocus = () => {
+      console.log('👁️ Tab focused - syncing session...');
+      updateSession();
+    };
+    window.addEventListener('focus', handleFocus);
 
     // 2. Re-fetch on visibility change (tab return)
     const handleVisibilityChange = () => {
@@ -119,41 +127,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 3. Initial session fetch on mount
-    updateSession();
-
-    // 4. Subscribe to auth state changes
+    // 3. Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔔 Auth event:', event, session ? '✅ Session' : '❌ No Session');
       
+      setSession(session);
+      setUser(session?.user ?? null);
+      
       if (event === 'SIGNED_OUT') {
         localStorage.removeItem('supabase-session-backup');
-        setUser(null);
-        setSession(null);
         setUserRole(null);
         setIsCreator(false);
         setProfile(null);
         setAuthStable(false);
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
+      } else if (session) {
         // Backup session on auth events
-        if (session) {
-          localStorage.setItem('supabase-session-backup', JSON.stringify({
-            session,
-            timestamp: Date.now()
-          }));
-        }
+        localStorage.setItem('supabase-session-backup', JSON.stringify({
+          session,
+          timestamp: Date.now()
+        }));
       }
     });
 
-    // 5. Cross-tab session synchronization
+    // 4. Cross-tab session synchronization
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'supabase-session-backup' && e.newValue) {
         try {
           const { session: newSession } = JSON.parse(e.newValue);
-          if (newSession && (!session || session.access_token !== newSession.access_token)) {
+          if (newSession) {
             console.log("🔄 Session updated from another tab");
             setSession(newSession);
             setUser(newSession.user);
@@ -165,13 +166,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener("storage", handleStorageChange);
 
+    // 5. Initial session fetch on mount (after setting up listeners)
+    updateSession();
+
     // Set loading to false after initial setup
     setLoading(false);
 
     // Cleanup all listeners and subscriptions
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('focus', updateSession);
+      window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener("storage", handleStorageChange);
     };
