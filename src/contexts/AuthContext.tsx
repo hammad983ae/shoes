@@ -40,13 +40,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshSession = async () => {
     try {
-      const { error } = await supabase.auth.refreshSession();
+      console.log("🔄 Forcing session refresh...");
+      const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error("Session refresh error:", error);
+        // Clear localStorage if refresh fails
+        localStorage.removeItem('supabase-session-backup');
         toast({ title: "Session Error", description: "Please sign in again", variant: "destructive" });
+      } else if (data.session) {
+        console.log("✅ Session refreshed successfully");
+        // Backup session to localStorage
+        localStorage.setItem('supabase-session-backup', JSON.stringify({
+          session: data.session,
+          timestamp: Date.now()
+        }));
+        setSession(data.session);
+        setUser(data.session.user);
       }
     } catch (error) {
       console.error("Refresh session failed:", error);
+      localStorage.removeItem('supabase-session-backup');
     }
   };
 
@@ -74,27 +87,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const init = async () => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // 🎯 ENHANCED SESSION RECOVERY WITH CROSS-TAB SYNC
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (!mounted) return;
+        
+        console.log(`🔔 Auth event: ${event}`, session ? 'with session' : 'no session');
+        
         if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('supabase-session-backup');
           setUser(null);
           setSession(null);
           setUserRole(null);
           setIsCreator(false);
           setProfile(null);
           setAuthStable(false);
-        } else {
-          setUser(session?.user ?? null);
+        } else if (session) {
+          // Backup session to localStorage on every auth event
+          localStorage.setItem('supabase-session-backup', JSON.stringify({
+            session,
+            timestamp: Date.now()
+          }));
+          setUser(session.user);
           setSession(session);
         }
       });
 
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession) {
-        setUser(currentSession.user);
-        setSession(currentSession);
-      }
-
+      // 🚀 AGGRESSIVE SESSION RECOVERY LOGIC
+      const recoverSession = async () => {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (currentSession) {
+          console.log("✅ Session found directly");
+          setUser(currentSession.user);
+          setSession(currentSession);
+        } else {
+          console.log("⚠️ No session from getSession(), trying recovery...");
+          
+          // Try localStorage backup first
+          const backup = localStorage.getItem('supabase-session-backup');
+          if (backup) {
+            try {
+              const { session: backedUpSession, timestamp } = JSON.parse(backup);
+              const isRecent = Date.now() - timestamp < 24 * 60 * 60 * 1000; // 24 hours
+              
+              if (isRecent && backedUpSession?.expires_at) {
+                const expiresAt = backedUpSession.expires_at * 1000;
+                const isStillValid = expiresAt > Date.now();
+                
+                if (isStillValid) {
+                  console.log("🔄 Attempting session recovery from localStorage backup");
+                  await refreshSession();
+                  return;
+                }
+              }
+            } catch (e) {
+              console.warn("Invalid session backup in localStorage");
+              localStorage.removeItem('supabase-session-backup');
+            }
+          }
+          
+          // Force refresh as last resort
+          console.log("🔄 Forcing session refresh as last resort");
+          await refreshSession();
+        }
+      };
+      
+      await recoverSession();
       setLoading(false);
       return subscription;
     };
@@ -137,42 +195,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error || !session) {
           console.warn("No session found on visibilitychange, attempting refresh...");
-          const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            console.error("Refresh session failed", refreshError);
-            setUser(null);
-            setSession(null);
-          } else {
-            console.log("Session refreshed on tab focus:", refreshedData.session);
-            setUser(refreshedData.session?.user || null);
-            setSession(refreshedData.session);
-            if (refreshedData.session?.user) {
-              await loadUserProfile(refreshedData.session.user.id);
-            }
-          }
+          await refreshSession();
         } else {
           const now = Date.now() / 1000;
           const expiresIn = session.expires_at ? session.expires_at - now : 0;
 
           console.log("Session is valid, expires in", Math.floor(expiresIn), "seconds");
-          setUser(session.user);
-          setSession(session);
+          
+          // Update state if different
+          if (!user || user.id !== session.user.id) {
+            setUser(session.user);
+            setSession(session);
+          }
 
           if (expiresIn < 300) {
             console.log("Token expiring soon, refreshing...");
-            const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshedData.session) {
-              setUser(refreshedData.session.user);
-              setSession(refreshedData.session);
-            } else if (refreshError) {
-              console.error("Token refresh failed:", refreshError);
-            }
+            await refreshSession();
           }
         }
       } catch (error) {
         console.error("Session check failed:", error);
       } finally {
         isRefreshing = false;
+      }
+    };
+
+    // 🔄 CROSS-TAB SESSION SYNCHRONIZATION
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'supabase-session-backup' && e.newValue) {
+        try {
+          const { session: newSession } = JSON.parse(e.newValue);
+          if (newSession && (!session || session.access_token !== newSession.access_token)) {
+            console.log("🔄 Session updated from another tab");
+            setSession(newSession);
+            setUser(newSession.user);
+          }
+        } catch (error) {
+          console.warn("Failed to parse session from storage event");
+        }
       }
     };
 
@@ -183,7 +243,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Set up event listeners
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("storage", handleStorageChange);
+    
     sessionInterval = setInterval(() => {
       if (document.visibilityState === "visible") {
         refreshIfNeeded();
@@ -194,6 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("storage", handleStorageChange);
       if (sessionInterval) clearInterval(sessionInterval);
     };
   }, []);
