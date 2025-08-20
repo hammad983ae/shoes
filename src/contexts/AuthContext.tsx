@@ -228,13 +228,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setUserRole(null);
-    setIsCreator(false);
-    setProfile(null);
-    setAuthStable(false);
+    try {
+      console.log('🚪 Starting logout process...');
+      
+      // Clear local session backup
+      localStorage.removeItem('supabase-session-backup');
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ Supabase signOut error:', error);
+        throw error;
+      }
+      
+      // Clear all auth state
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setIsCreator(false);
+      setProfile(null);
+      setAuthStable(false);
+      
+      console.log('✅ Logout completed successfully');
+    } catch (error) {
+      console.error('❌ SignOut error:', error);
+      
+      // Force clear state even if Supabase signOut fails
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setIsCreator(false);
+      setProfile(null);
+      setAuthStable(false);
+      localStorage.removeItem('supabase-session-backup');
+      
+      throw error;
+    }
   };
 
   if (!session && !loading && user) {
