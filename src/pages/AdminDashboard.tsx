@@ -37,7 +37,8 @@ interface MessageRow {
 }
 
 const AdminDashboard = () => {
-  const { user, userRole } = useAuth();
+  const { user, profile } = useAuth();
+  const userRole = profile?.role;
   const { toast } = useToast();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserRow[]>([]);

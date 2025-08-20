@@ -58,7 +58,8 @@ interface ChecklistItem {
 }
 
 export const useCreatorDashboard = () => {
-  const { user, authStable } = useAuth();
+  const { user, loading } = useAuth();
+  const authStable = !loading;
   const { isSessionValid, guardedValidation } = useSessionGuard();
   const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const [loading, setLoading] = useState(true);
