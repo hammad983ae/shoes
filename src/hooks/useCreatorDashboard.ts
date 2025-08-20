@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessionGuard } from './useSessionGuard';
 import { useCouponCode } from './useCouponCode';
 
 interface CreatorStats {
@@ -58,9 +57,8 @@ interface ChecklistItem {
 }
 
 export const useCreatorDashboard = () => {
-  const { user, loading } = useAuth();
-  const authStable = !loading;
-  const { isSessionValid, guardedValidation } = useSessionGuard();
+  const { user, loading: authLoading } = useAuth();
+  const authStable = !authLoading;
   const { couponCode: couponCodeData } = useCouponCode(user?.id);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<CreatorProfile>({
@@ -86,16 +84,9 @@ export const useCreatorDashboard = () => {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
 
   const fetchCreatorData = async () => {
-    // 🛡️ WAIT FOR STABLE AUTH + SESSION VALIDATION
-    if (!user?.id || !authStable || !isSessionValid) {
-      console.log('❌ Skipping fetch - auth not stable or session invalid');
-      return;
-    }
-
-    // 🔒 VALIDATE SESSION BEFORE MAKING QUERIES
-    const sessionValid = await guardedValidation();
-    if (!sessionValid) {
-      console.error('❌ Session validation failed, aborting fetch');
+    // Wait for stable auth
+    if (!user?.id || !authStable) {
+      console.log('❌ Skipping fetch - auth not stable');
       return;
     }
 
@@ -133,97 +124,23 @@ export const useCreatorDashboard = () => {
         });
       }
 
-      // Fetch orders created through this creator's coupon
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('creator_id', user.id)
-        .eq('status', 'paid');
-
-      if (ordersError) throw ordersError;
-
-      // Calculate stats
-      const totalOrders = orders?.length || 0;
-      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.order_total || 0), 0) || 0;
-      const totalCommission = orders?.reduce((sum, order) => sum + Number(order.commission_amount_at_purchase || 0), 0) || 0;
-      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-      const uniqueCustomers = new Set(orders?.map(order => order.user_id) || []);
-
+      // Set placeholder stats for now (no orders table yet)
       setStats({
-        totalOrders,
-        averageOrderValue: avgOrderValue,
-        customersAcquired: uniqueCustomers.size,
-        totalCommission,
-        totalSalesDriven: totalRevenue
+        totalOrders: 0,
+        averageOrderValue: 0,
+        customersAcquired: 0,
+        totalCommission: 0,
+        totalSalesDriven: 0
       });
 
-      // Fetch credits
-      const { data: userCredits } = await supabase
-        .from('user_credits')
-        .select('current_balance')
-        .eq('user_id', user.id)
-        .single();
+      // Set placeholder credits (no user_credits table yet)
+      setCredits({ balance: profileData.credits || 0 });
 
-      setCredits({ balance: userCredits?.current_balance || 0 });
-
-      // Fetch credits history
-      const { data: creditsHistoryData } = await supabase
-        .from('credits_history')
-        .select('*')
-        .eq('profile_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setCreditsHistory((creditsHistoryData || []).map(transaction => ({
-        date: new Date(transaction.created_at || '').toLocaleDateString(),
-        action: transaction.action,
-        credits: transaction.credits,
-        type: transaction.type
-      })));
-
-      // Fetch payouts
-      const { data: payoutsData } = await supabase
-        .from('payouts')
-        .select('*')
-        .eq('profile_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setPayoutHistory((payoutsData || []).map(payout => ({
-        date: new Date(payout.created_at || '').toLocaleDateString(),
-        amount: Number(payout.amount),
-        method: payout.method,
-        status: payout.status || 'pending'
-      })));
-
-      // Fetch videos
-      const { data: videosData } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('profile_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setRecentVideos((videosData || []).map(video => ({
-        title: video.title,
-        platform: video.platform,
-        views: video.views || 0,
-        likes: video.likes || 0,
-        comments: video.comments || 0
-      })));
-
-      // Fetch checklist items
-      const { data: checklistData } = await supabase
-        .from('checklist_items')
-        .select('*')
-        .eq('profile_id', user.id)
-        .order('created_at', { ascending: false });
-
-      setChecklistItems((checklistData || []).map((item, index) => ({
-        id: index + 1,
-        text: item.text,
-        completed: item.completed || false
-      })));
+      // Set placeholder histories (no related tables yet)
+      setCreditsHistory([]);
+      setPayoutHistory([]);
+      setRecentVideos([]);
+      setChecklistItems([]);
 
     } catch (error) {
       console.error('Error fetching creator data:', error);
@@ -233,60 +150,26 @@ export const useCreatorDashboard = () => {
   };
 
   const addChecklistItem = async (text: string) => {
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .insert([{ profile_id: user.id, text, completed: false }]);
-
-      if (error) throw error;
-      await fetchCreatorData(); // Refresh data
-    } catch (error) {
-      console.error('Error adding checklist item:', error);
-    }
+    // Placeholder - no checklist_items table yet
+    console.log('Add checklist item:', text);
   };
 
   const toggleChecklistItem = async (itemId: string, completed: boolean) => {
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .update({ completed })
-        .eq('profile_id', user.id)
-        .eq('id', itemId);
-
-      if (error) throw error;
-      await fetchCreatorData(); // Refresh data
-    } catch (error) {
-      console.error('Error updating checklist item:', error);
-    }
+    // Placeholder - no checklist_items table yet
+    console.log('Toggle checklist item:', itemId, completed);
   };
 
   const deleteChecklistItem = async (itemId: string) => {
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .delete()
-        .eq('profile_id', user.id)
-        .eq('id', itemId);
-
-      if (error) throw error;
-      await fetchCreatorData(); // Refresh data
-    } catch (error) {
-      console.error('Error deleting checklist item:', error);
-    }
+    // Placeholder - no checklist_items table yet
+    console.log('Delete checklist item:', itemId);
   };
 
   useEffect(() => {
     // Only fetch when auth is fully stable
-    if (authStable && isSessionValid) {
+    if (authStable) {
       fetchCreatorData();
     }
-  }, [user?.id, couponCodeData?.code, authStable, isSessionValid]); // Re-fetch when coupon code changes
+  }, [user?.id, couponCodeData?.code, authStable]); // Re-fetch when coupon code changes
 
   return {
     loading,
