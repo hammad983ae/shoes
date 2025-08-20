@@ -29,9 +29,11 @@ import {
   Edit,
   RefreshCw,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Users() {
   const { loading, users, summary, refetch } = useUsers();
+  const { debugSession } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -122,6 +124,9 @@ export default function Users() {
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
+            </Button>
+            <Button variant="outline" size="sm" onClick={debugSession}>
+              🔍 Debug Session
             </Button>
             <Button variant="outline" size="sm" onClick={handleExportUsers}>
               <Download className="w-4 h-4 mr-2" />
