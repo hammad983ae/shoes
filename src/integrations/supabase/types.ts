@@ -113,13 +113,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "checklist_items_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       contact_requests: {
@@ -198,13 +191,6 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: true
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "coupon_codes_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -473,13 +459,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "credits_history_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -803,13 +782,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "payouts_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1893,13 +1865,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "videos_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       wallet_transactions: {
@@ -1945,7 +1910,7 @@ export type Database = {
       }
     }
     Views: {
-      post_view_counts: {
+      post_view_counts_materialized: {
         Row: {
           post_id: string | null
           view_count: number | null
@@ -1959,33 +1924,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          creator_tier: string | null
-          display_name: string | null
-          is_creator: boolean | null
-          user_id: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          creator_tier?: string | null
-          display_name?: string | null
-          is_creator?: boolean | null
-          user_id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          creator_tier?: string | null
-          display_name?: string | null
-          is_creator?: boolean | null
-          user_id?: string | null
-        }
-        Relationships: []
       }
     }
     Functions: {
@@ -2072,6 +2010,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_post_view_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          post_id: string
+          view_count: number
+        }[]
+      }
       get_profile_is_creator: {
         Args: { _user_id: string }
         Returns: boolean
@@ -2079,6 +2024,17 @@ export type Database = {
       get_profile_role: {
         Args: { _user_id: string }
         Returns: string
+      }
+      get_public_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          bio: string
+          creator_tier: string
+          display_name: string
+          is_creator: boolean
+          user_id: string
+        }[]
       }
       get_unified_credits: {
         Args: { _user_id?: string }
@@ -2119,6 +2075,10 @@ export type Database = {
       promote_to_creator: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      refresh_post_view_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       set_user_role: {
         Args: { new_role: string; target_user_id: string }
