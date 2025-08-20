@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { SessionRecoveryManager } from '@/utils/SessionRecoveryManager';
 
 interface Profile {
   role: string;
@@ -25,7 +24,6 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
-  debugSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authStable, setAuthStable] = useState(false);
   const { toast } = useToast();
-  const [sessionRecoveryManager, setSessionRecoveryManager] = useState<SessionRecoveryManager | null>(null);
 
   const refreshSession = async () => {
     try {
@@ -185,14 +182,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, session]);
 
   useEffect(() => {
-    // 🔧 SET UP SESSION RECOVERY MANAGER
-    const sessionRecovery = new SessionRecoveryManager(supabase);
-    setSessionRecoveryManager(sessionRecovery);
-    
-    // Initial session recovery attempt
-    sessionRecovery.attemptSessionRecovery();
+    const updateUserFromSession = async () => {
+      console.log('🔄 Updating user from session...');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('❌ Error getting session:', error);
+        return;
+      }
+      
+      console.log('📋 Session status:', session ? '✅ Found' : '❌ Missing');
+      setSession(session);
+      setUser(session?.user ?? null);
+    };
 
-    // 🔄 CROSS-TAB SESSION SYNCHRONIZATION (preserved)
+    // 1. Recheck when the window regains focus
+    window.addEventListener('focus', updateUserFromSession);
+
+    // 2. Recheck on visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👁️ Tab became visible - syncing session...');
+        updateUserFromSession();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 3. On mount, get session once
+    updateUserFromSession();
+
+    // 4. Cross-tab session synchronization
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'supabase-session-backup' && e.newValue) {
         try {
@@ -207,11 +226,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     };
-
     window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      sessionRecovery.destroy();
+      window.removeEventListener('focus', updateUserFromSession);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
@@ -243,17 +262,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthStable(false);
   };
 
-  const debugSession = async () => {
-    if (sessionRecoveryManager) {
-      const report = await sessionRecoveryManager.diagnoseSessionIssues();
-      console.log("🔍 Session Debug Report:", report);
-      toast({
-        title: "Session Debug",
-        description: `Session: ${report.hasSession ? '✅ Found' : '❌ Missing'} | Auth Keys: ${report.authKeysInStorage.length}`,
-      });
-    }
-  };
-
   if (!session && !loading && user) {
     return <div className="min-h-screen flex items-center justify-center">Session Lost. Please refresh.</div>;
   }
@@ -274,8 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
-      refreshSession,
-      debugSession
+      refreshSession
     }}>
       {children}
     </AuthContext.Provider>
