@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          commission_rate: number | null
+          coupon_code: string | null
+          created_at: string | null
+          creator_tier: string | null
+          credits: number | null
+          display_name: string | null
+          is_creator: boolean | null
+          last_login_at: string | null
+          referrals_count: number | null
+          role: string | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          commission_rate?: number | null
+          coupon_code?: string | null
+          created_at?: string | null
+          creator_tier?: string | null
+          credits?: number | null
+          display_name?: string | null
+          is_creator?: boolean | null
+          last_login_at?: string | null
+          referrals_count?: number | null
+          role?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          commission_rate?: number | null
+          coupon_code?: string | null
+          created_at?: string | null
+          creator_tier?: string | null
+          credits?: number | null
+          display_name?: string | null
+          is_creator?: boolean | null
+          last_login_at?: string | null
+          referrals_count?: number | null
+          role?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
