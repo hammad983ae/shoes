@@ -123,7 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [user, session]);
 
-  // Enhanced session recovery with mutex and proper visibility handling
   useEffect(() => {
     let isRefreshing = false;
     let sessionInterval: NodeJS.Timeout | null = null;
@@ -156,12 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const expiresIn = session.expires_at ? session.expires_at - now : 0;
 
           console.log("Session is valid, expires in", Math.floor(expiresIn), "seconds");
-
-          // Update React state to ensure it's in sync
           setUser(session.user);
           setSession(session);
 
-          if (expiresIn < 300) { // Less than 5 minutes
+          if (expiresIn < 300) {
             console.log("Token expiring soon, refreshing...");
             const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
             if (refreshedData.session) {
@@ -186,17 +183,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Listen for tab focus with visibilitychange (more reliable than focus)
     document.addEventListener("visibilitychange", handleVisibility);
-
-    // Optional: 60s interval while tab is visible for proactive session monitoring
     sessionInterval = setInterval(() => {
-      if (document.visibilityState === "visible" && !isRefreshing) {
+      if (document.visibilityState === "visible") {
         refreshIfNeeded();
       }
-    }, 60000); // every 60s
+    }, 60000);
 
-    // Initial session check
     refreshIfNeeded();
 
     return () => {
