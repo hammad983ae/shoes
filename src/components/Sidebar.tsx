@@ -16,7 +16,9 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ avatar_url?: string | null; display_name?: string | null } | null>(null);
-  const { user, signOut, userRole, isCreator } = useAuth();
+  const { user, signOut, profile } = useAuth();
+  const userRole = profile?.role;
+  const isCreator = profile?.is_creator;
   const { unreadCount } = useNotifications();
 
   useEffect(() => {

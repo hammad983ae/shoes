@@ -1,4 +1,16 @@
 // Consolidated global types to prevent conflicts
+
+// Core Profile type for authentication and user data
+export interface Profile {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  role: 'user' | 'creator' | 'admin' | null;
+  is_creator: boolean;
+  credits: number;
+}
+
 export interface Sneaker {
   id: number | string;
   slug?: string; // Add slug field for SEO-friendly URLs

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthGuard } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
   id: string;
@@ -29,7 +29,8 @@ interface UserSummary {
 }
 
 export const useUsers = () => {
-  const { isReady, loading: authLoading } = useAuthGuard(); // 🔒 Session guard
+  const { user, loading: authLoading } = useAuth(); // 🔒 Session guard
+  const isReady = !authLoading && !!user;
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [summary, setSummary] = useState<UserSummary>({

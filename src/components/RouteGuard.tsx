@@ -15,7 +15,7 @@ const RouteGuard = ({
   requireCreator, 
   redirectTo = '/' 
 }: RouteGuardProps) => {
-  const { user, userRole, isCreator, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,32 +26,41 @@ const RouteGuard = ({
       return;
     }
 
+    // Wait for profile to load before checking role/creator requirements
+    if (user && !profile && (requireRole || requireCreator)) {
+      return; // Still loading profile
+    }
+
     // Check role requirement
-    if (requireRole && userRole !== requireRole) {
+    if (requireRole && profile?.role !== requireRole) {
       navigate(redirectTo);
       return;
     }
 
     // Check creator requirement
-    if (requireCreator && !isCreator && userRole !== 'admin') {
+    if (requireCreator && !profile?.is_creator && profile?.role !== 'admin') {
       navigate(redirectTo);
       return;
     }
-  }, [user, userRole, isCreator, loading, navigate, requireRole, requireCreator, redirectTo]);
+  }, [user, profile, loading, navigate, requireRole, requireCreator, redirectTo]);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!user) {
     return null;
   }
 
-  if (requireRole && userRole !== requireRole) {
+  if (requireRole && profile?.role !== requireRole) {
     return null;
   }
 
-  if (requireCreator && !isCreator && userRole !== 'admin') {
+  if (requireCreator && !profile?.is_creator && profile?.role !== 'admin') {
     return null;
   }
 

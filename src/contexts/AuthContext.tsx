@@ -2,28 +2,18 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface Profile {
-  role: string;
-  is_creator: boolean;
-  display_name: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  credits: number | null;
-}
+import type { Profile } from '@/types/global';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  userRole: string | null;
-  isCreator: boolean;
   profile: Profile | null;
   loading: boolean;
-  authStable: boolean;
-  signUp: (email: string, password: string, displayName: string, referralCode: string, acceptedTerms: boolean) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  reloadProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,255 +21,132 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isCreator, setIsCreator] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authStable, setAuthStable] = useState(false);
   const { toast } = useToast();
+
+  // Profile fetching helper
+  const getProfile = async (userId: string): Promise<Profile | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, bio, role, is_creator, credits')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.warn('Profile fetch error:', error);
+        return null;
+      }
+
+      return data as Profile;
+    } catch (error) {
+      console.warn('Profile fetch failed:', error);
+      return null;
+    }
+  };
+
+  const reloadProfile = async () => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+
+    const profileData = await getProfile(user.id);
+    setProfile(profileData);
+  };
 
   const refreshSession = async () => {
     try {
-      console.log("🔄 Forcing session refresh...");
+      console.log("🔄 Refreshing session...");
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error("Session refresh error:", error);
-        // Clear localStorage if refresh fails
-        localStorage.removeItem('supabase-session-backup');
         toast({ title: "Session Error", description: "Please sign in again", variant: "destructive" });
       } else if (data.session) {
         console.log("✅ Session refreshed successfully");
-        // Backup session to localStorage
-        localStorage.setItem('supabase-session-backup', JSON.stringify({
-          session: data.session,
-          timestamp: Date.now()
-        }));
         setSession(data.session);
         setUser(data.session.user);
       }
     } catch (error) {
       console.error("Refresh session failed:", error);
-      localStorage.removeItem('supabase-session-backup');
     }
   };
 
-  const loadUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role, is_creator, display_name, avatar_url, bio, credits')
-        .eq('user_id', userId)
-        .single();
-
-      if (data) {
-        setUserRole(data.role);
-        setIsCreator(data.is_creator || false);
-        setProfile(data);
-      } else if (error) {
-        console.error("Profile fetch error:", error);
-      }
-    } catch (error) {
-      console.error("loadUserProfile error:", error);
-    }
-  };
-
-  // 🛡️ BRUTE-FORCE SESSION FALLBACK - Forces hard reload on invalid sessions
+  // Initialize auth state
   useEffect(() => {
-    const checkSessionAndPossiblyReload = async () => {
-      console.log("🔍 [Session Check] Tab focused, checking session...");
+    let mounted = true;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const now = Math.floor(Date.now() / 1000);
-
-      if (!session) {
-        console.warn("❌ No session found, reloading...");
-        sessionStorage.setItem('scrollY', window.scrollY.toString());
-        window.location.reload();
-        return;
-      }
-
-      const expiresIn = session.expires_at! - now;
-      console.log(`⏰ Session expires in ${expiresIn} seconds`);
-
-      if (expiresIn < 60) {
-        console.log("🔄 Session near expiry, trying to refresh...");
-        const { error, data } = await supabase.auth.refreshSession();
-        if (error || !data.session) {
-          console.error("⚠️ Refresh failed or session still invalid, reloading...");
-          sessionStorage.setItem('scrollY', window.scrollY.toString());
-          window.location.reload();
-        } else {
-          console.log("✅ Session refreshed successfully");
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
         }
-      } else {
-        console.log("✅ Session is valid and not expiring soon");
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    const restoreScroll = () => {
-      const scrollY = sessionStorage.getItem('scrollY');
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY, 10));
-        sessionStorage.removeItem('scrollY'); // Clean up after restore
-        console.log(`📜 Restored scroll position to ${scrollY}px`);
-      }
-    };
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔔 Auth event:', event, session ? '✅ Session' : '❌ No Session');
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
 
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log("👁️ [Session Check] Tab became visible, checking session...");
-        checkSessionAndPossiblyReload();
-      }
-    };
-
-    const onFocus = () => {
-      console.log("🎯 [Session Check] Window focused, checking session...");
-      checkSessionAndPossiblyReload();
-    };
-
-    const onUnload = () => {
-      sessionStorage.setItem('scrollY', window.scrollY.toString());
-      console.log("💾 Stored scroll position before unload");
-    };
-
-    // Restore scroll position on initial load
-    restoreScroll();
-
-    // Add event listeners
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('focus', onFocus);
-    window.addEventListener('beforeunload', onUnload);
-
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('beforeunload', onUnload);
-    };
-  }, []);
-
-  // Session management effect - runs once on mount
-  useEffect(() => {
-    const updateSession = async () => {
-      console.log('🔄 Re-fetching session from Supabase...');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('❌ Error getting session:', error);
-        setSession(null);
-        setUser(null);
-        return;
-      }
-      
-      console.log('📋 Session sync:', session ? '✅ Found & Updated' : '❌ No Session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Handle session backup for cross-tab sync
-      if (session) {
-        localStorage.setItem('supabase-session-backup', JSON.stringify({
-          session,
-          timestamp: Date.now()
-        }));
-      } else {
-        localStorage.removeItem('supabase-session-backup');
-      }
-    };
-
-    // 1. Re-fetch on window focus
-    const handleFocus = () => {
-      console.log('👁️ Tab focused - syncing session...');
-      updateSession();
-    };
-    window.addEventListener('focus', handleFocus);
-
-    // 2. Re-fetch on visibility change (tab return)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('👁️ Tab visible - syncing session...');
-        updateSession();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // 3. Subscribe to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔔 Auth event:', event, session ? '✅ Session' : '❌ No Session');
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (event === 'SIGNED_OUT') {
-        localStorage.removeItem('supabase-session-backup');
-        setUserRole(null);
-        setIsCreator(false);
-        setProfile(null);
-        setAuthStable(false);
-      } else if (session) {
-        // Backup session on auth events
-        localStorage.setItem('supabase-session-backup', JSON.stringify({
-          session,
-          timestamp: Date.now()
-        }));
-      }
-    });
-
-    // 4. Cross-tab session synchronization
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'supabase-session-backup' && e.newValue) {
-        try {
-          const { session: newSession } = JSON.parse(e.newValue);
-          if (newSession) {
-            console.log("🔄 Session updated from another tab");
-            setSession(newSession);
-            setUser(newSession.user);
+        if (event === 'SIGNED_OUT') {
+          if (mounted) {
+            setProfile(null);
           }
-        } catch (error) {
-          console.warn("Failed to parse session from storage event");
         }
       }
-    };
-    window.addEventListener("storage", handleStorageChange);
+    );
 
-    // 5. Initial session fetch on mount (after setting up listeners)
-    updateSession();
+    initializeAuth();
 
-    // Set loading to false after initial setup
-    setLoading(false);
-
-    // Cleanup all listeners and subscriptions
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
-  // Load user profile when user changes
+  // Load profile when user changes
   useEffect(() => {
-    if (!user || !session) {
-      setUserRole(null);
-      setIsCreator(false);
+    if (!user) {
       setProfile(null);
-      setAuthStable(false);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      await loadUserProfile(user.id);
-      setAuthStable(true);
-    }, 100);
+    const loadProfile = async () => {
+      const profileData = await getProfile(user.id);
+      setProfile(profileData);
+    };
 
-    return () => clearTimeout(timer);
-  }, [user, session]);
+    loadProfile();
+  }, [user]);
 
-  const signUp = async (email: string, password: string, displayName: string, referralCode: string, acceptedTerms: boolean) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { display_name: displayName, referral_code: referralCode, accepted_terms: acceptedTerms },
+        data: metadata,
       },
     });
     return { error };
@@ -294,30 +161,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setUserRole(null);
-    setIsCreator(false);
     setProfile(null);
-    setAuthStable(false);
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading session...</div>;
-  }
+  const value = {
+    user,
+    session,
+    profile,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    refreshSession,
+    reloadProfile,
+  };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      userRole,
-      isCreator,
-      profile,
-      loading,
-      authStable,
-      signUp,
-      signIn,
-      signOut,
-      refreshSession
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -326,18 +186,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    console.error('useAuth called outside AuthProvider. Current context:', context);
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
 
+// Legacy compatibility helpers
 export function useAuthGuard() {
-  const { session, loading, authStable } = useAuth();
+  const { session, loading } = useAuth();
   return {
-    isReady: !loading && authStable && session,
+    isReady: !loading && !!session,
     session,
-    loading: loading || !authStable,
+    loading,
     error: !loading && !session ? 'No valid session' : null,
   };
 }
