@@ -391,6 +391,7 @@ export type Database = {
           commission_rate: number | null
           created_at: string | null
           creator_tier: string | null
+          credits_cents: number
           display_name: string | null
           is_creator: boolean | null
           last_login_at: string | null
@@ -405,6 +406,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           creator_tier?: string | null
+          credits_cents?: number
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
@@ -419,6 +421,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           creator_tier?: string | null
+          credits_cents?: number
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
@@ -754,6 +757,17 @@ export type Database = {
       }
     }
     Functions: {
+      admin_grant_credits: {
+        Args:
+          | {
+              p_amount: number
+              p_meta?: Json
+              p_reason?: string
+              p_user: string
+            }
+          | { p_amount_cents: number; p_note?: string; p_user: string }
+        Returns: undefined
+      }
       fn_get_balance: {
         Args: Record<PropertyKey, never> | { p_user_id: string }
         Returns: number
@@ -773,6 +787,12 @@ export type Database = {
       }
       spend_credits: {
         Args: { amount: number; meta?: Json; reason: string }
+        Returns: undefined
+      }
+      user_spend_credits: {
+        Args:
+          | { p_amount: number; p_meta?: Json; p_reason?: string }
+          | { p_amount_cents: number; p_note?: string }
         Returns: undefined
       }
     }
