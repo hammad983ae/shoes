@@ -2,14 +2,12 @@ import { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
 import AnnouncementBar from './AnnouncementBar';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const { session } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
 useEffect(() => {
