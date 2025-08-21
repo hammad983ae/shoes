@@ -7,7 +7,7 @@ import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
 import AnnouncementBar from './AnnouncementBar';
 import { useAuth } from '@/contexts/AuthContext';
-import { wakeUpBackend } from '@/integrations/supabase/client';
+import { wakeUpBackend } from '@/lib/backend';
 
 interface LayoutProps {
   children: ReactNode;
