@@ -78,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+// <<<<<<< codex/fix-app-connection-issue-to-supabase-db-s832p3
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         supabase.auth.startAutoRefresh();
@@ -92,6 +93,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       window.removeEventListener('focus', handleVisibility);
       document.removeEventListener('visibilitychange', handleVisibility);
+
+// <<<<<<< codex/fix-app-connection-issue-to-supabase-db-8jrtqq
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.startAutoRefresh();
+        void refresh();
+      }
+    };
+
+    supabase.auth.startAutoRefresh();
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    const onFocus = () => {
+      supabase.auth.startAutoRefresh();
+      // Debounce to avoid rate limiting
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => void rehydrate(), 1000);
+    };
+
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.startAutoRefresh();
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => void rehydrate(), 1000);
+      } else {
+        // Pause auto refresh when tab is hidden to avoid rate limiting
+        supabase.auth.stopAutoRefresh();
+      }
+    };
+
+    // Ensure auto refresh is active when this effect runs
+    supabase.auth.startAutoRefresh();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVis);
+
+
       supabase.auth.stopAutoRefresh();
     };
   }, [session]);
