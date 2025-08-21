@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CartItem {
@@ -16,125 +16,91 @@ export const useCartPersistence = (
   setItems: (items: CartItem[]) => void,
   setIsLoaded?: (loaded: boolean) => void
 ) => {
+  const loadedRef = useRef(false);
+  const savingRef = useRef<number | null>(null);
 
-  // Load cart from Supabase when component mounts and when auth state changes
+  // load once on mount & when user signs in
   useEffect(() => {
-    const loadCart = async () => {
-      await loadCartFromSupabase();
-    };
-    loadCart();
+    let mounted = true;
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        await loadCartFromSupabase();
-      } else if (event === 'SIGNED_OUT') {
+    const load = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setIsLoaded?.(true); return; }
+        const { data, error } = await supabase
+          .from('cart')
+          .select('items')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (error && error.code !== 'PGRST116') { // not found is fine
+          console.error('load cart error', error);
+          setIsLoaded?.(true);
+          return;
+        }
+        if (!mounted) return;
+        if (data?.items && Array.isArray(data.items)) {
+          setItems(data.items as CartItem[]);
+        } else {
+          setItems([]);
+        }
+        loadedRef.current = true;
+        setIsLoaded?.(true);
+      } catch (e) {
+        console.error('load cart exception', e);
+        setIsLoaded?.(true);
+      }
+    };
+
+    void load();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (evt, sess) => {
+      if (evt === 'SIGNED_IN' && sess?.user) {
+        loadedRef.current = false;
+        await load();
+      }
+      if (evt === 'SIGNED_OUT') {
         setItems([]);
+        loadedRef.current = true;
         setIsLoaded?.(true);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, [setItems, setIsLoaded]);
 
-  // Save cart to Supabase whenever items change (only after initial load)
+  // save with debounce (only when authed and after initial load)
   useEffect(() => {
-    if (setIsLoaded) {
-      // If we have the setIsLoaded function, wait for initial load before saving
-      const timeoutId = setTimeout(() => {
-        saveCartToSupabase();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    } else {
-      // Fallback for when setIsLoaded isn't provided
-      saveCartToSupabase();
-    }
+    const save = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !loadedRef.current) return;
+      try {
+        await supabase
+          .from('cart')
+          .upsert({
+            user_id: user.id,
+            items: items as any,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+      } catch (e) {
+        console.error('save cart exception', e);
+      }
+    };
+
+    if (savingRef.current) clearTimeout(savingRef.current);
+    savingRef.current = window.setTimeout(save, 250);
+
+    return () => { if (savingRef.current) clearTimeout(savingRef.current); };
   }, [items]);
 
-  const loadCartFromSupabase = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoaded?.(true);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('cart')
-        .select('items')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading cart:', error);
-        setIsLoaded?.(true);
-        return;
-      }
-
-      if (data?.items && Array.isArray(data.items) && data.items.length > 0) {
-        console.log('Loading cart from Supabase:', data.items);
-        setItems(data.items as unknown as CartItem[]);
-      } else {
-        console.log('No cart data found in Supabase or empty cart');
-        setItems([]);
-      }
-      setIsLoaded?.(true);
-    } catch (error) {
-      console.error('Error loading cart from Supabase:', error);
-      setIsLoaded?.(true);
-    }
-  };
-
-  const saveCartToSupabase = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      console.log('Saving cart to Supabase:', items);
-      
-      const { error } = await supabase
-        .from('cart')
-        .upsert({
-          user_id: user.id,
-          items: items as any,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) {
-        console.error('Error saving cart:', error);
-      } else {
-        console.log('Cart saved successfully to Supabase');
-      }
-    } catch (error) {
-      console.error('Error saving cart to Supabase:', error);
-    }
-  };
-
   const clearCartFromSupabase = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('cart')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error clearing cart from Supabase:', error);
-      } else {
-        console.log('Cart cleared from Supabase');
-      }
-    } catch (error) {
-      console.error('Error clearing cart from Supabase:', error);
+      await supabase.from('cart').delete().eq('user_id', user.id);
+    } catch (e) {
+      console.error('clear cart exception', e);
     }
   };
 
-  return {
-    loadCartFromSupabase,
-    saveCartToSupabase,
-    clearCartFromSupabase
-  };
+  return { clearCartFromSupabase };
 };
