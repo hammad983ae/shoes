@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -289,12 +289,12 @@ export default function EditProfile() {
           </div>
           {/* Avatar Section */}
           <div className="flex flex-col items-center mb-6">
-            <Avatar className="w-24 h-24 mb-2 border-2 border-yellow-500 shadow-lg">
-              <AvatarImage src={avatarUrl || undefined} />
-              <AvatarFallback className="bg-yellow-500 text-black font-bold text-2xl">
-                {displayName?.[0]?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              avatarUrl={avatarUrl} 
+              displayName={displayName} 
+              size="xl"
+              className="w-24 h-24 mb-2 border-2 border-yellow-500 shadow-lg"
+            />
             <input
               ref={fileInputRef}
               type="file"

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Copy,
@@ -111,10 +111,12 @@ export default function CreatorDashboard() {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 border-2 border-primary/30">
-                  <AvatarImage src={profile.profileImage} alt={profile.name} />
-                  <AvatarFallback className="bg-primary/20 text-primary">{profile.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  avatarUrl={profile.profileImage} 
+                  displayName={profile.name} 
+                  size="xl"
+                  className="border-2 border-primary/30"
+                />
                  <div>
                    {loading ? (
                      <Skeleton className="h-8 w-48 mb-2" />

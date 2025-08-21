@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { loadChiron } from '@/utils/loadChiron';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { usePostHog } from '@/contexts/PostHogProvider';
 import { trackPurchase, trackCheckoutStarted } from '@/hooks/useAnalytics';
 
@@ -468,10 +468,11 @@ export default function Checkout() {
                   <div className="space-y-3">
                     <h3 className="text-lg font-medium">Contact</h3>
                     <div className="flex items-center gap-3 p-4 border rounded-md bg-muted/50">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={userProfile?.avatar_url} />
-                        <AvatarFallback>{userProfile?.display_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
-                      </Avatar>
+                      <UserAvatar 
+                        avatarUrl={userProfile?.avatar_url} 
+                        displayName={userProfile?.display_name} 
+                        size="sm"
+                      />
                       <div className="flex-1">
                         <p className="font-medium text-sm">{userProfile?.display_name || 'User'}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -650,10 +651,11 @@ export default function Checkout() {
                   <div className="space-y-3">
                     <h3 className="text-lg font-medium">Contact</h3>
                     <div className="flex items-center gap-3 p-4 border rounded-md bg-muted/50">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={userProfile?.avatar_url} />
-                        <AvatarFallback>{userProfile?.display_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
-                      </Avatar>
+                      <UserAvatar 
+                        avatarUrl={userProfile?.avatar_url} 
+                        displayName={userProfile?.display_name} 
+                        size="sm"
+                      />
                       <div className="flex-1">
                         <p className="font-medium text-sm">{userProfile?.display_name || 'User'}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>

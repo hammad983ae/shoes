@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useToast } from '@/hooks/use-toast';
 import { Search, TrendingUp, Plus, Link, Eye, Heart, Trash2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -585,12 +585,11 @@ const TopPosts = () => {
                     className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                     onClick={() => handleViewUserProfile(profile.id)}
                   >
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={profile.avatar_url || undefined} />
-                      <AvatarFallback>
-                        {profile.display_name?.[0]?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar 
+                      avatarUrl={profile.avatar_url} 
+                      displayName={profile.display_name} 
+                      size="sm"
+                    />
                     <span className="text-sm font-medium">
                       {profile.display_name || 'Anonymous User'}
                     </span>
@@ -626,10 +625,11 @@ const TopPosts = () => {
             <Card key={post.id} className="bg-[#0a0a0a] border-[#FFD700] transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-lg">
               <CardContent className="p-3 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={post.profiles?.avatar_url || ''} />
-                    <AvatarFallback>{post.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    avatarUrl={post.profiles?.avatar_url} 
+                    displayName={post.profiles?.display_name} 
+                    size="sm"
+                  />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">
                       {post.profiles?.display_name || 'Unknown User'}
@@ -724,10 +724,11 @@ const TopPosts = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={viewingPost.profiles?.avatar_url || ''} />
-                      <AvatarFallback>{viewingPost.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar 
+                      avatarUrl={viewingPost.profiles?.avatar_url} 
+                      displayName={viewingPost.profiles?.display_name} 
+                      size="md"
+                    />
                     <div>
                       <h3 className="font-semibold">
                         {viewingPost.profiles?.display_name || 'Unknown User'}
