@@ -1,4 +1,3 @@
-// src/lib/backend.ts
 export async function wakeUpBackend() {
   try {
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wake-up-backend`

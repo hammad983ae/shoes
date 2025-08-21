@@ -1,7 +1,4 @@
-// ✅ Cleaned up Layout.tsx: Removed global cart button logic
-// Cart button now expected to be rendered inside individual sticky nav bars (e.g., MainCatalogNavBar.tsx)
-
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
@@ -18,18 +15,14 @@ const Layout = ({ children }: LayoutProps) => {
   const { session } = useAuth();
   const isHomePage = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pingedRef = useRef(false);
 
-  // 🔄 WAKE UP BACKEND ON ROUTE CHANGES
   useEffect(() => {
-    const handleRouteChange = async () => {
-      if (!session) return;
-      
-      console.log(`🛣️ Route changed to: ${location.pathname}`);
-      await wakeUpBackend();
-    };
-
-    handleRouteChange();
-  }, [location.pathname, session]);
+    if (!session || pingedRef.current) return;
+    pingedRef.current = true;
+    // fire-and-forget; do not await
+    void wakeUpBackend();
+  }, [session]);
 
   if (isHomePage) {
     return <>{children}</>;
