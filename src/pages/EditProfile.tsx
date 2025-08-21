@@ -205,7 +205,14 @@ export default function EditProfile() {
   };
 
   const handleCropSave = async () => {
-    if (!completedCrop || !imgRef.current || !user) return;
+    if (!completedCrop || !imgRef.current || !user) {
+      console.error('Missing requirements for avatar upload:', { 
+        completedCrop: !!completedCrop, 
+        imgRef: !!imgRef.current, 
+        user: !!user 
+      });
+      return;
+    }
 
     setUploading(true);
     try {
@@ -216,6 +223,8 @@ export default function EditProfile() {
       const fileName = `${Date.now()}.jpg`;
       const filePath = `${user.id}/${fileName}`;
 
+      console.log('Uploading avatar to path:', filePath);
+
       // Upload cropped file to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -224,7 +233,10 @@ export default function EditProfile() {
           upsert: true
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
 
       // Get public URL
       const { data } = supabase.storage
