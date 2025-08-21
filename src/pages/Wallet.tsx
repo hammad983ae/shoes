@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
@@ -113,12 +113,12 @@ const Wallet = () => {
 
             {/* Profile Section */}
             <div className="flex items-center gap-4 mb-6">
-              <Avatar className="w-12 h-12 border-2 border-yellow-500 shadow-lg">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-yellow-500 text-black font-bold">
-                  {profile.display_name?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar 
+                avatarUrl={profile.avatar_url} 
+                displayName={profile.display_name} 
+                size="lg"
+                className="border-2 border-yellow-500 shadow-lg"
+              />
               <div className="flex-1">
                 <h2 className="text-lg font-bold text-white">
                   {profile.display_name || 'Anonymous User'}

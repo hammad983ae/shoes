@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { DetailedUserEditModal } from "@/components/DetailedUserEditModal";
 import { AddCreatorModal } from "@/components/AddCreatorModal";
 import { InviteCreatorModal } from "@/components/InviteCreatorModal";
@@ -262,10 +262,11 @@ export default function Users() {
                     {filteredUsers.map((user) => (
                       <div key={user.id} className="flex items-center justify-between p-4 rounded-lg border">
                         <div className="flex items-center space-x-4">
-                          <Avatar>
-                            <AvatarImage src={user.email || ''} />
-                            <AvatarFallback>{user.display_name.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar 
+                            avatarUrl={user.avatar_url} 
+                            displayName={user.display_name} 
+                            size="md"
+                          />
                           <div>
                             <p className="font-medium">{user.display_name}</p>
                             <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
@@ -367,9 +368,11 @@ export default function Users() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <Avatar>
-                            <AvatarFallback>{creator.display_name.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar 
+                            avatarUrl={creator.avatar_url} 
+                            displayName={creator.display_name} 
+                            size="md"
+                          />
                           <div>
                             <p className="font-medium">{creator.display_name}</p>
                             <Badge variant="outline">{creator.creator_tier}</Badge>

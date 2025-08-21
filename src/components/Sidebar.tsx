@@ -3,7 +3,7 @@ import { Menu, X, ShoppingBag, Star, Smartphone, LogOut, User, Home, TrendingUp,
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarProps {
@@ -237,12 +237,12 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
             >
               <div className="relative">
                 {user ? (
-                  <Avatar className="w-5 h-5 flex-shrink-0 border border-primary/20">
-                    <AvatarImage src={userProfile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {userProfile?.display_name?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    avatarUrl={userProfile?.avatar_url} 
+                    displayName={userProfile?.display_name} 
+                    size="sm"
+                    className="border border-primary/20"
+                  />
                 ) : (
                   <User className="w-5 h-5 text-primary flex-shrink-0" />
                 )}

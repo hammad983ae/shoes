@@ -18,6 +18,7 @@ interface User {
   last_login_at?: string;
   created_at: string;
   updated_at: string;
+  avatar_url?: string | null;
 }
 
 interface UserSummary {
@@ -74,7 +75,8 @@ export const useUsers = () => {
           total_spent: user.total_spent || 0,
           last_login_at: user.last_login_at || undefined,
           created_at: user.created_at,
-          updated_at: user.created_at
+          updated_at: user.created_at,
+          avatar_url: user.avatar_url || null
         }));
         
         console.log('Edge function succeeded, got users:', formattedUsers.length);
@@ -98,7 +100,8 @@ export const useUsers = () => {
             total_spent,
             last_login_at,
             created_at,
-            updated_at
+            updated_at,
+            avatar_url
           `)
           .order('created_at', { ascending: false });
 
@@ -124,7 +127,8 @@ export const useUsers = () => {
           total_spent: profile.total_spent || 0,
           last_login_at: profile.last_login_at || undefined,
           created_at: profile.created_at,
-          updated_at: profile.updated_at || profile.created_at
+          updated_at: profile.updated_at || profile.created_at,
+          avatar_url: profile.avatar_url || null
         }));
       }
 

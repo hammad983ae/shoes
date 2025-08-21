@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { Users, Coins } from 'lucide-react';
 
 interface LeaderboardRowProps {
@@ -58,12 +58,12 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ position, user, isCurre
       </div>
 
       {/* Avatar */}
-      <Avatar className="w-10 h-10 border-2 border-gray-600 flex-shrink-0">
-        <AvatarImage src={user.avatar_url || undefined} />
-        <AvatarFallback className="bg-gray-600 text-white text-sm font-bold">
-          {user.display_name?.[0]?.toUpperCase() || 'U'}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar 
+        avatarUrl={user.avatar_url} 
+        displayName={user.display_name} 
+        size="md"
+        className="border-2 border-gray-600 flex-shrink-0"
+      />
 
       {/* User Info */}
       <div className="flex-1 min-w-0">

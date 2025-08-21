@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 // import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/UserAvatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import { useToast } from '@/hooks/use-toast';
@@ -406,12 +406,12 @@ const Profile = () => {
               {/* Profile Header */}
               <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <Avatar className="w-12 sm:w-16 h-12 sm:h-16 border-2 border-yellow-500 shadow-lg">
-                    <AvatarImage src={profile.avatar_url || undefined} />
-                    <AvatarFallback className="bg-yellow-500 text-black font-bold text-lg sm:text-xl">
-                      {profile.display_name?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    avatarUrl={profile.avatar_url} 
+                    displayName={profile.display_name} 
+                    size="xl"
+                    className="border-2 border-yellow-500 shadow-lg"
+                  />
                   <div className="text-left">
                     <h2 className="text-lg sm:text-xl font-bold text-white">
                       {profile?.display_name || user?.email?.split('@')[0] || 'User'}

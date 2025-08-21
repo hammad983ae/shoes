@@ -7,6 +7,7 @@ type Profile = {
   display_name: string;
   role: 'user' | 'admin';
   credits_cents: number;
+  avatar_url: string | null;
 };
 
 type AuthState = {
@@ -58,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, role, credits_cents')
+        .select('user_id, display_name, role, credits_cents, avatar_url')
         .eq('user_id', session.user.id)
         .single();
 
