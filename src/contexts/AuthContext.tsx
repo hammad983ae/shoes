@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const value = useMemo(
     () => ({
       session,
-      user: session?.user ?? null,
+      user,
       profile,
       isAdmin: profile?.role?.toLowerCase() === 'admin',
       loading,
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signUp,
       signOut,
     }),
-    [session, profile, loading]
+    [session, user, profile, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
