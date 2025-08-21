@@ -19,7 +19,7 @@ export const supabase = createClient(url, anon, {
   },
 });
 
-// Helper function to wake up backend (keep existing functionality)
+// Helper function to wake up backend
 export const wakeUpBackend = async () => {
   try {
     const { error } = await supabase.functions.invoke('wake-up-backend');
