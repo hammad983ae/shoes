@@ -34,6 +34,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // 1) initial session + listener
   useEffect(() => {
     let mounted = true;
+    // ensure auth auto refresh is running
+    supabase.auth.startAutoRefresh();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!mounted) return;
       setSession(s ?? null);
@@ -45,7 +47,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
-    return () => { mounted = false; sub.subscription.unsubscribe(); };
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+      // stop refresh when component unmounts
+      supabase.auth.stopAutoRefresh();
+    };
   }, []);
 
   // 2) gentle session recovery (avoid rate limiting)
@@ -89,8 +96,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     const onVis = () => {
       if (document.visibilityState === 'visible') {
+        // restart token refresh when returning to the tab
+        supabase.auth.startAutoRefresh();
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => void rehydrate(), 1000);
+      } else {
+        // pause token refresh to avoid background timer issues
+        supabase.auth.stopAutoRefresh();
       }
     };
 
