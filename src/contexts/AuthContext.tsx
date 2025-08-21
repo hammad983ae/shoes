@@ -48,30 +48,61 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  // 2) hard rehydrate on tab focus/visibility
+  // 2) gentle session recovery (avoid rate limiting)
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const rehydrate = async () => {
       if (refRefreshing.current) return;
       refRefreshing.current = true;
+      
       try {
         const { data } = await supabase.auth.getSession();
-        if (!data.session) await supabase.auth.refreshSession();
-        const after = await supabase.auth.getSession();
-        setSession(after.data.session ?? null);
-        setUser(after.data.session?.user ?? null);
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+        } else {
+          // Only try refresh if we don't have a session and had one before
+          if (session) {
+            const refreshResult = await supabase.auth.refreshSession();
+            if (refreshResult.data.session) {
+              setSession(refreshResult.data.session);
+              setUser(refreshResult.data.session.user);
+            } else {
+              setSession(null);
+              setUser(null);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Session rehydration failed:', error);
       } finally {
         refRefreshing.current = false;
       }
     };
-    const onFocus = () => { void rehydrate(); };
-    const onVis = () => { if (document.visibilityState === 'visible') void rehydrate(); };
+
+    const onFocus = () => {
+      // Debounce to avoid rate limiting
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => void rehydrate(), 1000);
+    };
+    
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => void rehydrate(), 1000);
+      }
+    };
+
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVis);
+    
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVis);
     };
-  }, []);
+  }, [session]);
 
   // 3) load profile (retry once if 406/rls hiccup)
   useEffect(() => {
@@ -107,8 +138,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
+    try {
+      // Force clear local state first
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Force signout with global scope
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Reload page to ensure complete cleanup
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force reload even if logout fails
+      window.location.reload();
+    }
   };
 
   const value = useMemo(() => ({
