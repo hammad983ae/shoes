@@ -48,68 +48,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  // 2) Enhanced session recovery - handles page refresh/tab switch null sessions
+  // 2) hard rehydrate on tab focus/visibility
   useEffect(() => {
-    const recoverSession = async () => {
+    const rehydrate = async () => {
       if (refRefreshing.current) return;
       refRefreshing.current = true;
-      
       try {
-        // First check current session
-        let { data: sessionData } = await supabase.auth.getSession();
-        
-        // If session is null, try to refresh it
-        if (!sessionData.session) {
-          console.log('Session null, attempting refresh...');
-          const { data: refreshData, error } = await supabase.auth.refreshSession();
-          
-          if (!error && refreshData.session) {
-            console.log('Session recovered successfully');
-            setSession(refreshData.session);
-            setUser(refreshData.session.user);
-          } else {
-            // If refresh fails, try one more getSession call
-            const { data: finalCheck } = await supabase.auth.getSession();
-            setSession(finalCheck.session ?? null);
-            setUser(finalCheck.session?.user ?? null);
-          }
-        } else {
-          setSession(sessionData.session);
-          setUser(sessionData.session.user);
-        }
-      } catch (error) {
-        console.error('Session recovery failed:', error);
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) await supabase.auth.refreshSession();
+        const after = await supabase.auth.getSession();
+        setSession(after.data.session ?? null);
+        setUser(after.data.session?.user ?? null);
       } finally {
         refRefreshing.current = false;
       }
     };
-
-    // Trigger on page focus and visibility change
-    const onFocus = () => { void recoverSession(); };
-    const onVisibilityChange = () => { 
-      if (document.visibilityState === 'visible') {
-        void recoverSession(); 
-      }
-    };
-
-    // Also trigger on page load if we detect a missing session
-    const checkOnLoad = () => {
-      if (!session && !loading) {
-        void recoverSession();
-      }
-    };
-
+    const onFocus = () => { void rehydrate(); };
+    const onVis = () => { if (document.visibilityState === 'visible') void rehydrate(); };
     window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    
-    // Check immediately if we're missing a session
-    checkOnLoad();
-
+    document.addEventListener('visibilitychange', onVis);
     return () => {
       window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('visibilitychange', onVis);
     };
-  }, [session, loading]);
+  }, []);
 
   // 3) load profile (retry once if 406/rls hiccup)
   useEffect(() => {

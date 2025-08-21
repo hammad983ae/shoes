@@ -48,7 +48,6 @@ import CreatorSignup from './pages/CreatorSignup';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import RouteGuard from "./components/RouteGuard";
-import AuthRefresh from "./components/AuthRefresh";
 
 const App = () => (
   <PostHogProvider>
@@ -109,11 +108,10 @@ const App = () => (
                         </RouteGuard>
                       } />
                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                    <AuthRefresh />
-                    <ReferralDiscountNotification />
-                    <CartAddNotification /> {/* Add this line */}
-                  </GlobalCartProvider>
+                   </Routes>
+                   <ReferralDiscountNotification />
+                   <CartAddNotification /> {/* Add this line */}
+                 </GlobalCartProvider>
                </Layout>
              </BrowserRouter>
            </TooltipProvider>
