@@ -3,7 +3,6 @@ import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
 import AnnouncementBar from './AnnouncementBar';
 import { useAuth } from '@/contexts/AuthContext';
-import { wakeUpBackend } from '@/lib/backend';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,13 +12,10 @@ const Layout = ({ children }: LayoutProps) => {
   const { session } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    let ran = false;
-    if (!session || ran) return;
-    ran = true;
-    void wakeUpBackend();
-  }, [session]);
-
+useEffect(() => {
+  console.log(`🛣️ Route: ${location.pathname}`);
+  // no backend wake calls here
+}, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-background">
