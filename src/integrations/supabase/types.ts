@@ -795,6 +795,10 @@ export type Database = {
           | { p_amount_cents: number; p_note?: string }
         Returns: undefined
       }
+      whoami: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       order_status: "pending" | "paid" | "shipped" | "cancelled" | "refunded"
