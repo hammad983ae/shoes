@@ -37,8 +37,8 @@ const RouteGuard = ({
       return;
     }
 
-    // Check creator requirement
-    if (requireCreator && !profile?.is_creator && profile?.role !== 'admin') {
+    // Check creator requirement (admin can access everything)
+    if (requireCreator && profile?.role !== 'admin') {
       navigate(redirectTo);
       return;
     }
@@ -60,7 +60,7 @@ const RouteGuard = ({
     return null;
   }
 
-  if (requireCreator && !profile?.is_creator && profile?.role !== 'admin') {
+  if (requireCreator && profile?.role !== 'admin') {
     return null;
   }
 

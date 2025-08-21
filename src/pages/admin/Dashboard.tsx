@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,7 @@ function KPIGrid({ loading = true, stats }: { loading?: boolean; stats?: any }) 
 }
 
 export default function Dashboard() {
+  useRequireAdmin();
   const { loading: adminLoading, recentOrders, alerts, stats: realStats } = useAdminDashboard();
   const [timeRange, setTimeRange] = useState('today');
   const { loading: analyticsLoading, stats: analyticsStats } = useAnalytics(timeRange);

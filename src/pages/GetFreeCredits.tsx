@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InteractiveParticles from '@/components/InteractiveParticles';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useReferral } from '@/hooks/useReferral';
 import { Check, Share, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
 const GetFreeCredits = () => {
+  useRequireAuth();
   const { user } = useAuth();
   const { referralData, copyReferralLink, shareReferralLink } = useReferral();
   const navigate = useNavigate();

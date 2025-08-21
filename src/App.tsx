@@ -45,6 +45,8 @@ import Users from "./pages/admin/Users";
 import AdminNotFound from "./pages/admin/NotFound";
 import HelpCenter from './pages/HelpCenter';
 import CreatorSignup from './pages/CreatorSignup';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 import RouteGuard from "./components/RouteGuard";
 
 const App = () => (
@@ -77,8 +79,9 @@ const App = () => (
                       <Route path="/order-confirmation" element={<OrderConfirmation />} />
                        <Route path="/order-history" element={<OrderHistory />} />
                        <Route path="/review-order/:orderId" element={<ReviewOrder />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/signin" element={<Auth />} />
+                       <Route path="/auth" element={<Auth />} />
+                       <Route path="/signin" element={<SignIn />} />
+                       <Route path="/signup" element={<SignUp />} />
                      <Route path="/reset-password" element={<ResetPassword />} />
                      <Route path="/privacy" element={<Privacy />} />
                      <Route path="/terms" element={<Terms />} />

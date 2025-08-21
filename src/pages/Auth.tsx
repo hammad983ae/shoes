@@ -51,7 +51,7 @@ export default function Auth() {
           });
         }
       } else {
-        const { error } = await signUp(email, password, { display_name: displayName });
+        const { error } = await signUp(email, password, displayName);
         if (error) {
           toast({
             title: "Sign Up Failed", 

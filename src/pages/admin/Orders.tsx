@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 
 export default function Orders() {
+  useRequireAdmin();
   const { loading, orders, summary, fulfillmentStats, refetch } = useOrders();
   
   const [selectedOrder, setSelectedOrder] = useState<any>(null);

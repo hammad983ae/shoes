@@ -16,9 +16,9 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ avatar_url?: string | null; display_name?: string | null } | null>(null);
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, isAdmin } = useAuth();
   const userRole = profile?.role;
-  const isCreator = profile?.is_creator;
+  const isCreator = isAdmin; // For now, only admins have creator access
   const { unreadCount } = useNotifications();
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 export default function Analytics() {
+  useRequireAdmin();
   const [timeRange, setTimeRange] = useState('today');
   const { loading, stats } = useAnalytics(timeRange);
 
