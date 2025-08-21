@@ -785,6 +785,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_self: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       spend_credits: {
         Args: { amount: number; meta?: Json; reason: string }
         Returns: undefined
