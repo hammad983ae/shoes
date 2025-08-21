@@ -235,13 +235,13 @@ const Sidebar = ({ onBackToHome }: SidebarProps) => {
               to={user ? "/profile" : "/signin"}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors relative"
             >
-              <div className="relative">
+              <div className="relative flex items-center justify-center">
                 {user ? (
                   <UserAvatar 
                     avatarUrl={userProfile?.avatar_url} 
                     displayName={userProfile?.display_name} 
                     size="sm"
-                    className="border border-primary/20"
+                    className="border border-primary/20 w-5 h-5"
                   />
                 ) : (
                   <User className="w-5 h-5 text-primary flex-shrink-0" />

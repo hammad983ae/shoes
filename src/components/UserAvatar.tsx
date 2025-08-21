@@ -23,7 +23,7 @@ export function UserAvatar({
   const fallbackInitial = displayName?.[0]?.toUpperCase() || 'U';
   
   return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
+    <Avatar className={className || sizeClasses[size]}>
       <AvatarImage src={avatarUrl || undefined} />
       <AvatarFallback className="bg-primary text-primary-foreground font-medium">
         {fallbackInitial}
