@@ -82,18 +82,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const onFocus = () => {
+      supabase.auth.startAutoRefresh();
       // Debounce to avoid rate limiting
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => void rehydrate(), 1000);
     };
-    
+
     const onVis = () => {
       if (document.visibilityState === 'visible') {
+        supabase.auth.startAutoRefresh();
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => void rehydrate(), 1000);
+      } else {
+        // Pause auto refresh when tab is hidden to avoid rate limiting
+        supabase.auth.stopAutoRefresh();
       }
     };
 
+    // Ensure auto refresh is active when this effect runs
+    supabase.auth.startAutoRefresh();
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVis);
     
@@ -101,6 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       clearTimeout(timeoutId);
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVis);
+      supabase.auth.stopAutoRefresh();
     };
   }, [session]);
 
