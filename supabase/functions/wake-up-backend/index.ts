@@ -1,66 +1,51 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.0'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+};
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    console.log('🔥 Backend wake-up function called');
-    
-    // Perform a lightweight query to wake up the database
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .limit(1);
-    
-    if (error) {
-      console.error('Wake-up query failed:', error);
-      throw error;
-    }
-    
-    console.log('✅ Backend wake-up successful');
-    
+    console.log('Wake-up backend function called');
+
+    // Simple health check response
+    const response = {
+      message: 'Backend is awake',
+      timestamp: new Date().toISOString(),
+      status: 'healthy'
+    };
+
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Backend services are awake',
-        timestamp: new Date().toISOString()
-      }),
-      { 
-        headers: { 
+      JSON.stringify(response),
+      {
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        },
+        status: 200
       }
     );
-    
   } catch (error) {
-    console.error('❌ Backend wake-up failed:', error);
+    console.error('Error in wake-up-backend:', error);
     
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error.message,
-        timestamp: new Date().toISOString()
+        error: 'Internal server error',
+        message: error.message
       }),
-      { 
-        status: 500,
-        headers: { 
+      {
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        },
+        status: 500
       }
     );
   }

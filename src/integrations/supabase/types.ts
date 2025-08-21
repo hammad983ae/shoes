@@ -395,6 +395,8 @@ export type Database = {
           display_name: string | null
           is_creator: boolean | null
           last_login_at: string | null
+          referral_code: string | null
+          referred_by: string | null
           role: string | null
           total_spent: number | null
           updated_at: string | null
@@ -410,6 +412,8 @@ export type Database = {
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           role?: string | null
           total_spent?: number | null
           updated_at?: string | null
@@ -425,6 +429,8 @@ export type Database = {
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           role?: string | null
           total_spent?: number | null
           updated_at?: string | null
@@ -771,6 +777,14 @@ export type Database = {
       fn_get_balance: {
         Args: Record<PropertyKey, never> | { p_user_id: string }
         Returns: number
+      }
+      generate_my_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_my_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       grant_credits_admin: {
         Args: {

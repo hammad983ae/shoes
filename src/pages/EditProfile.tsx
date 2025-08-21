@@ -14,7 +14,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -205,11 +205,21 @@ export default function EditProfile() {
   };
 
   const handleCropSave = async () => {
-    if (!completedCrop || !imgRef.current || !user) {
+    // 5. Runtime guard for session validation
+    if (!session?.user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upload an avatar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!completedCrop || !imgRef.current) {
       console.error('Missing requirements for avatar upload:', { 
         completedCrop: !!completedCrop, 
         imgRef: !!imgRef.current, 
-        user: !!user 
+        sessionUserId: session.user.id 
       });
       return;
     }
@@ -219,9 +229,10 @@ export default function EditProfile() {
       // Get cropped image blob
       const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
       
-      // Generate unique file name with user folder structure for RLS
-      const fileName = `${Date.now()}.jpg`;
-      const filePath = `${user.id}/${fileName}`;
+      // 4. Generate unique file name with proper avatar upload path
+      const timestamp = Date.now();
+      const fileName = `avatar-${timestamp}.jpg`;
+      const filePath = `${session.user.id}/${fileName}`;
 
       console.log('Uploading avatar to path:', filePath);
 
@@ -246,11 +257,11 @@ export default function EditProfile() {
       // Update avatar URL in state and database
       setAvatarUrl(data.publicUrl);
 
-      // Update profile in database
+      // 4. Update profile via direct update (no upsert)
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: data.publicUrl })
-        .eq('user_id', user.id);
+        .eq('user_id', session.user.id);
 
       if (updateError) throw updateError;
 

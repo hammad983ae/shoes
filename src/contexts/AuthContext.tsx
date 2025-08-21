@@ -37,15 +37,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // initial session
+  // 6. Ensure AuthProvider waits for initial session properly
   useEffect(() => {
+    let isMounted = true;
+    
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => {
+      if (isMounted) {
+        setSession(s ?? null);
+      }
+    });
+
+    // Then check for existing session
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session ?? null);
+      if (isMounted) {
+        setSession(data.session ?? null);
+      }
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_ev, s) => {
-      setSession(s ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // load profile
@@ -101,7 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       session,
       user: session?.user ?? null,
       profile,
-      isAdmin: profile?.role === 'admin',
+      isAdmin: profile?.role?.toLowerCase() === 'admin',
       loading,
       signIn,
       signUp,
