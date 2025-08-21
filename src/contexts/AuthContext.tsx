@@ -48,39 +48,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  // 2) gentle session recovery (avoid rate limiting)
+  // 2) keep session fresh when user returns to the tab
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    const rehydrate = async () => {
+    const refresh = async () => {
       if (refRefreshing.current) return;
       refRefreshing.current = true;
-      
+
       try {
-        const { data } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.refreshSession();
         if (data.session) {
           setSession(data.session);
           setUser(data.session.user);
         } else {
-          // Only try refresh if we don't have a session and had one before
-          if (session) {
-            const refreshResult = await supabase.auth.refreshSession();
-            if (refreshResult.data.session) {
-              setSession(refreshResult.data.session);
-              setUser(refreshResult.data.session.user);
-            } else {
-              setSession(null);
-              setUser(null);
-            }
-          }
+          setSession(null);
+          setUser(null);
         }
       } catch (error) {
-        console.warn('Session rehydration failed:', error);
+        console.warn('Session refresh failed:', error);
       } finally {
         refRefreshing.current = false;
       }
     };
 
+// <<<<<<< codex/fix-app-connection-issue-to-supabase-db-8jrtqq
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.startAutoRefresh();
+        void refresh();
+      }
+    };
+
+    supabase.auth.startAutoRefresh();
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
     const onFocus = () => {
       supabase.auth.startAutoRefresh();
       // Debounce to avoid rate limiting
@@ -108,6 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       clearTimeout(timeoutId);
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVis);
+
       supabase.auth.stopAutoRefresh();
     };
   }, [session]);
