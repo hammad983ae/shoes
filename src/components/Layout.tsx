@@ -18,15 +18,12 @@ const Layout = ({ children }: LayoutProps) => {
   const pingedRef = useRef(false);
 
   useEffect(() => {
-    if (!session || pingedRef.current) return;
-    pingedRef.current = true;
-    // fire-and-forget; do not await
+    let ran = false;
+    if (!session || ran) return;
+    ran = true;
     void wakeUpBackend();
   }, [session]);
 
-  if (isHomePage) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="min-h-screen bg-background">

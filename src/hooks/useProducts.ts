@@ -1,16 +1,25 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
+
+type Media = {
+  id: string;
+  url: string;
+  role: string; // mapped from 'kind' if 'role' isn't present in DB
+};
 
 interface Product {
   id: string;
-  title: string;
+  slug: string;
+  name: string;
+  title: string | null;
   description: string;
-  brand: string;
-  category: string;
+  brand: string | null;
+  category: string | null;
   limited: boolean;
   infinite_stock?: boolean;
-  size_type: string;
-  price: number;
+  size_type: string | null;
+  price: number;              // numeric dollars (fallback to price_cents/100 if needed)
+  price_cents?: number | null;
   stock: number;
   filters: any;
   materials: string;
@@ -19,11 +28,8 @@ interface Product {
   availability: string;
   created_at: string;
   updated_at: string;
-  media: Array<{
-    id: string;
-    url: string;
-    role: string;
-  }>;
+  product_media?: Media[];
+  media: Media[];
 }
 
 interface ProductSummary {
@@ -34,7 +40,7 @@ interface ProductSummary {
   totalValue: number;
 }
 
-export const useProducts = () => {
+export const useProducts = (limit: number = 24, onlyActive: boolean = true) => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [summary, setSummary] = useState<ProductSummary>({
@@ -46,89 +52,120 @@ export const useProducts = () => {
   });
 
   const fetchProducts = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const { data: productsData, error } = await supabase
+      // NOTE: We alias role from 'kind' to be compatible with schemas that don't have 'role'
+      let query = supabase
         .from('products')
         .select(`
-          *,
-          product_media(id, url, role)
+          id, slug, name, title, description, brand, category,
+          limited, infinite_stock, size_type,
+          price, price_cents, stock, filters, materials, care_instructions,
+          shipping_time, availability, created_at, updated_at,
+          product_media:id (
+            id,
+            url,
+            role:kind   -- alias ensures we always get a 'role' field even if column 'role' doesn't exist
+          )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
+      if (onlyActive) {
+        query = query.eq('active', true);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
-      const formattedProducts = (productsData || []).map(product => ({
-        ...product,
-        description: product.description || '',
-        materials: product.materials || '',
-        care_instructions: product.care_instructions || '',
-        shipping_time: product.shipping_time || '5-9 days',
-        availability: product.availability || 'In Stock',
-        stock: product.stock || 0,
-        limited: product.limited || false,
-        infinite_stock: product.infinite_stock || false,
-        size_type: product.size_type || 'US',
-        created_at: product.created_at || '',
-        updated_at: product.updated_at || '',
-        media: (product.product_media || []).map((media: any) => ({
-          ...media,
-          role: media.role || 'gallery'
-        }))
-      }));
+      const formatted: Product[] = (data || []).map((p: any) => {
+        // normalize price: prefer numeric price, fallback to price_cents
+        let price = Number(p?.price ?? 0);
+        if (!price && typeof p?.price_cents === 'number') {
+          price = Math.round((p.price_cents as number) / 100);
+        }
 
-      setProducts(formattedProducts);
+        const media: Media[] = Array.isArray(p?.product_media)
+          ? p.product_media.map((m: any) => ({
+              id: m?.id,
+              url: m?.url,
+              role: m?.role || 'gallery',
+            }))
+          : [];
 
-      // Calculate summary
-      const totalProducts = formattedProducts.length;
-      const inStock = formattedProducts.filter(p => p.stock > 10).length;
-      const lowStock = formattedProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-      const outOfStock = formattedProducts.filter(p => p.stock === 0).length;
-      const totalValue = formattedProducts.reduce((sum, p) => sum + (p.price * p.stock), 0);
-
-      setSummary({
-        totalProducts,
-        inStock,
-        lowStock,
-        outOfStock,
-        totalValue
+        return {
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          title: p.title ?? p.name ?? null,
+          description: p.description || '',
+          brand: p.brand ?? null,
+          category: p.category ?? null,
+          limited: !!p.limited,
+          infinite_stock: !!p.infinite_stock,
+          size_type: p.size_type ?? 'US',
+          price,
+          price_cents: p.price_cents ?? null,
+          stock: Number(p.stock ?? 0),
+          filters: p.filters ?? {},
+          materials: p.materials || '',
+          care_instructions: p.care_instructions || '',
+          shipping_time: p.shipping_time || '5-9 days',
+          availability: p.availability || 'In Stock',
+          created_at: p.created_at || '',
+          updated_at: p.updated_at || '',
+          product_media: media,
+          media,
+        };
       });
 
-    } catch (error) {
-      console.error('Error fetching products:', error);
+      setProducts(formatted);
+
+      // summary
+      const totalProducts = formatted.length;
+      const inStock = formatted.filter(p => p.stock > 10).length;
+      const lowStock = formatted.filter(p => p.stock > 0 && p.stock <= 10).length;
+      const outOfStock = formatted.filter(p => p.stock === 0).length;
+      const totalValue = formatted.reduce((sum, p) => sum + (Number(p.price) * Number(p.stock)), 0);
+
+      setSummary({ totalProducts, inStock, lowStock, outOfStock, totalValue });
+    } catch (e) {
+      console.warn('Error fetching products:', e);
+      // fail-soft: keep previous list instead of wiping to avoid permanent skeletons
     } finally {
       setLoading(false);
     }
   };
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'media'>) => {
+  const addProduct = async (
+    productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'product_media' | 'media' | 'price_cents'>
+  ) => {
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert([productData])
+        .insert([productData as any])
         .select()
         .single();
 
       if (error) throw error;
-
-      await fetchProducts(); // Refresh the list
+      await fetchProducts();
       return { success: true, data };
-    } catch (error) {
-      console.error('Error adding product:', error);
-      return { success: false, error };
+    } catch (e) {
+      console.error('Error adding product:', e);
+      return { success: false, error: e };
     }
   };
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, onlyActive]);
 
   return {
     loading,
     products,
     summary,
     addProduct,
-    refetch: fetchProducts
+    refetch: fetchProducts,
   };
 };
