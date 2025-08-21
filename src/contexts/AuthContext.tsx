@@ -5,8 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 type Profile = {
   user_id: string;
   display_name: string | null;
-  role: 'user' | 'admin' | string;
-  credits_cents: number;
+  role: string | null;
+  credits_cents?: number | null;
+  credits?: number | null;         // tolerate either column name
   avatar_url: string | null;
 };
 
@@ -21,76 +22,49 @@ type AuthState = {
   signOut: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthState>({
-  session: null,
-  user: null,
-  profile: null,
-  isAdmin: false,
-  loading: true,
-  signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null }),
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthState>({} as any);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const refRefreshing = useRef(false);
 
-  // prevent double refresh calls
-  const refreshLock = useRef(false);
-
-  // Subscribe to auth events + initial hydrate
+  // 1) initial session + listener
   useEffect(() => {
     let mounted = true;
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!mounted) return;
       setSession(s ?? null);
       setUser(s?.user ?? null);
     });
-
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session ?? null);
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
-
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
-  // On tab focus / visible, rehydrate/refresh session if needed
+  // 2) hard rehydrate on tab focus/visibility
   useEffect(() => {
-    const rehydrateOnFocus = async () => {
-      if (refreshLock.current) return;
-      refreshLock.current = true;
+    const rehydrate = async () => {
+      if (refRefreshing.current) return;
+      refRefreshing.current = true;
       try {
         const { data } = await supabase.auth.getSession();
-        if (!data.session) {
-          // try to refresh once
-          await supabase.auth.refreshSession();
-          const after = await supabase.auth.getSession();
-          setSession(after.data.session ?? null);
-          setUser(after.data.session?.user ?? null);
-        } else {
-          setSession(data.session);
-          setUser(data.session.user);
-        }
+        if (!data.session) await supabase.auth.refreshSession();
+        const after = await supabase.auth.getSession();
+        setSession(after.data.session ?? null);
+        setUser(after.data.session?.user ?? null);
       } finally {
-        refreshLock.current = false;
+        refRefreshing.current = false;
       }
     };
-
-    const onFocus = () => void rehydrateOnFocus();
-    const onVis = () => {
-      if (document.visibilityState === 'visible') void rehydrateOnFocus();
-    };
-
+    const onFocus = () => { void rehydrate(); };
+    const onVis = () => { if (document.visibilityState === 'visible') void rehydrate(); };
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVis);
     return () => {
@@ -99,76 +73,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  // Load profile when session changes
+  // 3) load profile (retry once if 406/rls hiccup)
   useEffect(() => {
     let mounted = true;
     const load = async (retry = false) => {
-      if (!session?.user) {
-        if (mounted) setProfile(null);
-        return;
-      }
-      // do not block global loading state; page UIs can show their own skeletons
+      if (!user?.id) { if (mounted) setProfile(null); return; }
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, role, credits_cents, avatar_url')
-        .eq('user_id', session.user.id)
-        .single();
-
+        .select('user_id, display_name, role, credits_cents, credits, avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
       if (!mounted) return;
       if (error) {
-        // one retry after small delay (handles intermittent 406/401 when tab resumes)
-        if (!retry) {
-          setTimeout(() => load(true), 250);
-        } else {
-          console.warn('profile load failed:', error);
-          // keep old profile instead of nulling it to avoid “U” fallback flicker
-          // setProfile(null) // <- don’t
-        }
+        if (!retry) setTimeout(() => load(true), 250);
+        else setProfile(null);
       } else {
-        setProfile(data as Profile);
+        setProfile((data || null) as Profile | null);
       }
     };
-
     void load(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
+    return () => { mounted = false; };
+  }, [user?.id]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
-
   const signUp = async (email: string, password: string, displayName?: string) => {
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName || '' },
-        // optional: add emailRedirectTo if you want a fixed callback
-        // emailRedirectTo: 'https://<your-app>/auth/callback',
-      },
+      email, password,
+      options: { data: { display_name: displayName || '' } }
     });
     return { error };
   };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
   };
 
-  const value = useMemo(
-    () => ({
-      session,
-      user,
-      profile,
-      isAdmin: (profile?.role || '').toLowerCase() === 'admin',
-      loading,
-      signIn,
-      signUp,
-      signOut,
-    }),
-    [session, user, profile, loading]
-  );
+  const value = useMemo(() => ({
+    session, user, profile,
+    isAdmin: (profile?.role || '').toLowerCase() === 'admin',
+    loading, signIn, signUp, signOut
+  }), [session, user, profile, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
