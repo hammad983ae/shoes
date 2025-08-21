@@ -250,20 +250,15 @@ export default function Checkout() {
 
             // Deduct credits if used
             if (appliedCredits > 0 && user) {
-              const { data: userCreditsData } = await supabase
-                .from('user_credits')
-                .select('current_balance, total_spent')
-                .eq('user_id', user.id)
-                .single();
-
-              if (userCreditsData && userCreditsData.current_balance !== null) {
-                await supabase
-                  .from('user_credits')
-                  .update({ 
-                    current_balance: userCreditsData.current_balance - appliedCredits,
-                    total_spent: (userCreditsData.total_spent || 0) + appliedCredits
-                  })
-                  .eq('user_id', user.id);
+              try {
+                await supabase.rpc('spend_credits', {
+                  amount: appliedCredits,
+                  reason: 'order_payment',
+                  meta: { order_total: total }
+                });
+              } catch (error) {
+                console.error('Failed to deduct credits:', error);
+                throw new Error('Failed to process credit payment');
               }
             }
 
@@ -376,20 +371,15 @@ export default function Checkout() {
 
       // Deduct credits if used
       if (appliedCredits > 0) {
-        const { data: userCreditsData } = await supabase
-          .from('user_credits')
-          .select('current_balance, total_spent')
-          .eq('user_id', user.id)
-          .single();
-
-        if (userCreditsData && userCreditsData.current_balance !== null) {
-          await supabase
-            .from('user_credits')
-            .update({ 
-              current_balance: userCreditsData.current_balance - appliedCredits,
-              total_spent: (userCreditsData.total_spent || 0) + appliedCredits
-            })
-            .eq('user_id', user.id);
+        try {
+          await supabase.rpc('spend_credits', {
+            amount: appliedCredits,
+            reason: 'order_payment',
+            meta: { order_total: total }
+          });
+        } catch (error) {
+          console.error('Failed to deduct credits:', error);
+          throw new Error('Failed to process credit payment');
         }
       }
 

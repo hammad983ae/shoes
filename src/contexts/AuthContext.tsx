@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getProfile = async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('v_profile_full')
         .select('user_id, display_name, avatar_url, bio, role, is_creator, credits')
         .eq('user_id', userId)
         .single();

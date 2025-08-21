@@ -38,26 +38,21 @@ export const useReferral = () => {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      // Get user credits including earned_from_referrals
+      // Get user credits from new system 
       const { data: credits } = await supabase
-        .from('user_credits')
-        .select('earned_from_referrals, total_earned')
+        .from('user_balances')
+        .select('lifetime_earned, available')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      // Get post analytics for total credits earned
-      const { data: analytics } = await supabase
-        .from('post_analytics')
-        .select('credits_earned')
-        .eq('user_id', user.id);
+      const totalCreditsEarned = credits?.lifetime_earned || 0;
 
-      const totalCreditsEarned = analytics?.reduce((sum, a) => sum + (a.credits_earned || 0), 0) || 0;
 
       if (profile) {
         setReferralData({
           referralCode: profile.referral_code,
           referralsCount: profile.referrals_count || 0,
-          creditsEarnedFromReferrals: credits?.earned_from_referrals || 0,
+          creditsEarnedFromReferrals: 0, // We'll need a separate tracking for referral earnings
           totalCreditsEarned: totalCreditsEarned
         });
       }
@@ -96,7 +91,7 @@ export const useReferral = () => {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'user_credits',
+          table: 'user_balances',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {

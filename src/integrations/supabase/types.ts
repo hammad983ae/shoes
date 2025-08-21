@@ -104,6 +104,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credits_ledger: {
+        Row: {
+          created_at: string
+          delta: number
+          id: number
+          meta: Json
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: number
+          meta?: Json
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: number
+          meta?: Json
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string | null
@@ -567,6 +594,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_balances: {
+        Row: {
+          available: number
+          lifetime_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: number
+          lifetime_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: number
+          lifetime_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           created_at: string
@@ -632,10 +680,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_profile_full: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          commission_rate: number | null
+          coupon_code: string | null
+          created_at: string | null
+          creator_tier: string | null
+          credits: number | null
+          display_name: string | null
+          is_creator: boolean | null
+          last_login_at: string | null
+          referrals_count: number | null
+          role: string | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      grant_credits_admin: {
+        Args: {
+          amount: number
+          meta?: Json
+          reason: string
+          target_user: string
+        }
+        Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      spend_credits: {
+        Args: { amount: number; meta?: Json; reason: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

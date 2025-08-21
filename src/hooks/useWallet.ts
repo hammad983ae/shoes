@@ -50,39 +50,22 @@ export const useWallet = () => {
     try {
       setLoading(true);
 
-      // Fetch user credits
+      // Fetch user credits from new balance system
       const { data: creditsData, error: creditsError } = await supabase
-        .from('user_credits')
+        .from('user_balances')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (creditsError && creditsError.code !== 'PGRST116') throw creditsError;
 
-      // Create user credits record if it doesn't exist
-      if (!creditsData) {
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .insert([{ user_id: user.id }]);
-
-        if (insertError) throw insertError;
-
-        setStats({
-          currentBalance: 0,
-          totalEarned: 0,
-          totalSpent: 0,
-          videoCredits: 0,
-          lifetimeVideoCredits: 0
-        });
-      } else {
-        setStats({
-          currentBalance: creditsData.current_balance || 0,
-          totalEarned: creditsData.total_earned || 0,
-          totalSpent: creditsData.total_spent || 0,
-          videoCredits: creditsData.video_credits_this_month || 0,
-          lifetimeVideoCredits: creditsData.lifetime_video_credits || 0
-        });
-      }
+      setStats({
+        currentBalance: creditsData?.available || 0,
+        totalEarned: creditsData?.lifetime_earned || 0,
+        totalSpent: (creditsData?.lifetime_earned || 0) - (creditsData?.available || 0),
+        videoCredits: 0, // This might need to be tracked separately if needed
+        lifetimeVideoCredits: 0
+      });
 
       // Fetch wallet transactions
       const { data: transactionsData, error: transactionsError } = await supabase

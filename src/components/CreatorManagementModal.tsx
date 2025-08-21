@@ -163,11 +163,11 @@ export const CreatorManagementModal = ({ user, isOpen, onClose, onUserUpdated }:
 
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('grant_user_credits', {
-        target_user_id: user.id,
-        credit_amount: creditAmount,
-        credit_type: 'admin_grant',
-        notes_text: creditNotes.trim() || undefined,
+      const { error } = await supabase.rpc('grant_credits_admin', {
+        target_user: user.id,
+        amount: creditAmount,
+        reason: 'admin_grant',
+        meta: { notes: creditNotes.trim() || undefined },
       });
 
       if (error) throw error;

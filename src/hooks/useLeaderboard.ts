@@ -45,15 +45,15 @@ export const useLeaderboard = () => {
 
       const userIds = profiles.map(u => u.user_id);
 
-      // Fetch matching credits
+      // Fetch matching credits from new system
       const { data: credits, error: creditsError } = await supabase
-        .from('user_credits')
-        .select('user_id, earned_from_referrals')
+        .from('user_balances')
+        .select('user_id, lifetime_earned')
         .in('user_id', userIds);
 
       if (creditsError) throw creditsError;
 
-      const creditsMap = new Map(credits.map(c => [c.user_id, c.earned_from_referrals]));
+      const creditsMap = new Map(credits.map(c => [c.user_id, c.lifetime_earned]));
 
       const mergedUsers: LeaderboardUser[] = profiles.map(user => ({
         id: user.user_id,

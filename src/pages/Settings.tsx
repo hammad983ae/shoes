@@ -96,9 +96,9 @@ const Settings = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Fetch credits
+      // Fetch credits from new system
       const { data: creditsData } = await supabase
-        .from('user_credits')
+        .from('user_balances')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -178,7 +178,7 @@ const Settings = () => {
       // Fetch all user data
       const [profileRes, creditsRes, postsRes, transactionsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user!.id),
-        supabase.from('user_credits').select('*').eq('user_id', user!.id),
+        supabase.from('user_balances').select('*').eq('user_id', user!.id),
         supabase.from('posts').select('*').eq('user_id', user!.id),
         supabase.from('transactions').select('*').eq('user_id', user!.id)
       ]);
