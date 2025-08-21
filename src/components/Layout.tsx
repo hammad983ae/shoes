@@ -1,5 +1,4 @@
-import { ReactNode, useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import ChatBotWidget from './ChatBotWidget';
 import AnnouncementBar from './AnnouncementBar';
@@ -11,11 +10,8 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation();
   const { session } = useAuth();
-  const isHomePage = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pingedRef = useRef(false);
 
   useEffect(() => {
     let ran = false;

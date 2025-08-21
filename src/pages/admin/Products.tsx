@@ -122,8 +122,8 @@ export default function Products() {
 
 
   const filteredProducts = products.filter(product => 
-    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+    (product.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.brand || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Calculate top performers based on purchase count from orders
@@ -297,7 +297,7 @@ export default function Products() {
                         <div className="relative">
                           <img 
                             src={(product as any).media?.[0]?.url || (product as any).images?.[0] || '/placeholder.png'}
-                            alt={product.title}
+                            alt={product.title || product.name}
                             className="w-16 h-16 object-cover rounded"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.png';
@@ -363,7 +363,7 @@ export default function Products() {
                       </div>
                       <img 
                         src={(product as any).images?.[0] || '/placeholder.png'}
-                        alt={product.title}
+                        alt={product.title || product.name}
                         className="w-12 h-12 object-cover rounded"
                       />
                       <div className="flex-1">
@@ -394,7 +394,7 @@ export default function Products() {
                       <AlertCircle className="w-6 h-6 text-red-600" />
                       <img 
                         src={(product as any).images?.[0] || '/placeholder.png'}
-                        alt={product.title}
+                        alt={product.title || product.name}
                         className="w-12 h-12 object-cover rounded"
                       />
                       <div className="flex-1">
