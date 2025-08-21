@@ -228,19 +228,16 @@ const Settings = () => {
       }
 
       // Call edge function with proper authorization
-      const response = await fetch(`https://uvczawicaqqiyutcqoyg.supabase.co/functions/v1/delete-account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ user_id: user.id })
+      const { data: result, error: functionError } = await supabase.functions.invoke('delete-account', {
+        body: { user_id: user.id }
       });
 
-      const result = await response.json();
+      if (functionError) {
+        throw functionError;
+      }
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete account');
+      if (!result || result.error) {
+        throw new Error(result?.error || 'Failed to delete account');
       }
 
       toast({

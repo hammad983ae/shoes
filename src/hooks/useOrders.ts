@@ -93,7 +93,7 @@ export const useOrders = () => {
         coupon_code: order.coupon_code || undefined,
         commission_amount_at_purchase: order.commission_amount_at_purchase || undefined,
         customer_name: profileMap.get(order.user_id)?.display_name || 'Anonymous',
-        items: (order.order_items || []).map(item => ({
+        items: (order.order_items || []).map((item: any) => ({
           ...item,
           size: item.size || undefined,
           product_title: (item.products as any)?.title || 'Unknown Product'

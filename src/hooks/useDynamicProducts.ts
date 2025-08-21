@@ -66,7 +66,7 @@ export const useDynamicProducts = () => {
           is_limited: product.is_limited || false,
           infinite_stock: product.infinite_stock || false,
           type: product.category?.toLowerCase().includes('high') ? 'high-top' : 'low-top',
-          colors: product.color ? product.color.split(',').map(c => c.trim()).filter(Boolean) : [],
+          colors: product.color ? product.color.split(',').map((c: string) => c.trim()).filter(Boolean) : [],
           keywords: []
         };
       });

@@ -72,7 +72,7 @@ export const useProducts = () => {
         size_type: product.size_type || 'US',
         created_at: product.created_at || '',
         updated_at: product.updated_at || '',
-        media: (product.product_media || []).map(media => ({
+        media: (product.product_media || []).map((media: any) => ({
           ...media,
           role: media.role || 'gallery'
         }))

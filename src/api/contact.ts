@@ -20,22 +20,17 @@ export const submitContactRequest = async (contactData: ContactRequest) => {
     }
 
     // Send email notification using Supabase Edge Function
-    const emailResponse = await fetch('https://uvczawicaqqiyutcqoyg.supabase.co/functions/v1/send-contact-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2Y3phd2ljYXFxaXl1dGNxb3lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNjczNDAsImV4cCI6MjA2ODY0MzM0MH0.m3NCcH46Dfce34aVgEYbF08Bh_6rkMIDB6UF6z6xLLY',
-      },
-      body: JSON.stringify({
+    const { error: edgeError } = await supabase.functions.invoke('send-contact-email', {
+      body: {
         name: contactData.name,
         email: contactData.email,
         message: contactData.message,
         requestId: data.id
-      }),
+      }
     });
 
-    if (!emailResponse.ok) {
-      console.error('Failed to send email notification');
+    if (edgeError) {
+      console.error('Failed to send email notification:', edgeError);
     }
 
     return { success: true, data };
