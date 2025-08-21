@@ -34,6 +34,7 @@ const AuthContext = createContext<AuthState>({
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,16 +43,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let isMounted = true;
     
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (isMounted) {
-        setSession(s ?? null);
+        setSession(session || null);
+        setUser(session?.user ?? null);
       }
     });
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data }) => {
       if (isMounted) {
-        setSession(data.session ?? null);
+        setSession(data.session || null);
+        setUser(data.session?.user ?? null);
       }
     });
 

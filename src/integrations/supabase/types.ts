@@ -249,31 +249,61 @@ export type Database = {
       orders: {
         Row: {
           commission_amount_at_purchase: number | null
+          coupon_code: string | null
+          coupon_discount: number | null
           created_at: string
           creator_id: string | null
+          credits_used: number | null
+          discount_amount: number | null
+          estimated_delivery: string | null
           id: string
+          order_images: string[] | null
           order_total: number
+          payment_method: string | null
+          product_details: Json | null
+          shipping_address: Json | null
           status: string
+          subtotal: number | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           commission_amount_at_purchase?: number | null
+          coupon_code?: string | null
+          coupon_discount?: number | null
           created_at?: string
           creator_id?: string | null
+          credits_used?: number | null
+          discount_amount?: number | null
+          estimated_delivery?: string | null
           id?: string
+          order_images?: string[] | null
           order_total?: number
+          payment_method?: string | null
+          product_details?: Json | null
+          shipping_address?: Json | null
           status?: string
+          subtotal?: number | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           commission_amount_at_purchase?: number | null
+          coupon_code?: string | null
+          coupon_discount?: number | null
           created_at?: string
           creator_id?: string | null
+          credits_used?: number | null
+          discount_amount?: number | null
+          estimated_delivery?: string | null
           id?: string
+          order_images?: string[] | null
           order_total?: number
+          payment_method?: string | null
+          product_details?: Json | null
+          shipping_address?: Json | null
           status?: string
+          subtotal?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -309,25 +339,31 @@ export type Database = {
       product_media: {
         Row: {
           created_at: string
+          display_order: number
           id: string
           kind: string
           product_id: string
+          role: string
           sort_order: number
           url: string
         }
         Insert: {
           created_at?: string
+          display_order?: number
           id?: string
           kind?: string
           product_id: string
+          role?: string
           sort_order?: number
           url: string
         }
         Update: {
           created_at?: string
+          display_order?: number
           id?: string
           kind?: string
           product_id?: string
+          role?: string
           sort_order?: number
           url?: string
         }
@@ -351,35 +387,77 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          availability: string | null
+          brand: string | null
+          care_instructions: string | null
+          category: string | null
+          color: string | null
           created_at: string
           description: string
+          filters: Json
           id: string
+          infinite_stock: boolean
+          limited: boolean
+          materials: string | null
           name: string
+          price: number | null
           price_cents: number
+          shipping_time: string | null
+          size_type: string | null
+          slashed_price: number | null
           slug: string
           stock: number
+          title: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
+          availability?: string | null
+          brand?: string | null
+          care_instructions?: string | null
+          category?: string | null
+          color?: string | null
           created_at?: string
           description?: string
+          filters?: Json
           id?: string
+          infinite_stock?: boolean
+          limited?: boolean
+          materials?: string | null
           name: string
+          price?: number | null
           price_cents: number
+          shipping_time?: string | null
+          size_type?: string | null
+          slashed_price?: number | null
           slug: string
           stock?: number
+          title?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
+          availability?: string | null
+          brand?: string | null
+          care_instructions?: string | null
+          category?: string | null
+          color?: string | null
           created_at?: string
           description?: string
+          filters?: Json
           id?: string
+          infinite_stock?: boolean
+          limited?: boolean
+          materials?: string | null
           name?: string
+          price?: number | null
           price_cents?: number
+          shipping_time?: string | null
+          size_type?: string | null
+          slashed_price?: number | null
           slug?: string
           stock?: number
+          title?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -391,11 +469,13 @@ export type Database = {
           commission_rate: number | null
           created_at: string | null
           creator_tier: string | null
+          credits: number
           credits_cents: number
           display_name: string | null
           is_creator: boolean | null
           last_login_at: string | null
           referral_code: string | null
+          referrals_count: number
           referred_by: string | null
           role: string | null
           total_spent: number | null
@@ -408,11 +488,13 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           creator_tier?: string | null
+          credits?: number
           credits_cents?: number
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
           referral_code?: string | null
+          referrals_count?: number
           referred_by?: string | null
           role?: string | null
           total_spent?: number | null
@@ -425,11 +507,13 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           creator_tier?: string | null
+          credits?: number
           credits_cents?: number
           display_name?: string | null
           is_creator?: boolean | null
           last_login_at?: string | null
           referral_code?: string | null
+          referrals_count?: number
           referred_by?: string | null
           role?: string | null
           total_spent?: number | null
